@@ -19,7 +19,6 @@ if [ ! -f "$root/web/.env.local" ]; then
         echo "BV_DATA_SOURCE=live"
         echo "BACKEND_URL=http://127.0.0.1:$api_port"
         echo "ADMIN_TOKEN=$admin_token"
-        echo "BV_SAMPLE_NOTICE=1"
     } > "$root/web/.env.local"
     echo "Se creó web/.env.local (modo live). Defina AUDITOR_ACCESS_CODE y SESSION_SECRET para proteger el área de auditores."
 fi

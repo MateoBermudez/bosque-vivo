@@ -6,7 +6,7 @@ import { PageHeader } from "@/components/common/page-header";
 import { SampleBadge } from "@/components/common/sample-badge";
 import { ErrorState, Loading } from "@/components/common/states";
 import { Explorer, type ExplorerRow } from "@/components/projects/explorer";
-import { attempt, loadExplorerItems, showSampleNotice } from "@/lib/api";
+import { attempt, isDemoProject, loadExplorerItems, showSampleNotice } from "@/lib/api";
 import { normalizeConfidence } from "@/lib/domain";
 
 export const metadata: Metadata = {
@@ -20,24 +20,12 @@ export default function ProjectsPage() {
     <>
       <PageHeader eyebrow="Explorador" title="Proyectos de carbono forestal">
         Elige un proyecto en el mapa o en la lista para ver lo declarado frente a lo observado.
-        <Suspense>
-          <SampleNotice />
-        </Suspense>
       </PageHeader>
       <Suspense fallback={<Loading label="Cargando proyectos…" />}>
         <ExplorerLoader />
       </Suspense>
     </>
   );
-}
-
-async function SampleNotice() {
-  await connection();
-  return showSampleNotice() ? (
-    <div className="mt-4">
-      <SampleBadge />
-    </div>
-  ) : null;
 }
 
 async function ExplorerLoader() {
@@ -62,5 +50,15 @@ async function ExplorerLoader() {
     confidence: audit?.result ? normalizeConfidence(audit.result.confidence_label) : null,
     geometry: geometry?.geometry ?? null,
   }));
-  return <Explorer rows={rows} />;
+  const sample = showSampleNotice() || result.data.some(({ project }) => isDemoProject(project));
+  return (
+    <>
+      {sample && (
+        <div className="mx-auto mb-4 max-w-7xl px-5">
+          <SampleBadge />
+        </div>
+      )}
+      <Explorer rows={rows} />
+    </>
+  );
 }
