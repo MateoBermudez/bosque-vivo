@@ -1,0 +1,23 @@
+[project]
+name = "bosquevivo-panel"
+version = "0.1.0"
+description = "Panel web de solo lectura de Bosque Vivo"
+requires-python = ">=3.12"
+dependencies = [
+    "streamlit>=1.40",
+    "httpx>=0.27",
+    "pandas>=2.2",
+    "altair>=5.4",
+    "pydeck>=0.9",
+]
+
+[dependency-groups]
+dev = ["ruff>=0.8", "pytest>=8.3"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]

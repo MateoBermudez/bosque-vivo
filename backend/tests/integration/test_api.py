@@ -1,9 +1,12 @@
 import json
+from datetime import date
 from pathlib import Path
 
 import pytest
 
 from bosquevivo.db.models import Job, Project
+from bosquevivo.satellite import SatelliteService, Sensor
+from bosquevivo.satellite.providers import FakeProvider
 
 RING = [[-75.0, 5.0], [-74.9, 5.0], [-74.9, 5.1], [-75.0, 5.1], [-75.0, 5.0]]
 ADMIN = {"X-Admin-Token": "secreto"}
@@ -72,3 +75,18 @@ def test_admin_import(client, db, tmp_path: Path):
     assert response.status_code == 200
     assert response.json()["created"] == 1
     assert client.post("/api/v1/admin/import", json={"path": "x", "source": "y"}).status_code == 401
+
+
+def test_geometry_and_series_endpoints(client, db, project):
+    sat = SatelliteService(db, FakeProvider(loss_by_year={2021: 2.0}), Path("."))
+    sat.refresh_timeseries(
+        project.id, date(2020, 1, 1), date(2020, 6, 30), sensors=(Sensor.SENTINEL2,)
+    )
+    sat.refresh_forest_loss(project.id)
+    db.commit()
+    geometry = client.get(f"/api/v1/projects/{project.id}/geometry").json()
+    assert geometry["geometry"]["type"] == "Polygon"
+    series = client.get(f"/api/v1/projects/{project.id}/series").json()
+    assert len(series["ndvi"]) == 6
+    assert series["loss"] == [{"year": 2021, "ha_lost": 2.0}]
+    assert client.get("/api/v1/projects/999/series").status_code == 404
