@@ -46,10 +46,10 @@ describe("cliente del backend", () => {
     const feature = { type: "Feature", properties: {}, geometry: { type: "Polygon", coordinates: [[[0, 0], [1, 0], [1, 1], [0, 0]]] } };
     fetchMock.mockImplementation(async () => json(feature));
     await liveApi.getGeometry(3);
-    await liveApi.getGeometry(3, { simplify: 0.002 });
+    await liveApi.getGeometry(3, { simplify: 0.002, maxParts: 200 });
     expect(String(fetchMock.mock.calls[0]![0])).toBe("http://backend.test/api/v1/projects/3/geometry");
     expect(String(fetchMock.mock.calls[1]![0])).toBe(
-      "http://backend.test/api/v1/projects/3/geometry?simplify=0.002",
+      "http://backend.test/api/v1/projects/3/geometry?simplify=0.002&max_parts=200",
     );
   });
 

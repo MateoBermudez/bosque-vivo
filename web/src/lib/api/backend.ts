@@ -107,12 +107,15 @@ async function requireJson<T>(path: string, schema: ZodType<T>, options: Request
 export const liveApi: BosqueVivoApi = {
   listProjects: () => requireJson(`${API_PREFIX}/projects?limit=200`, projectSchema.array()),
   getProject: (id) => getJson(`${API_PREFIX}/projects/${id}`, projectSchema, { nullOn: [404] }),
-  getGeometry: (id, options) =>
-    getJson(
-      `${API_PREFIX}/projects/${id}/geometry${options?.simplify ? `?simplify=${options.simplify}` : ""}`,
-      geometrySchema,
-      { nullOn: [404] },
-    ),
+  getGeometry: (id, options) => {
+    const query = new URLSearchParams();
+    if (options?.simplify) query.set("simplify", String(options.simplify));
+    if (options?.maxParts) query.set("max_parts", String(options.maxParts));
+    const suffix = query.size ? `?${query}` : "";
+    return getJson(`${API_PREFIX}/projects/${id}/geometry${suffix}`, geometrySchema, {
+      nullOn: [404],
+    });
+  },
   getSeries: (id) => getJson(`${API_PREFIX}/projects/${id}/series`, seriesSchema, { nullOn: [404] }),
   getLatestAudit: (id) =>
     getJson(`${API_PREFIX}/projects/${id}/audit`, auditRunSchema, { nullOn: [404] }),
