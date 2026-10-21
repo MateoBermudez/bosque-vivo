@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Reporte de auditoría · {{ project.name }}</title>
+<style>
+body { font-family: system-ui, sans-serif; max-width: 860px; margin: 2rem auto; padding: 0 1rem; color: #1b2a1f; }
+h1 { margin-bottom: 0; }
+.meta { color: #55655a; margin-top: .25rem; }
+.score { font-size: 3rem; font-weight: 700; }
+table { border-collapse: collapse; width: 100%; margin: 1rem 0; }
+th, td { border: 1px solid #ccd6cf; padding: .4rem .6rem; text-align: left; }
+th { background: #eef3ef; }
+.note { background: #f6f8f6; border-left: 4px solid #4c8c5a; padding: .6rem 1rem; }
+img { max-width: 100%; }
+code { background: #eef3ef; padding: 0 .25rem; }
+</style>
+</head>
+<body>
+<h1>{{ project.name }}</h1>
+<p class="meta">{{ project.country or "País no registrado" }} · {{ project.source_registry }} {{ project.registry_id }} · {{ "%.0f"|format(project.area_ha or 0) }} ha</p>
+
+<h2>Resultado</h2>
+<p class="score">{{ "%.0f"|format(result.score) if result.score is not none else "—" }}<small> / 100</small></p>
+<p>Correspondencia observada: <strong>{{ result.category }}</strong> · Confianza: <strong>{{ result.confidence_label }}</strong> ({{ "%.2f"|format(result.confidence) }})</p>
+<p class="note">{{ result.narrative }}</p>
+
+<h2>Componentes</h2>
+<table>
+<tr><th>Componente</th><th>Puntaje</th><th>Detalle</th></tr>
+{% for name, data in components %}
+<tr><td>{{ name }}</td><td>{{ data.puntaje if data.puntaje is not none else "—" }}</td>
+<td>{% for key, value in data.items() if key != "puntaje" %}{{ key }}: {{ value }}{% if not loop.last %} · {% endif %}{% endfor %}</td></tr>
+{% endfor %}
+</table>
+{% if sensitivity %}
+<p>Sensibilidad a los pesos (±{{ "%.0f"|format(sensitivity_delta * 100) }} puntos porcentuales): entre {{ sensitivity.minimo }} y {{ sensitivity.maximo }}.</p>
+{% endif %}
+
+<h2>Serie de NDVI</h2>
+{% if chart %}<img alt="Serie de NDVI" src="data:image/png;base64,{{ chart }}">{% else %}<p>No hay serie disponible.</p>{% endif %}
+
+<h2>Declarado y observado por año</h2>
+<table>
+<tr><th>Año</th><th>Periodo</th><th>NDVI medio</th><th>Pérdida (ha)</th></tr>
+{% for row in comparison %}
+<tr><td>{{ row.year }}</td><td>{{ row.declared_note }}</td><td>{{ row.ndvi_mean if row.ndvi_mean is not none else "—" }}</td><td>{{ row.loss_ha }}</td></tr>
+{% endfor %}
+</table>
+
+<h2>Trazabilidad</h2>
+<ul>
+<li>Corrida de auditoría: <code>{{ run.id }}</code> · versión del índice <code>{{ run.index_version }}</code></li>
+<li>Versión del código: <code>{{ run.git_sha or "no disponible" }}</code></li>
+<li>Sensor usado: <code>{{ sensor }}</code></li>
+<li>Conjuntos de datos: {% for key, value in run.dataset_versions.items() %}{{ key }} = <code>{{ value }}</code>{% if not loop.last %}, {% endif %}{% endfor %}</li>
+<li>Parámetros: pesos {{ run.parameters.weight_permanence }} / {{ run.parameters.weight_trend }} / {{ run.parameters.weight_stability }}</li>
+<li>Fecha: {{ run.created_at.strftime("%Y-%m-%d %H:%M") }} UTC</li>
+</ul>
+
+<h2>Limitaciones</h2>
+<ul>
+<li>El índice mide la correspondencia entre lo declarado y lo observado. No estima contrafactuales ni adicionalidad.</li>
+<li>Las nubes pueden dejar series incompletas; en ese caso la confianza baja y "Insuficiente" es un resultado válido.</li>
+<li>Los valores de NDVI de Landsat y Sentinel-2 no son directamente comparables entre sí.</li>
+<li>Este reporte describe lo que se observa desde el satélite y no atribuye intenciones.</li>
+</ul>
+</body>
+</html>
