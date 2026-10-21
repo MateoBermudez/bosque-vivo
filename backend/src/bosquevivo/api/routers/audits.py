@@ -6,8 +6,8 @@ from bosquevivo.api.deps import db_session, require_admin
 from bosquevivo.api.schemas import AuditRunOut, JobOut
 from bosquevivo.audit.service import AuditService
 from bosquevivo.db.models import AuditRun, Project, Report
+from bosquevivo.jobs.kinds import CALCULATE_AUDIT, GENERATE_REPORT
 from bosquevivo.jobs.queue import JobQueue
-from bosquevivo.jobs.tasks import CALCULATE_AUDIT, GENERATE_REPORT
 
 router = APIRouter(prefix="/api/v1", tags=["auditorías"])
 

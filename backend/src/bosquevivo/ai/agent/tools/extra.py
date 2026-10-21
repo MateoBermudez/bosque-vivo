@@ -11,8 +11,8 @@ from bosquevivo.ai.llm import MediaPart
 from bosquevivo.ai.vision import assess_scene_quality, describe_change, describe_user_photo
 from bosquevivo.audit.service import AuditService
 from bosquevivo.db.models import AuditRun, ImageAsset
+from bosquevivo.jobs.kinds import CALCULATE_AUDIT, GENERATE_REPORT
 from bosquevivo.jobs.queue import JobQueue
-from bosquevivo.jobs.tasks import CALCULATE_AUDIT, GENERATE_REPORT
 from bosquevivo.satellite.models import Sensor, ThumbnailKind
 
 
