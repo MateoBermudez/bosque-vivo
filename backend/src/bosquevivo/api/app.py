@@ -7,7 +7,7 @@ from fastapi.responses import JSONResponse
 from bosquevivo import __version__
 from bosquevivo.api.routers import admin, audits, chat, health, projects, whatsapp
 from bosquevivo.core.config import get_settings
-from bosquevivo.core.errors import NotFoundError, ValidationFailedError
+from bosquevivo.core.errors import ExternalServiceError, NotFoundError, ValidationFailedError
 from bosquevivo.core.logging import configure_logging, get_logger
 from bosquevivo.db.session import get_engine, init_db, make_session_factory
 from bosquevivo.jobs import JobWorker
@@ -54,6 +54,10 @@ def create_app() -> FastAPI:
     @app.exception_handler(ValidationFailedError)
     async def validation_handler(_: Request, exc: ValidationFailedError) -> JSONResponse:
         return JSONResponse(status_code=422, content={"detail": str(exc)})
+
+    @app.exception_handler(ExternalServiceError)
+    async def external_handler(_: Request, exc: ExternalServiceError) -> JSONResponse:
+        return JSONResponse(status_code=503, content={"detail": str(exc)})
 
     app.include_router(health.router)
     app.include_router(projects.router)
