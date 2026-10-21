@@ -24,8 +24,7 @@ if (-not (Test-Path "$root\web\.env.local")) {
     $envLines = @(
         "BV_DATA_SOURCE=live",
         "BACKEND_URL=http://127.0.0.1:$ApiPort",
-        "ADMIN_TOKEN=$adminToken",
-        "BV_SAMPLE_NOTICE=1"
+        "ADMIN_TOKEN=$adminToken"
     )
     # UTF-8 sin BOM: con BOM, Next no reconocería la primera variable.
     [System.IO.File]::WriteAllLines("$root\web\.env.local", $envLines, (New-Object System.Text.UTF8Encoding($false)))

@@ -42,6 +42,17 @@ describe("cliente del backend", () => {
     expect((init!.headers as Record<string, string>)["X-Admin-Token"]).toBeUndefined();
   });
 
+  it("pide el polígono liviano solo cuando se le indica", async () => {
+    const feature = { type: "Feature", properties: {}, geometry: { type: "Polygon", coordinates: [[[0, 0], [1, 0], [1, 1], [0, 0]]] } };
+    fetchMock.mockImplementation(async () => json(feature));
+    await liveApi.getGeometry(3);
+    await liveApi.getGeometry(3, { simplify: 0.002 });
+    expect(String(fetchMock.mock.calls[0]![0])).toBe("http://backend.test/api/v1/projects/3/geometry");
+    expect(String(fetchMock.mock.calls[1]![0])).toBe(
+      "http://backend.test/api/v1/projects/3/geometry?simplify=0.002",
+    );
+  });
+
   it("devuelve null cuando el backend responde 404", async () => {
     fetchMock.mockResolvedValue(json({ detail: "proyecto no encontrado" }, 404));
     expect(await liveApi.getProject(99)).toBeNull();

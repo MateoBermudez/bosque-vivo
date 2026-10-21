@@ -38,8 +38,9 @@ En `.env.local`:
 BV_DATA_SOURCE=live
 BACKEND_URL=http://127.0.0.1:8000
 ADMIN_TOKEN=<el mismo ADMIN_TOKEN del backend>
-BV_SAMPLE_NOTICE=1        # mientras el backend tenga solo la base de demostración
 ```
+
+El aviso «datos ilustrativos» sale solo cuando hay proyectos del registro `demo` (la base de demostración de `bosquevivo seed-demo`); `BV_SAMPLE_NOTICE=1` lo fuerza.
 
 y levanta el backend (`cd backend && uv run uvicorn bosquevivo.api.app:app`). Con `scripts/dev` (en la raíz del repo) todo esto se hace solo: arranca la API y el sitio, y crea `web/.env.local` copiando el `ADMIN_TOKEN` de `backend/.env`.
 

@@ -38,6 +38,14 @@ export async function attempt<T>(task: () => Promise<T>): Promise<Attempt<T>> {
   }
 }
 
+/** 0,002° ≈ 220 m: de sobra para un mapa de país y mucho más liviano que el polígono completo. */
+const MAP_SIMPLIFY_DEGREES = 0.002;
+
+/** Los proyectos de la base de demostración llevan el registro «demo». */
+export function isDemoProject(project: Project): boolean {
+  return project.source_registry.toLowerCase() === "demo";
+}
+
 export interface ExplorerItem {
   project: Project;
   geometry: ProjectGeometry | null;
@@ -51,7 +59,8 @@ export async function loadExplorerItems(): Promise<ExplorerItem[]> {
   const projects = await api.listProjects();
   return Promise.all(
     projects.map(async (project) => {
-      const [geometry, audit] = await Promise.all([api.getGeometry(project.id), api.getLatestAudit(project.id)]);
+      const [geometry, audit] = await Promise.all([api.getGeometry(project.id, { simplify: MAP_SIMPLIFY_DEGREES }),
+        api.getLatestAudit(project.id),]);
       return { project, geometry, audit, category: audit?.result?.category ?? null };
     }),
   );

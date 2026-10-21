@@ -12,7 +12,7 @@ import { ComparisonTable } from "@/components/projects/comparison-table";
 import { LossChart } from "@/components/projects/loss-chart";
 import { NdviChart } from "@/components/projects/ndvi-chart";
 import { ScoreCard } from "@/components/projects/score-card";
-import { attempt, dataSource, loadProjectView, showSampleNotice } from "@/lib/api";
+import { attempt, dataSource, isDemoProject, loadProjectView, showSampleNotice } from "@/lib/api";
 import { readSensorKey } from "@/lib/domain";
 import { formatDateTime, formatHa, formatPercent } from "@/lib/format";
 
@@ -62,7 +62,7 @@ async function ProjectDetail({ params }: Pick<PageProps<"/proyectos/[id]">, "par
     <>
       <header className="mt-4 grid gap-6 lg:grid-cols-[1.5fr_1fr]">
         <div>
-          {showSampleNotice() && <SampleBadge />}
+          {(showSampleNotice() || isDemoProject(project)) && <SampleBadge />}
           <h1 className="mt-4 text-4xl font-extrabold md:text-5xl">{project.name}</h1>
           <dl className="mt-4 flex flex-wrap gap-x-6 gap-y-2 text-sm text-muted-foreground">
             <div>
