@@ -15,6 +15,7 @@ class Settings(BaseSettings):
     gemini_model: str = ""
     gemini_model_light: str = ""
     gee_project: str = ""
+    satellite_provider: str = "gee"
     whatsapp_token: str = ""
     whatsapp_phone_number_id: str = ""
     whatsapp_verify_token: str = ""

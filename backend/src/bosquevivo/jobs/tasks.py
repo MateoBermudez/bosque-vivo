@@ -1,0 +1,36 @@
+from datetime import date
+from typing import Any
+
+from sqlalchemy.orm import Session
+
+from bosquevivo.audit.index import IndexCalculator
+from bosquevivo.audit.service import AuditService
+from bosquevivo.core.config import get_settings
+from bosquevivo.reports.service import ReportService
+from bosquevivo.satellite.provider import SatelliteProvider
+from bosquevivo.satellite.service import SatelliteService
+
+CALCULATE_AUDIT = "calculate_audit"
+GENERATE_REPORT = "generate_report"
+
+
+def make_calculate_audit(provider: SatelliteProvider):
+    def handler(session: Session, payload: dict[str, Any]) -> dict[str, Any]:
+        project_id = int(payload["project_id"])
+        settings = get_settings()
+        satellite = SatelliteService(session, provider, settings.images_dir)
+        start = date.fromisoformat(payload.get("start", "2000-01-01"))
+        end = date.fromisoformat(payload["end"]) if payload.get("end") else date.today()
+        satellite.refresh_timeseries(project_id, start, end)
+        satellite.refresh_forest_loss(project_id)
+        audit = AuditService(session, IndexCalculator(), provider.dataset_versions())
+        run = audit.run(project_id)
+        return {"run_id": run.id}
+
+    return handler
+
+
+def generate_report(session: Session, payload: dict[str, Any]) -> dict[str, Any]:
+    service = ReportService(session, get_settings().reports_dir)
+    report = service.generate(int(payload["run_id"]), payload.get("format", "html"))
+    return {"report_id": report.id, "path": report.path}
