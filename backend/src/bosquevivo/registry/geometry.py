@@ -1,0 +1,68 @@
+from dataclasses import dataclass
+
+from pyproj import CRS, Transformer
+from shapely import make_valid
+from shapely.geometry import MultiPolygon, Polygon, shape
+from shapely.geometry.base import BaseGeometry
+from shapely.ops import transform
+
+from bosquevivo.core.errors import ValidationFailedError
+
+WGS84 = CRS.from_epsg(4326)
+EQUAL_AREA = CRS.from_epsg(6933)
+
+
+@dataclass(frozen=True)
+class GeometryReport:
+    geometry: MultiPolygon | Polygon
+    repaired: bool
+    area_ha: float
+
+
+def _polygons_only(geom: BaseGeometry) -> MultiPolygon | Polygon:
+    if isinstance(geom, Polygon | MultiPolygon):
+        return geom
+    parts = [g for g in getattr(geom, "geoms", []) if isinstance(g, Polygon | MultiPolygon)]
+    flat: list[Polygon] = []
+    for part in parts:
+        if isinstance(part, MultiPolygon):
+            flat.extend(part.geoms)
+        else:
+            flat.append(part)
+    if not flat:
+        raise ValidationFailedError("la geometría no contiene polígonos")
+    return flat[0] if len(flat) == 1 else MultiPolygon(flat)
+
+
+def reproject(geom: BaseGeometry, source: CRS, target: CRS) -> BaseGeometry:
+    if source == target:
+        return geom
+    transformer = Transformer.from_crs(source, target, always_xy=True)
+    return transform(transformer.transform, geom)
+
+
+def area_hectares(geom: BaseGeometry) -> float:
+    projected = reproject(geom, WGS84, EQUAL_AREA)
+    return float(projected.area) / 10_000.0
+
+
+def normalize_geometry(geom: BaseGeometry | dict, source_crs: CRS = WGS84) -> GeometryReport:
+    parsed = shape(geom) if isinstance(geom, dict) else geom
+    if parsed is None or parsed.is_empty:
+        raise ValidationFailedError("geometría vacía")
+    repaired = False
+    if not parsed.is_valid:
+        parsed = make_valid(parsed)
+        repaired = True
+    polygons = _polygons_only(parsed)
+    polygons = reproject(polygons, source_crs, WGS84)
+    if not polygons.is_valid:
+        polygons = _polygons_only(make_valid(polygons))
+        repaired = True
+    bounds = polygons.bounds
+    if not (-180 <= bounds[0] <= 180 and -90 <= bounds[1] <= 90):
+        raise ValidationFailedError("coordenadas fuera de rango WGS84")
+    area = area_hectares(polygons)
+    if area <= 0:
+        raise ValidationFailedError("el polígono tiene área cero")
+    return GeometryReport(geometry=_polygons_only(polygons), repaired=repaired, area_ha=area)
