@@ -1,7 +1,7 @@
 from datetime import date
 
 import pytest
-from shapely.geometry import Point, box
+from shapely.geometry import MultiPolygon, Point, box
 
 from bosquevivo.audit.compare import compare_declared_observed
 from bosquevivo.audit.index import INSUFFICIENT, IndexCalculator
@@ -10,6 +10,7 @@ from bosquevivo.audit.narrative import build_narrative
 from bosquevivo.audit.service import analysis_window_start
 from bosquevivo.registry.geometry import (
     MAX_ANALYSIS_VERTICES,
+    keep_largest_parts,
     simplify_for_analysis,
     vertex_count,
 )
@@ -119,3 +120,18 @@ def test_la_comparacion_marca_los_anos_desde_t0():
 
     assert not rows[2012].after_t0 and rows[2014].after_t0
     assert rows[2013].after_t0  # el 31-dic-2013 ya es posterior a T0
+
+
+def test_conserva_solo_las_partes_mas_grandes():
+    parcels = [box(i, 0, i + 0.1 * (i + 1), 0.1 * (i + 1)) for i in range(6)]  # áreas crecientes
+    multi = MultiPolygon(parcels)
+
+    kept = keep_largest_parts(multi, 2)
+
+    assert len(kept.geoms) == 2
+    assert {round(p.area, 3) for p in kept.geoms} == {
+        round(parcels[5].area, 3),
+        round(parcels[4].area, 3),
+    }
+    assert keep_largest_parts(multi, 10) is multi  # no hace nada si ya cabe
+    assert keep_largest_parts(parcels[0], 1) is parcels[0]  # un polígono simple no se toca

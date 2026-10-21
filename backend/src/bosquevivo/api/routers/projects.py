@@ -52,14 +52,20 @@ def get_geometry(
         le=0.1,
         description="Tolerancia en grados para aligerar el polígono (p. ej. 0.002 ≈ 220 m).",
     ),
+    max_parts: int | None = Query(
+        default=None,
+        ge=1,
+        le=100_000,
+        description="Conserva solo las N partes más grandes (para proyectos de miles de parcelas).",
+    ),
     session: Session = Depends(db_session),
 ):
     project = ProjectRepository(session).get(project_id)
     if project is None:
         raise HTTPException(status_code=404, detail="proyecto no encontrado")
     geometry = json.loads(project.geometry)
-    if simplify:
-        geometry = mapping(simplify_geometry(shape(geometry), simplify))
+    if simplify or max_parts:
+        geometry = mapping(simplify_geometry(shape(geometry), simplify or 0.0, max_parts))
     return {
         "type": "Feature",
         "properties": {"id": project.id, "name": project.name},
