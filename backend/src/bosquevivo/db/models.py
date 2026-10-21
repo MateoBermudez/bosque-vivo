@@ -92,6 +92,16 @@ class ForestLoss(Base):
     source: Mapped[str] = mapped_column(String(80))
 
 
+class ForestBaselineRecord(Base):
+    __tablename__ = "forest_baseline"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    project_id: Mapped[int] = project_fk()
+    tree_cover_ha: Mapped[float] = mapped_column(Float)
+    threshold_percent: Mapped[int] = mapped_column(Integer, default=30)
+    source: Mapped[str] = mapped_column(String(80))
+
+
 class AuditRun(Base):
     __tablename__ = "audit_run"
 

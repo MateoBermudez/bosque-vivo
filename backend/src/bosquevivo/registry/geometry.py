@@ -1,10 +1,11 @@
 from dataclasses import dataclass
 
+import numpy as np
+import shapely
 from pyproj import CRS, Transformer
 from shapely import make_valid
 from shapely.geometry import MultiPolygon, Polygon, shape
 from shapely.geometry.base import BaseGeometry
-from shapely.ops import transform
 
 from bosquevivo.core.errors import ValidationFailedError
 
@@ -38,7 +39,12 @@ def reproject(geom: BaseGeometry, source: CRS, target: CRS) -> BaseGeometry:
     if source == target:
         return geom
     transformer = Transformer.from_crs(source, target, always_xy=True)
-    return transform(transformer.transform, geom)
+
+    def convert(coords: np.ndarray) -> np.ndarray:
+        x, y = transformer.transform(coords[:, 0], coords[:, 1])
+        return np.column_stack([x, y])
+
+    return shapely.transform(geom, convert)
 
 
 def area_hectares(geom: BaseGeometry) -> float:
