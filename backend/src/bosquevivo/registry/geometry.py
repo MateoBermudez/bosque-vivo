@@ -96,9 +96,23 @@ def vertex_count(geom: BaseGeometry) -> int:
     return int(shapely.get_num_coordinates(geom))
 
 
-def simplify_geometry(geom: BaseGeometry, tolerance: float) -> MultiPolygon | Polygon:
-    """Simplifica conservando la topología; si algo queda inválido lo repara."""
+def keep_largest_parts(geom: MultiPolygon | Polygon, max_parts: int) -> MultiPolygon | Polygon:
+    """Deja solo las `max_parts` partes de mayor área. Sirve para dibujar proyectos formados por
+    miles de parcelas diminutas, que la simplificación de vértices no logra aligerar."""
+    if not isinstance(geom, MultiPolygon) or len(geom.geoms) <= max_parts:
+        return geom
+    largest = sorted(geom.geoms, key=lambda part: part.area, reverse=True)[:max_parts]
+    return MultiPolygon(largest)
+
+
+def simplify_geometry(
+    geom: BaseGeometry, tolerance: float, max_parts: int | None = None
+) -> MultiPolygon | Polygon:
+    """Simplifica conservando la topología; si algo queda inválido lo repara.
+    Con `max_parts` conserva solo las partes más grandes (vista de mapa)."""
     polygons = _polygons_only(geom)
+    if max_parts is not None:
+        polygons = keep_largest_parts(polygons, max_parts)
     simplified = polygons.simplify(tolerance, preserve_topology=True)
     if simplified.is_empty:
         return polygons
