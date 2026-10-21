@@ -12,7 +12,7 @@ from bosquevivo.assistant.signature import compute_signature
 from bosquevivo.audit import AuditService
 from bosquevivo.core.config import Settings, get_settings
 from bosquevivo.core.privacy import phone_hmac
-from bosquevivo.db.models import AgentRun, ConsentLog, Job, Project, WaUser
+from bosquevivo.db.models import AgentRun, ConsentLog, Evidence, Job, Project, WaUser
 from bosquevivo.satellite import SatelliteService, Sensor
 from bosquevivo.satellite.providers import FakeProvider
 
@@ -129,6 +129,19 @@ def test_delete_command_removes_user_consents_and_traces(db, seeded):
     assert db.query(ConsentLog).count() == 0
     assert db.query(AgentRun).count() == 0
     assert "Borré" in client.sent[0][1]
+
+
+def test_delete_command_also_removes_evidence_of_the_user_queries(db, seeded):
+    script = [
+        ToolCallResponse("obtener_auditoria", proyecto_id=seeded.id),
+        LLMResponse(text="Hay correspondencia alta con confianza alta."),
+    ]
+    service, _, _ = build(db, script)
+    onboard(service)
+    service.handle(text("m2", "estado"))
+    assert db.query(Evidence).count() == 1
+    service.handle(text("m3", "borrar mis datos"))
+    assert db.query(Evidence).count() == 0
 
 
 def test_photo_requires_separate_consent(db, seeded):
