@@ -51,6 +51,10 @@ line-length = 100
 target-version = "py312"
 src = ["src", "tests"]
 
+[tool.ruff.lint.per-file-ignores]
+"src/bosquevivo/ai/prompts/*" = ["E501"]
+"tests/*" = ["PLR2004", "E501"]
+
 [tool.ruff.lint.flake8-bugbear]
 extend-immutable-calls = ["fastapi.Depends", "fastapi.Query", "fastapi.Header"]
 
