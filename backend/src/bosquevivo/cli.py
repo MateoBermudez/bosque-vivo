@@ -6,12 +6,14 @@ from pathlib import Path
 from bosquevivo.ai.agent import Agent, default_registry
 from bosquevivo.ai.eval import EvalRunner, load_cases
 from bosquevivo.assistant.runtime import build_llm
-from bosquevivo.audit.service import AuditService
+from bosquevivo.audit.service import AuditService, analysis_window_start
 from bosquevivo.core.config import get_settings
 from bosquevivo.core.logging import configure_logging
+from bosquevivo.db.models import Project
 from bosquevivo.db.session import get_session, init_db
 from bosquevivo.demo import seed_demo
 from bosquevivo.registry.importer import import_file
+from bosquevivo.registry.karnik import import_karnik
 from bosquevivo.satellite.factory import build_provider
 from bosquevivo.satellite.service import SatelliteService
 
@@ -48,17 +50,39 @@ def cmd_import(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_import_karnik(args: argparse.Namespace) -> int:
+    init_db()
+    with get_session() as session:
+        summary = import_karnik(session, Path(args.path), country=args.country, limit=args.limit)
+        print(
+            f"creados={summary.created} actualizados={summary.updated} "
+            f"reparados={summary.repaired} simplificados={summary.simplified} "
+            f"con_area_de_contabilidad={summary.accounting_area_used} "
+            f"omitidos_por_ser_punto={len(summary.skipped_points)} "
+            f"omitidos_otros={len(summary.skipped_other)}"
+        )
+        for item in summary.skipped_points:
+            print(f"  punto (no auditable): {item}")
+        for item in summary.skipped_other:
+            print(f"  omitido: {item}")
+    return 0
+
+
 def cmd_audit(args: argparse.Namespace) -> int:
     init_db()
     settings = get_settings()
     provider = build_provider(settings)
     with get_session() as session:
         satellite = SatelliteService(session, provider, settings.images_dir)
-        satellite.refresh_timeseries(args.project_id, date.fromisoformat(args.start), date.today())
+        audits = AuditService(session, dataset_versions=provider.dataset_versions())
+        if args.start:
+            start = date.fromisoformat(args.start)
+        else:
+            project = session.get(Project, args.project_id)
+            start = analysis_window_start(audits.resolve_t0(project) if project else None)
+        satellite.refresh_timeseries(args.project_id, start, date.today())
         satellite.refresh_forest_loss(args.project_id)
-        run = AuditService(session, dataset_versions=provider.dataset_versions()).run(
-            args.project_id
-        )
+        run = audits.run(args.project_id)
         result = run.result
         print(f"corrida={run.id} categoria={result.category if result else None}")
     return 0
@@ -90,9 +114,16 @@ def build_parser() -> argparse.ArgumentParser:
     imp.add_argument("--country")
     imp.add_argument("--limit", type=int)
     imp.set_defaults(func=cmd_import)
+    karnik = sub.add_parser("import-karnik", help="Importa la base de Karnik et al. (2025)")
+    karnik.add_argument("path", help="GeoPackage continental, p. ej. south_america.gpkg")
+    karnik.add_argument("--country")
+    karnik.add_argument("--limit", type=int)
+    karnik.set_defaults(func=cmd_import_karnik)
     audit = sub.add_parser("audit")
     audit.add_argument("project_id", type=int)
-    audit.add_argument("--start", default="2016-01-01")
+    audit.add_argument(
+        "--start", help="AAAA-MM-DD; por defecto, 3 años antes de T0 (mínimo el año 2000)"
+    )
     audit.set_defaults(func=cmd_audit)
     evaluate = sub.add_parser("eval")
     evaluate.add_argument("--output", default="data/eval/report.json")

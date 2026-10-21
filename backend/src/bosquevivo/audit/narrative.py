@@ -4,6 +4,14 @@ from bosquevivo.audit.index import INSUFFICIENT, IndexOutcome
 def build_narrative(outcome: IndexOutcome, project_name: str) -> str:
     confidence = outcome.confidence.label
     if outcome.category == INSUFFICIENT or outcome.score is None:
+        permanence = next((c for c in outcome.components if c.name == "permanencia"), None)
+        if permanence and permanence.score is None and "motivo" in permanence.detail:
+            return (
+                f"En {project_name} no se pudo calcular la permanencia del bosque porque no hay "
+                f"bosque de referencia al inicio del periodo (año 2000) dentro de su polígono. "
+                f"Es lo esperado en proyectos de reforestación, que el índice v0 todavía no "
+                f"cubre; no indica un problema del proyecto."
+            )
         return (
             f"No hay datos suficientes para estimar la correspondencia observada en "
             f"{project_name}. La confianza es {confidence}; es habitual con nubosidad alta "
