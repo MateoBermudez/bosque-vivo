@@ -39,6 +39,18 @@ def current_git_sha() -> str | None:
         return None
 
 
+ANALYSIS_FLOOR_YEAR = 2000
+YEARS_BEFORE_T0 = 3
+
+
+def analysis_window_start(t0: date | None) -> date:
+    """Inicio de las series: unos años antes de T0 (para tener «antes» y estacionalidad), sin
+    bajar del 2000 (inicio de Hansen). Sin T0 se usa el 2000."""
+    if t0 is None:
+        return date(ANALYSIS_FLOOR_YEAR, 1, 1)
+    return date(max(ANALYSIS_FLOOR_YEAR, t0.year - YEARS_BEFORE_T0), 1, 1)
+
+
 def parse_t0(value: str) -> date | None:
     text = value.strip()
     try:
