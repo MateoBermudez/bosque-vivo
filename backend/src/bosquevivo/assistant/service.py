@@ -17,7 +17,7 @@ from bosquevivo.core.config import Settings
 from bosquevivo.core.errors import ExternalServiceError
 from bosquevivo.core.logging import get_logger
 from bosquevivo.core.privacy import phone_hmac
-from bosquevivo.db.models import AgentRun, ConsentLog, ProcessedMessage, WaUser
+from bosquevivo.db.models import AgentRun, ConsentLog, Evidence, ProcessedMessage, WaUser
 
 log = get_logger(__name__)
 
@@ -82,6 +82,11 @@ class AssistantService:
 
     def delete_user(self, phone: str) -> None:
         digest = phone_hmac(phone, self.settings.phone_hmac_key)
+        run_ids = self.session.scalars(select(AgentRun.id).where(AgentRun.user_ref == digest)).all()
+        for run_id in run_ids:
+            self.session.execute(
+                delete(Evidence).where(Evidence.id.like(f"r{run_id}\\_%", escape="\\"))
+            )
         self.session.execute(delete(AgentRun).where(AgentRun.user_ref == digest))
         user = self.session.scalars(select(WaUser).where(WaUser.phone_hmac == digest)).first()
         if user:

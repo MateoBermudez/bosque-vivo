@@ -35,7 +35,7 @@ if data["t0"]:
         .encode(x="t0:T")
     )
     layers.append(rule)
-st.altair_chart(alt.layer(*layers), use_container_width=True)
+st.altair_chart(alt.layer(*layers), width="stretch")
 st.caption("Línea punteada: fecha de acreditación (T0). Los huecos indican nubes o falta de datos.")
 
 st.subheader("Declarado y observado por año")
@@ -50,4 +50,4 @@ if not comparison.empty:
             "declared_note": "Periodo",
         }
     )
-    st.dataframe(comparison, hide_index=True, use_container_width=True)
+    st.dataframe(comparison, hide_index=True, width="stretch")
