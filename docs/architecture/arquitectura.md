@@ -13,7 +13,7 @@ flowchart LR
     AG --> TOOLS[herramientas de solo lectura]
     TOOLS --> DB
     AG --> GUARD[validador de fidelidad]
-    API --> PANEL[Panel Streamlit]
+    API --> WEB[Sitio Next.js web/]
     WA[Meta WhatsApp Cloud API] --> TUN[túnel HTTPS] --> API
     API --> JOBS[job worker]
     JOBS --> AG
@@ -33,6 +33,10 @@ flowchart LR
 | `ai` | Agente, herramientas, guardas, conocimiento, visión, evaluación | RF09, RF10, RF15, RF17 |
 | `jobs` | Cola y trabajador en segundo plano | |
 | `api` | Routers REST y webhook | |
+
+## Frontend (`web/`)
+
+Sitio Next.js (App Router). El navegador solo habla con el servidor de Next, que llama a la API con `ADMIN_TOKEN` cuando hace falta (chat y trazas), por eso la API no necesita CORS. Las respuestas se validan con zod en `web/src/lib/api/schema.ts`. Detalle y decisión en la [ADR 0013](adr/0013-nextjs-para-el-frontend.md); pedidos pendientes al backend en [`solicitudes-al-backend.md`](solicitudes-al-backend.md).
 
 ## Fronteras
 
