@@ -5,7 +5,7 @@ Politécnico Colombiano Jaime Isaza Cadavid · Segundo semestre de 2026
 
 Sistema de información que contrasta lo que declaran los proyectos de carbono forestal con lo que se observa desde el satélite, y lo explica en lenguaje sencillo mediante un **asistente con IA** por WhatsApp y un panel web para auditores.
 
-> **Estado:** planificación. Aún no hay código.
+> **Estado:** núcleo implementado (RF01–RF10, RF12, RF13, RF15, RF17). Pendiente: mediciones de NFR, evaluación con Gemini real, validación con polígonos reales, RF11, RF14 y RF16.
 
 ## Decisiones del equipo (leer primero)
 
@@ -28,16 +28,51 @@ Los nombres de modelo y las cuotas de Gemini cambian: verificar en AI Studio y c
 |---|---|
 | [`docs/planning/PLAN_IMPLEMENTACION.md`](docs/planning/PLAN_IMPLEMENTACION.md) | Plan maestro: arquitectura local, stack, estructura del repo, datos, índice, equipo, pruebas, cronograma, riesgos, primeros pasos |
 | [`docs/planning/PLAN_AGENTE_IA.md`](docs/planning/PLAN_AGENTE_IA.md) | Diseño del agente con Gemini: herramientas, análisis de imágenes, conocimiento, voz, cuotas, seguridad, evaluación |
+| [`docs/architecture`](docs/architecture/arquitectura.md) | Arquitectura y [ADRs](docs/architecture/adr/README.md) |
+| [`docs/methodology/indice-v0.md`](docs/methodology/indice-v0.md) | Definición del índice, confianza y limitaciones |
+| [`docs/testing`](docs/testing/plan-de-pruebas.md) | Plan de pruebas, matriz RF → pruebas y resultados |
+| [`docs/privacy`](docs/privacy/aviso-de-privacidad.md) | Aviso de privacidad (Ley 1581) |
 
-## Ejecución local (cuando exista el código)
+## Ejecución local
 
-Requisitos previstos en cada PC: Python 3.12, `uv`, Git, una clave de Google AI Studio, acceso a Google Earth Engine y (solo para WhatsApp) ngrok o cloudflared.
+Requisitos en cada PC: Python 3.12, [`uv`](https://docs.astral.sh/uv/), Git, una clave de Google AI Studio, acceso a Google Earth Engine y (solo para WhatsApp) cloudflared o ngrok.
 
-1. Copiar `.env.example` a `.env` y completar `GEMINI_API_KEY`, `GEMINI_MODEL`, `GEE_PROJECT` y las variables de WhatsApp.
-2. Instalar dependencias con `uv sync`.
-3. Arrancar todo con `scripts\dev.ps1` (API, panel y, si se pide, túnel).
+```
+cp .env.example backend/.env        # completar claves
+cd backend && uv sync
+uv run bosquevivo seed-demo          # tres proyectos de demostración
+cd ../panel && uv sync
+cd .. && scripts/dev.sh              # en Windows: scripts\dev.ps1
+```
+
+- API: http://127.0.0.1:8000 (documentación en `/docs`)
+- Panel: http://127.0.0.1:8501
+
+Para probar sin credenciales, use `SATELLITE_PROVIDER=fake` y los datos de demostración. El chat y WhatsApp sí requieren `GEMINI_API_KEY` y `GEMINI_MODEL`.
+
+Importar polígonos reales y calcular una auditoría:
+
+```
+uv run bosquevivo import ruta/al/archivo.gpkg --source karnik --country Colombia
+uv run bosquevivo audit 1
+```
+
+Calidad:
+
+```
+cd backend && uv run ruff check . && uv run pyright && uv run pytest
+```
 
 Para la demo y el piloto, el computador debe estar encendido, sin suspensión y con Internet estable.
+
+## Estructura
+
+```
+backend/   API, módulos de dominio, agente de IA y pruebas
+panel/     panel Streamlit de solo lectura
+docs/      ERS, planes, arquitectura y ADRs, metodología, pruebas y privacidad
+scripts/   arranque local
+```
 
 ## Reglas del repositorio
 
