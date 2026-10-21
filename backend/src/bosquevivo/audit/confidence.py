@@ -37,6 +37,8 @@ def assess_confidence(inputs: AuditInputs, config: IndexConfig) -> Confidence:
     valid_fraction = sum(p.valid_fraction for p in valid) / len(valid)
     scenes = sum(p.scene_count for p in valid) / len(valid)
     value = 0.4 * coverage + 0.4 * valid_fraction + 0.2 * min(1.0, scenes / 3.0)
+    if valid_fraction < config.min_valid_fraction:
+        value = min(value, 0.25)
     label = (
         "alta"
         if value >= config.confidence_high

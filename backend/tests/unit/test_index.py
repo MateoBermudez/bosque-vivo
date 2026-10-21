@@ -95,3 +95,9 @@ def test_comparison_marks_years_after_t0():
     assert not by_year[2016].after_t0
     assert by_year[2019].after_t0
     assert by_year[2019].loss_ha == 3.0
+
+
+def test_nearly_all_pixels_masked_is_insufficient_even_with_full_coverage():
+    series = monthly_series(2015, 2024, valid=0.02)
+    outcome = IndexCalculator().calculate(make_inputs(series=series))
+    assert outcome.category == "Insuficiente"

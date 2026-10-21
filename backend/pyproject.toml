@@ -29,6 +29,9 @@ dependencies = [
     "python-multipart>=0.0.12",
 ]
 
+[project.scripts]
+bosquevivo = "bosquevivo.cli:main"
+
 [dependency-groups]
 dev = [
     "pytest>=8.3",

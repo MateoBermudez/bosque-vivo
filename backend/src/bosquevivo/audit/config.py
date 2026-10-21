@@ -12,6 +12,7 @@ class IndexConfig(BaseModel):
     category_high: float = 75.0
     category_medium: float = 50.0
     min_confidence: float = Field(default=0.30, ge=0.0, le=1.0)
+    min_valid_fraction: float = Field(default=0.15, ge=0.0, le=1.0)
     min_valid_months_post: int = 12
     min_valid_months_pre: int = 6
     confidence_high: float = 0.70

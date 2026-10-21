@@ -58,7 +58,8 @@ class IndexCalculator:
         confidence = assess_confidence(inputs, config)
         missing_core = components[0].score is None or all(c.score is None for c in components[1:])
         score = weighted_score(components, self._weights(config))
-        if score is None or confidence.value < config.min_confidence or missing_core:
+        too_cloudy = confidence.valid_fraction < config.min_valid_fraction
+        if score is None or confidence.value < config.min_confidence or missing_core or too_cloudy:
             return IndexOutcome(None, INSUFFICIENT, components, confidence, {}, config.version)
         return IndexOutcome(
             round(score, 1),
