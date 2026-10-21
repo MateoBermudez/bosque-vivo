@@ -7,7 +7,13 @@ from sqlalchemy import delete
 from sqlalchemy.orm import Session
 
 from bosquevivo.core.errors import NotFoundError
-from bosquevivo.db.models import ForestLoss, ImageAsset, NdviObservation, Project
+from bosquevivo.db.models import (
+    ForestBaselineRecord,
+    ForestLoss,
+    ImageAsset,
+    NdviObservation,
+    Project,
+)
 from bosquevivo.satellite.models import Sensor, ThumbnailKind
 from bosquevivo.satellite.provider import SatelliteProvider
 
@@ -67,8 +73,21 @@ class SatelliteService:
 
     def refresh_forest_loss(self, project_id: int) -> int:
         project = self._project(project_id)
-        points = self.provider.get_forest_loss(json.loads(project.geometry))
+        geometry = json.loads(project.geometry)
+        points = self.provider.get_forest_loss(geometry)
+        baseline = self.provider.get_forest_baseline(geometry)
         self.session.execute(delete(ForestLoss).where(ForestLoss.project_id == project_id))
+        self.session.execute(
+            delete(ForestBaselineRecord).where(ForestBaselineRecord.project_id == project_id)
+        )
+        self.session.add(
+            ForestBaselineRecord(
+                project_id=project_id,
+                tree_cover_ha=baseline.tree_cover_ha,
+                threshold_percent=baseline.threshold_percent,
+                source=baseline.source,
+            )
+        )
         for point in points:
             self.session.add(
                 ForestLoss(
