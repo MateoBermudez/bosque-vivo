@@ -12,7 +12,7 @@ if not rows:
 frame = pd.DataFrame(rows)
 frame["herramientas"] = frame["tools"].apply(lambda t: ", ".join(t))
 frame = frame.drop(columns=["tools"])
-st.dataframe(frame, hide_index=True, use_container_width=True)
+st.dataframe(frame, hide_index=True, width="stretch")
 fallback_rate = frame["used_fallback"].mean()
 st.metric("Respuestas de respaldo", f"{fallback_rate:.0%}")
 st.caption("p50 y p90 de latencia por consulta (ms)")

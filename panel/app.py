@@ -47,7 +47,7 @@ if audit and audit.get("result"):
     frame = components_frame(result["components"])
     if not frame.empty:
         st.subheader("Componentes")
-        st.dataframe(frame, hide_index=True, use_container_width=True)
+        st.dataframe(frame, hide_index=True, width="stretch")
     st.caption(
         f"Corrida {audit['id']} · índice {audit['index_version']} · "
         f"código {audit['git_sha'] or 'n/d'} · {audit['created_at'][:10]}"
