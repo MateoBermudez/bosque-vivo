@@ -34,6 +34,21 @@ Se devuelve sin puntaje cuando ocurre cualquiera de:
 
 Es un resultado legítimo en zonas muy nubosas.
 
+## Alcance por tipo de proyecto
+El índice v0 mide la **permanencia de un bosque que ya existía**: parte de la cobertura arbórea del año 2000 (Hansen). Por eso:
+
+| Tipo | Situación |
+|---|---|
+| Deforestación evitada (AD) y manejo forestal mejorado (IFM) | Soportados |
+| **Reforestación (ARR)** | **No soportado en v0.** Un proyecto que planta árboles sobre tierra degradada casi no tenía bosque en 2000, así que no hay línea base y el resultado es «Insuficiente» con el motivo explícito en el texto (no se atribuye a las nubes) |
+
+En la base de Colombia (ver `docs/data/karnik.md`) son 22 de 55 proyectos (40 %) de tipo ARR.
+
+**Propuesta para v1, a validar con el docente (no implementada):** para ARR reemplazar *Permanencia* por *Establecimiento de la cobertura*, es decir, cuánto sube el NDVI medio de los últimos 12 meses con datos respecto al promedio de los 3 años previos a T0, normalizado contra una meta que debe fijarse con casos reales. *Tendencia* y *Estabilidad* se mantienen. No se implementó para no introducir umbrales sin validar.
+
+## Ventana de series
+Las series satelitales se piden desde **3 años antes de T0** (mínimo el año 2000, inicio de Hansen) hasta hoy, para tener un «antes» y suficientes meses para la estacionalidad sin pedir décadas innecesarias.
+
 ## Sensibilidad
 Cada reporte incluye el rango del puntaje al mover cada peso ±10 puntos porcentuales y renormalizar.
 
