@@ -2,6 +2,7 @@ import json
 from dataclasses import asdict
 
 from fastapi import APIRouter, Depends, HTTPException, Query
+from shapely.geometry import mapping, shape
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -10,6 +11,7 @@ from bosquevivo.api.schemas import LossOut, ProjectOut, SeriesOut, SeriesPointOu
 from bosquevivo.audit.compare import compare_declared_observed
 from bosquevivo.audit.service import AuditService
 from bosquevivo.db.models import ForestLoss, NdviObservation
+from bosquevivo.registry.geometry import simplify_geometry
 from bosquevivo.registry.repository import ProjectRepository
 
 router = APIRouter(prefix="/api/v1/projects", tags=["proyectos"])
@@ -42,14 +44,26 @@ def get_project(project_id: int, session: Session = Depends(db_session)):
 
 
 @router.get("/{project_id}/geometry")
-def get_geometry(project_id: int, session: Session = Depends(db_session)):
+def get_geometry(
+    project_id: int,
+    simplify: float | None = Query(
+        default=None,
+        ge=0,
+        le=0.1,
+        description="Tolerancia en grados para aligerar el polígono (p. ej. 0.002 ≈ 220 m).",
+    ),
+    session: Session = Depends(db_session),
+):
     project = ProjectRepository(session).get(project_id)
     if project is None:
         raise HTTPException(status_code=404, detail="proyecto no encontrado")
+    geometry = json.loads(project.geometry)
+    if simplify:
+        geometry = mapping(simplify_geometry(shape(geometry), simplify))
     return {
         "type": "Feature",
         "properties": {"id": project.id, "name": project.name},
-        "geometry": json.loads(project.geometry),
+        "geometry": geometry,
     }
 
 
