@@ -5,7 +5,7 @@ from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 
 from bosquevivo import __version__
-from bosquevivo.api.routers import admin, audits, health, projects, whatsapp
+from bosquevivo.api.routers import admin, audits, chat, health, projects, whatsapp
 from bosquevivo.core.config import get_settings
 from bosquevivo.core.errors import NotFoundError, ValidationFailedError
 from bosquevivo.core.logging import configure_logging, get_logger
@@ -59,6 +59,7 @@ def create_app() -> FastAPI:
     app.include_router(projects.router)
     app.include_router(audits.router)
     app.include_router(admin.router)
+    app.include_router(chat.router)
     app.include_router(whatsapp.router)
     return app
 
