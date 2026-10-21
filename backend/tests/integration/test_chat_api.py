@@ -6,6 +6,7 @@ import pytest
 from bosquevivo.ai.llm import LLMResponse, ScriptedLLM, ToolCall
 from bosquevivo.api.deps import get_llm, get_satellite_provider
 from bosquevivo.audit import AuditService
+from bosquevivo.core.errors import ExternalServiceError
 from bosquevivo.db.models import Project
 from bosquevivo.satellite import SatelliteService, Sensor
 from bosquevivo.satellite.providers import FakeProvider
@@ -60,3 +61,14 @@ def test_chat_rejects_empty_message(client):
     client.app.dependency_overrides[get_llm] = lambda: ScriptedLLM([])
     client.app.dependency_overrides[get_satellite_provider] = lambda: None
     assert client.post("/api/v1/chat", headers=ADMIN, json={"message": ""}).status_code == 422
+
+
+def test_chat_returns_503_when_model_is_not_configured(client):
+    def missing():
+        raise ExternalServiceError("GEMINI_API_KEY y GEMINI_MODEL son obligatorios")
+
+    client.app.dependency_overrides[get_llm] = missing
+    client.app.dependency_overrides[get_satellite_provider] = lambda: None
+    response = client.post("/api/v1/chat", headers=ADMIN, json={"message": "hola"})
+    assert response.status_code == 503
+    assert "GEMINI_API_KEY" in response.json()["detail"]
