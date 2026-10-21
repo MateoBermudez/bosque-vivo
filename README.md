@@ -17,7 +17,7 @@ Sistema de información que contrasta lo que declaran los proyectos de carbono f
 | **Nivel del proyecto** | **Proyecto universitario, no tesis.** Se prioriza que funcione, se pueda demostrar, esté probado y documentado. |
 | **Código abierto** | Todo el código propio es abierto. Gemini, Google Earth Engine y WhatsApp Cloud API son servicios gratuitos de terceros (el ERS contempla "servicios gratuitos de terceros"). |
 | **Base de datos** | SQLite + shapely (sin PostgreSQL/PostGIS). |
-| **Panel** | Streamlit. |
+| **Frontend** | Next.js en `web/` ([ADR 0013](docs/architecture/adr/0013-nextjs-para-el-frontend.md), propuesta). El panel Streamlit (`panel/`) queda en desuso hasta que se apruebe. |
 | **Alcance** | ERS (RF01–RF08) + agente de IA que razona, analiza imágenes y concluye con evidencia (RF09–RF17, pendiente de aprobación del docente). |
 
 Los nombres de modelo y las cuotas de Gemini cambian: verificar en AI Studio y configurar `GEMINI_MODEL` en el `.env`.
@@ -35,20 +35,22 @@ Los nombres de modelo y las cuotas de Gemini cambian: verificar en AI Studio y c
 
 ## Ejecución local
 
-Requisitos en cada PC: Python 3.12, [`uv`](https://docs.astral.sh/uv/), Git, una clave de Google AI Studio, acceso a Google Earth Engine y (solo para WhatsApp) cloudflared o ngrok.
+Requisitos en cada PC: Python 3.12, [`uv`](https://docs.astral.sh/uv/), Node 22 o superior, Git, una clave de Google AI Studio, acceso a Google Earth Engine y (solo para WhatsApp) cloudflared o ngrok.
 
 ```
-cp .env.example backend/.env        # completar claves
+cp .env.example backend/.env        # completar claves (en Windows: Copy-Item)
 cd backend && uv sync
 uv run bosquevivo seed-demo          # tres proyectos de demostración
-cd ../panel && uv sync
 cd .. && scripts/dev.sh              # en Windows: scripts\dev.ps1
 ```
 
-- API: http://127.0.0.1:8000 (documentación en `/docs`)
-- Panel: http://127.0.0.1:8501
+`scripts/dev` levanta la API y el sitio (`web/`), instala las dependencias de `web/` la primera vez y crea `web/.env.local` copiando el `ADMIN_TOKEN` de `backend/.env`.
 
-Para probar sin credenciales, use `SATELLITE_PROVIDER=fake` y los datos de demostración. El chat y WhatsApp sí requieren `GEMINI_API_KEY` y `GEMINI_MODEL`.
+- API: http://127.0.0.1:8000 (documentación en `/docs`)
+- Sitio: http://localhost:3000
+- Panel Streamlit (en desuso, opcional): `scripts\dev.ps1 -Streamlit` o `STREAMLIT=1 scripts/dev.sh` → http://127.0.0.1:8501
+
+Para probar sin credenciales, use `SATELLITE_PROVIDER=fake` y los datos de demostración. El chat y WhatsApp sí requieren `GEMINI_API_KEY` y `GEMINI_MODEL`. El chat y las trazas del sitio están protegidos con `AUDITOR_ACCESS_CODE` y `SESSION_SECRET` en `web/.env.local` (sin definirlos quedan abiertos en desarrollo). Más detalle en [`web/README.md`](web/README.md).
 
 Importar polígonos reales y calcular una auditoría:
 
@@ -61,6 +63,7 @@ Calidad:
 
 ```
 cd backend && uv run ruff check . && uv run pyright && uv run pytest
+cd web && npm run lint && npm run typecheck && npm test && npm run build
 ```
 
 Para la demo y el piloto, el computador debe estar encendido, sin suspensión y con Internet estable.
@@ -69,7 +72,8 @@ Para la demo y el piloto, el computador debe estar encendido, sin suspensión y 
 
 ```
 backend/   API, módulos de dominio, agente de IA y pruebas
-panel/     panel Streamlit de solo lectura
+web/       sitio Next.js (inicio, explorador, detalle, chat del auditor, trazas, metodología)
+panel/     panel Streamlit de solo lectura (en desuso, ver ADR 0013)
 docs/      ERS, planes, arquitectura y ADRs, metodología, pruebas y privacidad
 scripts/   arranque local
 ```
