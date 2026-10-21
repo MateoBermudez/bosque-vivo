@@ -63,3 +63,23 @@ class ImportOut(BaseModel):
     updated: int
     repaired: int
     skipped: int
+
+
+class SeriesPointOut(BaseModel):
+    period: str
+    sensor: str
+    ndvi_mean: float | None
+    valid_fraction: float
+    scene_count: int
+
+
+class LossOut(BaseModel):
+    year: int
+    ha_lost: float
+
+
+class SeriesOut(BaseModel):
+    t0: str | None
+    ndvi: list[SeriesPointOut]
+    loss: list[LossOut]
+    comparison: list[dict[str, Any]]
