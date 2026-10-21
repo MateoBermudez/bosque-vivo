@@ -3,7 +3,7 @@ from datetime import date
 
 import geopandas as gpd
 import pytest
-from shapely.geometry import Point, Polygon, box, shape
+from shapely.geometry import MultiPolygon, Point, Polygon, box, shape
 
 from bosquevivo.audit.service import AuditService
 from bosquevivo.core.errors import ValidationFailedError
@@ -207,3 +207,31 @@ def test_endpoint_de_geometria_puede_aligerar_el_poligono(db, client):
     assert shape(light).is_valid
     assert simplify_geometry(shape(full), 0.002).equals_exact(shape(light), 1e-9)
     assert client.get(f"/api/v1/projects/{project.id}/geometry?simplify=5").status_code == 422
+
+
+def test_endpoint_de_geometria_limita_las_partes(db, client):
+    parcels = MultiPolygon(
+        [box(-75 + i * 0.01, 5.0, -75 + i * 0.01 + 0.005, 5.005) for i in range(30)]
+    )
+    project, _ = ProjectRepository(db).upsert(
+        {
+            "source_registry": "EcoRegistry",
+            "registry_id": "ER10",
+            "name": "Muchas parcelas",
+            "country": "Colombia",
+            "project_type": None,
+            "start_year": 2015,
+            "area_ha": 1.0,
+            "geometry": json.dumps(parcels.__geo_interface__),
+            "source": "karnik",
+            "source_version": "v1",
+        }
+    )
+    db.flush()
+
+    light = client.get(f"/api/v1/projects/{project.id}/geometry?max_parts=5").json()["geometry"]
+    full = client.get(f"/api/v1/projects/{project.id}/geometry").json()["geometry"]
+
+    assert len(shape(light).geoms) == 5
+    assert len(shape(full).geoms) == 30
+    assert client.get(f"/api/v1/projects/{project.id}/geometry?max_parts=0").status_code == 422
