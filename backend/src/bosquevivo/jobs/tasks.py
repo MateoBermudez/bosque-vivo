@@ -6,8 +6,9 @@ from sqlalchemy.orm import Session
 from bosquevivo.assistant.messages import IncomingMessage
 from bosquevivo.assistant.runtime import build_assistant, build_llm
 from bosquevivo.audit.index import IndexCalculator
-from bosquevivo.audit.service import AuditService
+from bosquevivo.audit.service import AuditService, analysis_window_start
 from bosquevivo.core.config import get_settings
+from bosquevivo.db.models import Project
 from bosquevivo.jobs.kinds import CALCULATE_AUDIT, GENERATE_REPORT, WHATSAPP_MESSAGE
 from bosquevivo.reports.service import ReportService
 from bosquevivo.satellite.provider import SatelliteProvider
@@ -21,11 +22,15 @@ def make_calculate_audit(provider: SatelliteProvider):
         project_id = int(payload["project_id"])
         settings = get_settings()
         satellite = SatelliteService(session, provider, settings.images_dir)
-        start = date.fromisoformat(payload.get("start", "2000-01-01"))
+        audit = AuditService(session, IndexCalculator(), provider.dataset_versions())
+        project = session.get(Project, project_id)
+        if payload.get("start"):
+            start = date.fromisoformat(payload["start"])
+        else:
+            start = analysis_window_start(audit.resolve_t0(project) if project else None)
         end = date.fromisoformat(payload["end"]) if payload.get("end") else date.today()
         satellite.refresh_timeseries(project_id, start, end)
         satellite.refresh_forest_loss(project_id)
-        audit = AuditService(session, IndexCalculator(), provider.dataset_versions())
         run = audit.run(project_id)
         return {"run_id": run.id}
 

@@ -19,8 +19,15 @@ COLUMN_ALIASES: dict[str, tuple[str, ...]] = {
     "name": ("project_name", "name", "nombre", "title"),
     "country": ("country", "pais", "country_name"),
     "project_type": ("project_type", "type", "tipo", "category", "sector"),
-    "start_year": ("start_year", "year_start", "crediting_start_year", "start_date", "year"),
-    "source_registry": ("registry", "standard", "source_registry", "program"),
+    "start_year": (
+        "start_year",
+        "year_start",
+        "crediting_start_year",
+        "start_date",
+        "project_start_date",
+        "year",
+    ),
+    "source_registry": ("registry", "standard", "source_registry", "program", "registry_name"),
 }
 
 
@@ -38,7 +45,7 @@ class ImportSummary:
 
 
 def resolve_columns(columns: list[str]) -> dict[str, str]:
-    lowered = {c.lower(): c for c in columns}
+    lowered = {c.lower().replace(" ", "_"): c for c in columns}
     resolved: dict[str, str] = {}
     for target, aliases in COLUMN_ALIASES.items():
         for alias in aliases:
