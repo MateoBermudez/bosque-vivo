@@ -3,15 +3,17 @@ from typing import Any
 
 from sqlalchemy.orm import Session
 
+from bosquevivo.assistant.messages import IncomingMessage
+from bosquevivo.assistant.runtime import build_assistant, build_llm
 from bosquevivo.audit.index import IndexCalculator
 from bosquevivo.audit.service import AuditService
 from bosquevivo.core.config import get_settings
+from bosquevivo.jobs.kinds import CALCULATE_AUDIT, GENERATE_REPORT, WHATSAPP_MESSAGE
 from bosquevivo.reports.service import ReportService
 from bosquevivo.satellite.provider import SatelliteProvider
 from bosquevivo.satellite.service import SatelliteService
 
-CALCULATE_AUDIT = "calculate_audit"
-GENERATE_REPORT = "generate_report"
+__all__ = ["CALCULATE_AUDIT", "GENERATE_REPORT", "WHATSAPP_MESSAGE"]
 
 
 def make_calculate_audit(provider: SatelliteProvider):
@@ -34,3 +36,14 @@ def generate_report(session: Session, payload: dict[str, Any]) -> dict[str, Any]
     service = ReportService(session, get_settings().reports_dir)
     report = service.generate(int(payload["run_id"]), payload.get("format", "html"))
     return {"report_id": report.id, "path": report.path}
+
+
+def make_whatsapp_message(provider: SatelliteProvider | None):
+    def handler(session: Session, payload: dict[str, Any]) -> dict[str, Any]:
+        settings = get_settings()
+        llm = build_llm(settings)
+        assistant = build_assistant(session, settings, llm, satellite_provider=provider)
+        assistant.handle(IncomingMessage(**payload))
+        return {"message_id": payload["message_id"]}
+
+    return handler
