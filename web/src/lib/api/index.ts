@@ -38,8 +38,12 @@ export async function attempt<T>(task: () => Promise<T>): Promise<Attempt<T>> {
   }
 }
 
-/** 0,002° ≈ 220 m: de sobra para un mapa de país y mucho más liviano que el polígono completo. */
-const MAP_SIMPLIFY_DEGREES = 0.002;
+/**
+ * Para el mapa de país basta un contorno aproximado: 0,005° ≈ 550 m y las 200 partes más grandes
+ * (hay proyectos formados por miles de parcelas diminutas que no se distinguen a esa escala).
+ */
+const MAP_SIMPLIFY_DEGREES = 0.005;
+const MAP_MAX_PARTS = 200;
 
 /** Los proyectos de la base de demostración llevan el registro «demo». */
 export function isDemoProject(project: Project): boolean {
@@ -59,7 +63,7 @@ export async function loadExplorerItems(): Promise<ExplorerItem[]> {
   const projects = await api.listProjects();
   return Promise.all(
     projects.map(async (project) => {
-      const [geometry, audit] = await Promise.all([api.getGeometry(project.id, { simplify: MAP_SIMPLIFY_DEGREES }),
+      const [geometry, audit] = await Promise.all([api.getGeometry(project.id, { simplify: MAP_SIMPLIFY_DEGREES, maxParts: MAP_MAX_PARTS }),
         api.getLatestAudit(project.id),]);
       return { project, geometry, audit, category: audit?.result?.category ?? null };
     }),

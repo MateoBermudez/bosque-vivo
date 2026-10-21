@@ -14,8 +14,11 @@ import type {
 export interface BosqueVivoApi {
   listProjects(): Promise<Project[]>;
   getProject(id: number): Promise<Project | null>;
-  /** `simplify` (grados) aligera el polígono; los reales pueden tener decenas de miles de vértices. */
-  getGeometry(id: number, options?: { simplify?: number }): Promise<ProjectGeometry | null>;
+  /** `simplify` (grados) aligera el polígono; `maxParts` deja solo las N partes más grandes. */
+  getGeometry(
+    id: number,
+    options?: { simplify?: number; maxParts?: number },
+  ): Promise<ProjectGeometry | null>;
   getSeries(id: number): Promise<Series | null>;
   /** `null` cuando el proyecto todavía no tiene una auditoría calculada. */
   getLatestAudit(id: number): Promise<AuditRun | null>;
