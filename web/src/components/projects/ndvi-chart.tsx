@@ -20,15 +20,17 @@ interface Row {
   period: string;
   landsat: number | null;
   s2: number | null;
+  modis: number | null;
 }
 
 /** Une los dos sensores por mes para dibujarlos en el mismo eje. */
 function toRows(points: NdviPoint[]): Row[] {
   const byPeriod = new Map<string, Row>();
   for (const point of points) {
-    const row = byPeriod.get(point.period) ?? { period: point.period, landsat: null, s2: null };
+    const row = byPeriod.get(point.period) ?? { period: point.period, landsat: null, s2: null, modis: null };
     if (point.sensor === "landsat") row.landsat = point.ndvi_mean;
     if (point.sensor === "s2") row.s2 = point.ndvi_mean;
+    if (point.sensor === "modis") row.modis = point.ndvi_mean;
     byPeriod.set(point.period, row);
   }
   return [...byPeriod.values()].sort((a, b) => a.period.localeCompare(b.period));
@@ -87,6 +89,7 @@ export function NdviChart({ points, t0 }: { points: NdviPoint[]; t0: string | nu
             />
           )}
           <Line type="monotone" dataKey="landsat" name="Landsat" stroke="var(--chart-2)" strokeWidth={2.5} dot={false} connectNulls={false} isAnimationActive={false} />
+          <Line type="monotone" dataKey="modis" name="MODIS (250 m)" stroke="var(--chart-1)" strokeWidth={2.5} dot={false} connectNulls={false} isAnimationActive={false} />
           <Line type="monotone" dataKey="s2" name="Sentinel-2" stroke="var(--chart-1)" strokeWidth={2.5} dot={false} connectNulls={false} isAnimationActive={false} />
         </LineChart>
       </ResponsiveContainer>

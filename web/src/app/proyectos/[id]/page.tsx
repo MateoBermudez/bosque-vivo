@@ -163,8 +163,11 @@ async function ProjectDetail({ params }: Pick<PageProps<"/proyectos/[id]">, "par
             </div>
           </section>
 
-          <section className="mt-6 grid gap-6 lg:grid-cols-[1.2fr_1fr]" aria-label="Imágenes y comparación">
-            {isMock ? (
+          <section
+            className={isMock ? "mt-6 grid gap-6 lg:grid-cols-[1.2fr_1fr]" : "mt-6"}
+            aria-label="Imágenes y comparación"
+          >
+            {isMock && (
               <BeforeAfter
                 before="/images/sat-before.jpg"
                 after="/images/sat-after.jpg"
@@ -172,11 +175,6 @@ async function ProjectDetail({ params }: Pick<PageProps<"/proyectos/[id]">, "par
                 afterLabel="Después (reciente)"
                 simulated
               />
-            ) : (
-              <EmptyState title="Imágenes antes y después">
-                Todavía no están disponibles desde el servidor. Aparecerán aquí cuando se generen las miniaturas
-                del proyecto.
-              </EmptyState>
             )}
             <ComparisonTable rows={series?.comparison ?? []} />
           </section>
@@ -184,7 +182,11 @@ async function ProjectDetail({ params }: Pick<PageProps<"/proyectos/[id]">, "par
       )}
 
       {audit && (
-        <section className="mt-6 grid gap-6 md:grid-cols-2" aria-label="Calidad y reproducibilidad">
+        <section
+          className={usedPoints.length > 0 ? "mt-6 grid gap-6 md:grid-cols-2" : "mt-6"}
+          aria-label="Calidad y reproducibilidad"
+        >
+          {usedPoints.length > 0 && (
           <div className="card-soft p-6">
             <h2 className="text-xl font-bold">Calidad de los datos</h2>
             <div className="mt-4 grid grid-cols-2 gap-4">
@@ -198,6 +200,7 @@ async function ProjectDetail({ params }: Pick<PageProps<"/proyectos/[id]">, "par
               </div>
             </div>
           </div>
+          )}
           <div className="card-soft p-6">
             <h2 className="text-xl font-bold">Reproducibilidad</h2>
             <dl className="mt-4 grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 text-sm">
