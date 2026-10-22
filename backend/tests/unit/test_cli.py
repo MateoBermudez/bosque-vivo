@@ -1,6 +1,7 @@
 import pytest
 
-from bosquevivo.cli import build_parser
+from bosquevivo.cli import build_parser, main
+from bosquevivo.core.config import Settings, get_settings
 
 
 def test_parser_accepts_known_commands():
@@ -14,3 +15,11 @@ def test_parser_accepts_known_commands():
 def test_parser_rejects_missing_command():
     with pytest.raises(SystemExit):
         build_parser().parse_args([])
+
+
+def test_gemini_check_sin_clave_explica_donde_ponerla(monkeypatch, capsys):
+    monkeypatch.setattr("bosquevivo.cli.get_settings", lambda: Settings(gemini_api_key=""))
+    get_settings.cache_clear()
+
+    assert main(["gemini-check"]) == 1
+    assert "GEMINI_API_KEY" in capsys.readouterr().out

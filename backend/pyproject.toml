@@ -27,6 +27,9 @@ dependencies = [
     "google-genai>=1.0",
     "earthengine-api>=1.0",
     "python-multipart>=0.0.12",
+    "rasterio>=1.5.2",
+    "pystac-client>=0.9.1",
+    "planetary-computer>=1.0.0",
 ]
 
 [project.scripts]

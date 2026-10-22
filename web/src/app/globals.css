@@ -1,0 +1,219 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --font-sans: var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --radius-sm: calc(var(--radius) - 8px);
+  --radius-md: calc(var(--radius) - 4px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 10px);
+  --radius-3xl: calc(var(--radius) + 18px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-forest: var(--forest);
+  --color-forest-2: var(--forest-2);
+  --color-forest-foreground: var(--forest-foreground);
+  --color-forest-muted: var(--forest-muted);
+  --color-lime: var(--lime);
+  --color-lime-foreground: var(--lime-foreground);
+  --color-cat-alta: var(--cat-alta);
+  --color-cat-media: var(--cat-media);
+  --color-cat-baja: var(--cat-baja);
+  --color-cat-insuficiente: var(--cat-insuficiente);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+}
+
+:root {
+  --radius: 1.25rem;
+  --background: oklch(0.975 0.007 100);
+  --foreground: oklch(0.21 0.025 145);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.21 0.025 145);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.21 0.025 145);
+  --primary: oklch(0.28 0.045 145);
+  --primary-foreground: oklch(0.97 0.01 100);
+  --secondary: oklch(0.94 0.012 110);
+  --secondary-foreground: oklch(0.25 0.03 145);
+  --muted: oklch(0.945 0.01 105);
+  --muted-foreground: oklch(0.47 0.025 140);
+  --accent: oklch(0.9 0.16 118);
+  --accent-foreground: oklch(0.22 0.04 140);
+  --destructive: oklch(0.56 0.17 35);
+  --destructive-foreground: oklch(0.98 0 0);
+  --border: oklch(0.9 0.012 110);
+  --input: oklch(0.9 0.012 110);
+  --ring: oklch(0.55 0.12 130);
+
+  --forest: oklch(0.255 0.04 145);
+  --forest-2: oklch(0.32 0.045 140);
+  --forest-foreground: oklch(0.96 0.015 110);
+  --forest-muted: oklch(0.78 0.03 125);
+  --lime: oklch(0.89 0.16 118);
+  --lime-foreground: oklch(0.22 0.04 140);
+
+  --cat-alta: oklch(0.72 0.17 135);
+  --cat-media: oklch(0.8 0.14 85);
+  --cat-baja: oklch(0.64 0.16 40);
+  --cat-insuficiente: oklch(0.7 0.01 120);
+  --chart-1: oklch(0.6 0.15 140);
+  --chart-2: oklch(0.7 0.12 75);
+
+  --shadow-soft: 0 20px 50px -25px oklch(0.25 0.04 145 / 0.35);
+  --gradient-fade: linear-gradient(180deg, oklch(0.2 0.04 145 / 0) 30%, oklch(0.18 0.04 145 / 0.85) 100%);
+}
+
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+  h1,
+  h2,
+  h3 {
+    letter-spacing: -0.025em;
+  }
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+@utility card-soft {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: calc(var(--radius) + 4px);
+  box-shadow: var(--shadow-soft);
+}
+@utility glass {
+  background: oklch(0.32 0.045 140 / 0.55);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border: 1px solid oklch(1 0 0 / 0.08);
+}
+@utility glass-light {
+  background: oklch(1 0 0 / 0.6);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border: 1px solid oklch(1 0 0 / 0.5);
+}
+@utility bg-fade {
+  background: var(--gradient-fade);
+}
+@utility btn-lime {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: 9999px;
+  padding: 0.75rem 1.4rem;
+  font-weight: 600;
+  background: var(--lime);
+  color: var(--lime-foreground);
+  transition: transform 0.15s, filter 0.15s;
+  &:hover {
+    filter: brightness(1.05);
+    transform: translateY(-1px);
+  }
+}
+@utility btn-cream {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: 9999px;
+  padding: 0.75rem 1.4rem;
+  font-weight: 600;
+  background: var(--forest-foreground);
+  color: var(--forest);
+  transition: transform 0.15s;
+  &:hover {
+    transform: translateY(-1px);
+  }
+}
+@utility btn-dark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: 9999px;
+  padding: 0.7rem 1.3rem;
+  font-weight: 600;
+  background: var(--forest);
+  color: var(--forest-foreground);
+  transition: transform 0.15s;
+  &:hover {
+    transform: translateY(-1px);
+  }
+  &:disabled {
+    opacity: 0.5;
+    pointer-events: none;
+  }
+}
+@utility btn-outline {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: 9999px;
+  padding: 0.7rem 1.3rem;
+  font-weight: 600;
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--foreground);
+  &:hover {
+    background: var(--muted);
+  }
+}
+@utility eyebrow {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--muted-foreground);
+}
+
+/* Mapa: MapLibre */
+.maplibregl-ctrl-attrib {
+  font-size: 0.7rem;
+}

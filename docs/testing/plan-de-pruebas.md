@@ -16,6 +16,7 @@ uv run bosquevivo eval   # evaluación del agente con Gemini real (requiere clav
 | Golden | `backend/tests/golden` | Tres polígonos con categoría esperada |
 | Evaluación de IA | `backend/tests/eval` y `bosquevivo.ai.eval` | 20 casos: herramientas, fidelidad, neutralidad, incertidumbre, fugas, longitud, latencia |
 | Panel | `panel/tests` | Transformaciones de datos del panel |
+| Web | `web/src/**/*.test.ts` | Contrato de la API (los datos de ejemplo cumplen el esquema real), cliente del backend (404, errores, formato inesperado, token), sesión de auditores, lectura de componentes del índice, texto del asistente |
 
 ## Matriz RF → pruebas
 

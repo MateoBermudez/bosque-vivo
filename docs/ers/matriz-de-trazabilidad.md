@@ -15,6 +15,6 @@
 | RF12 | Ampliación | herramienta `analizar_foto_usuario` | `test_agent_tools.py`, `test_whatsapp_flow.py` |
 | RF13 | Ampliación | `assistant/voice.py` | `test_whatsapp_flow.py` |
 | RF15 | Ampliación | `ai/knowledge` | `test_knowledge.py` |
-| RF17 | Ampliación | `api/routers/chat.py`, `panel/pages/3_Chat_del_auditor.py` | `test_chat_api.py` |
+| RF17 | Ampliación | `api/routers/chat.py`, `web/src/app/chat`, `web/src/app/api/chat` (antes `panel/pages/3_Chat_del_auditor.py`) | `test_chat_api.py`, `web/src/lib/api/backend.test.ts` |
 
 No implementados en esta etapa: RF11 (modelo propio de visión), RF14 (alertas tempranas) y RF16 (extracción de declaraciones desde PDD). RF09 a RF17 requieren aprobación del docente como revisión del ERS.

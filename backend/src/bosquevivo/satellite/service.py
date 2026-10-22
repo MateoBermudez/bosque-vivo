@@ -19,6 +19,7 @@ from bosquevivo.satellite.provider import SatelliteProvider
 
 SENTINEL2_START = date(2017, 1, 1)
 LANDSAT_START = date(1999, 1, 1)
+MODIS_START = date(2000, 3, 1)
 
 
 class SatelliteService:
@@ -38,10 +39,14 @@ class SatelliteService:
     ) -> int:
         project = self._project(project_id)
         geometry = json.loads(project.geometry)
-        chosen = sensors or (Sensor.LANDSAT, Sensor.SENTINEL2)
+        default = getattr(self.provider, "default_sensors", (Sensor.LANDSAT, Sensor.SENTINEL2))
+        chosen = sensors or default
         stored = 0
         for sensor in chosen:
-            floor = SENTINEL2_START if sensor == Sensor.SENTINEL2 else LANDSAT_START
+            floor = {
+                Sensor.SENTINEL2: SENTINEL2_START,
+                Sensor.MODIS: MODIS_START,
+            }.get(sensor, LANDSAT_START)
             sensor_start = max(start, floor)
             if sensor_start >= end:
                 continue

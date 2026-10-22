@@ -16,6 +16,8 @@ class Settings(BaseSettings):
     gemini_model_light: str = ""
     gee_project: str = ""
     satellite_provider: str = "gee"
+    # versión del índice con la que se calculan las auditorías nuevas (v0 sigue disponible)
+    index_version: str = "v1"
     whatsapp_token: str = ""
     whatsapp_phone_number_id: str = ""
     whatsapp_verify_token: str = ""
