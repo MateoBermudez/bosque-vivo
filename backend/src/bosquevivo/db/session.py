@@ -11,13 +11,19 @@ from bosquevivo.core.config import get_settings
 from bosquevivo.db import models
 from bosquevivo.db.base import Base
 
+SQLITE_BUSY_SECONDS = 60
+
 
 def build_engine(url: str) -> Engine:
     parsed = make_url(url)
     is_sqlite = parsed.drivername.startswith("sqlite")
     if is_sqlite and parsed.database not in (None, "", ":memory:"):
         Path(parsed.database).parent.mkdir(parents=True, exist_ok=True)
-    engine = create_engine(url, future=True, connect_args={"check_same_thread": False})
+    # `timeout` es la espera máxima (s) por un bloqueo de escritura: con varios procesos calculando
+    # a la vez, los 5 s por defecto no alcanzan y fallan con «database is locked».
+    engine = create_engine(
+        url, future=True, connect_args={"check_same_thread": False, "timeout": SQLITE_BUSY_SECONDS}
+    )
     if is_sqlite:
 
         @event.listens_for(engine, "connect")

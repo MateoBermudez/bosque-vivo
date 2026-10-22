@@ -143,3 +143,22 @@ def test_el_reparto_en_partes_cubre_todo_sin_repetir(db, projects):
     assert sorted(parts[0] + parts[1]) == sorted(everything)
     assert not set(parts[0]) & set(parts[1])
     assert [p.id for p in select_projects(db, shard=(0, 1))] == everything
+
+
+def test_missing_index_recalcula_solo_lo_que_no_tiene_puntaje(db, projects, tmp_path):
+    # un proyecto con índice completo y otro con resultado parcial (sin NDVI)
+    run_batch(db, FakeProvider(), tmp_path, [projects["chico"]])
+
+    class NoNdvi(FakeProvider):
+        def get_timeseries(self, geometry, start, end, sensor):
+            return []
+
+    run_batch(db, NoNdvi(), tmp_path, [projects["ifm"]])
+
+    pending = {p.registry_id for p in select_projects(db, missing_index=True)}
+
+    assert "AD-C" not in pending  # ya tiene puntaje
+    assert {"IFM-1", "AD-G"} <= pending  # parcial y sin auditoría
+    assert {p.registry_id for p in select_projects(db)} == {
+        "AD-G"
+    }  # sin la opción: solo los nunca hechos

@@ -166,6 +166,7 @@ def cmd_audit_batch(args: argparse.Namespace) -> int:
             include_arr=args.include_arr,
             max_area_ha=args.max_area_ha,
             redo=args.redo,
+            missing_index=args.missing_index,
             limit=args.limit,
             shard=_parse_shard(args.shard),
         )
@@ -225,6 +226,11 @@ def build_parser() -> argparse.ArgumentParser:
     batch.add_argument("--max-area-ha", type=float, help="omite proyectos más grandes que esto")
     batch.add_argument("--include-arr", action="store_true", help="incluye reforestación (ARR)")
     batch.add_argument("--redo", action="store_true", help="recalcula los que ya tienen auditoría")
+    batch.add_argument(
+        "--missing-index",
+        action="store_true",
+        help="solo los que aún no tienen índice completo (sin auditoría o con resultado parcial)",
+    )
     batch.add_argument("--start", help="AAAA-MM-DD; por defecto, 3 años antes de T0 de cada uno")
     batch.add_argument(
         "--shard", help="i/n: calcula solo la parte i de n, para correr varios procesos"

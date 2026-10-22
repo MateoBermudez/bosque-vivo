@@ -13,7 +13,7 @@ from sqlalchemy.orm import Session
 from bosquevivo.audit.service import AuditService, analysis_window_start
 from bosquevivo.core.errors import NotFoundError
 from bosquevivo.core.logging import get_logger
-from bosquevivo.db.models import AuditRun, Project, Report
+from bosquevivo.db.models import AuditResult, AuditRun, Project, Report
 from bosquevivo.reports.service import ReportService
 from bosquevivo.satellite.provider import SatelliteProvider
 from bosquevivo.satellite.service import SatelliteService
@@ -57,18 +57,28 @@ def select_projects(
     include_arr: bool = False,
     max_area_ha: float | None = None,
     redo: bool = False,
+    missing_index: bool = False,
     limit: int | None = None,
     shard: tuple[int, int] | None = None,
 ) -> list[Project]:
     """Proyectos a calcular, de menor a mayor área (los chicos terminan primero).
 
-    `shard=(i, n)` reparte la lista entre n procesos y devuelve la parte i (0 a n-1)."""
+    `shard=(i, n)` reparte la lista entre n procesos y devuelve la parte i (0 a n-1).
+    `missing_index=True` incluye los que no tienen una corrida con puntaje (sin auditoría o con
+    resultado parcial), aunque ya tengan una corrida terminada."""
     stmt = select(Project).where(Project.source_registry != "demo").order_by(Project.area_ha)
     if country:
         stmt = stmt.where(Project.country == country)
     if max_area_ha is not None:
         stmt = stmt.where(Project.area_ha <= max_area_ha)
     done = set(session.scalars(select(AuditRun.project_id).where(AuditRun.status == "done")))
+    scored = set(
+        session.scalars(
+            select(AuditRun.project_id)
+            .join(AuditResult, AuditResult.run_id == AuditRun.id)
+            .where(AuditRun.status == "done", AuditResult.score.is_not(None))
+        )
+    )
     selected: list[Project] = []
     for project in session.scalars(stmt):
         kind = project_kind(project.project_type)
@@ -76,7 +86,10 @@ def select_projects(
             continue
         if kind is not None and kind not in SUPPORTED_KINDS | {"ARR"}:
             continue
-        if project.id in done and not redo:
+        if missing_index:
+            if project.id in scored and not redo:
+                continue
+        elif project.id in done and not redo:
             continue
         selected.append(project)
     if shard is not None:

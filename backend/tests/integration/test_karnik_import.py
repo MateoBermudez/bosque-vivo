@@ -5,6 +5,7 @@ import geopandas as gpd
 import pytest
 from shapely.geometry import MultiPolygon, Point, Polygon, box, shape
 
+from bosquevivo.api.routers import projects as router
 from bosquevivo.audit.service import AuditService
 from bosquevivo.core.errors import ValidationFailedError
 from bosquevivo.db.models import Project, ProjectDeclaration
@@ -256,3 +257,39 @@ def test_la_ficha_del_proyecto_se_expone_por_la_api(db, client, karnik_file):
     assert by_field["geometry_source"] == "área de contabilidad (Official)"
     assert all("Karnik" in (d["source_document"] or "") for d in declarations)
     assert client.get("/api/v1/projects/9999/declarations").status_code == 404
+
+
+def test_el_poligono_liviano_se_calcula_una_sola_vez(db, client, monkeypatch):
+    parcels = MultiPolygon(
+        [box(-75 + i * 0.01, 5.0, -75 + i * 0.01 + 0.005, 5.005) for i in range(20)]
+    )
+    project, _ = ProjectRepository(db).upsert(
+        {
+            "source_registry": "EcoRegistry",
+            "registry_id": "ER11",
+            "name": "Con caché",
+            "country": "Colombia",
+            "project_type": None,
+            "start_year": 2015,
+            "area_ha": 1.0,
+            "geometry": json.dumps(parcels.__geo_interface__),
+            "source": "karnik",
+            "source_version": "v1",
+        }
+    )
+    db.flush()
+    calls: list[int] = []
+    original = router.simplify_geometry
+
+    def counting(geom, tolerance, max_parts=None):
+        calls.append(1)
+        return original(geom, tolerance, max_parts)
+
+    monkeypatch.setattr(router, "simplify_geometry", counting)
+    router._LIGHT_CACHE.clear()
+    url = f"/api/v1/projects/{project.id}/geometry?simplify=0.005&max_parts=5"
+
+    first = client.get(url).json()
+    second = client.get(url).json()
+
+    assert first == second and len(calls) == 1
