@@ -10,6 +10,14 @@ export const INDEX_MODEL = {
   confidenceMedium: 0.4,
 } as const;
 
+/** Pesos del índice v1: la permanencia pasa a tasa anual y se suma la evolución de la pérdida. */
+export const INDEX_V1_WEIGHTS = {
+  permanencia: 0.35,
+  evolucion_perdida: 0.35,
+  tendencia: 0.15,
+  estabilidad: 0.15,
+} as const;
+
 export const SAMPLE_NOTICE = "Datos ilustrativos, no corresponden a proyectos reales evaluados";
 
 export const categoryBg: Record<Category, string> = {
@@ -50,7 +58,7 @@ export function sensorLabel(sensor: string): string {
   return sensor;
 }
 
-export type ComponentKey = keyof typeof INDEX_MODEL.weights;
+export type ComponentKey = keyof typeof INDEX_V1_WEIGHTS;
 
 export interface ComponentView {
   key: ComponentKey;
@@ -63,6 +71,7 @@ export interface ComponentView {
 
 const COMPONENT_LABELS: Record<ComponentKey, string> = {
   permanencia: "Permanencia forestal",
+  evolucion_perdida: "Evolución de la pérdida",
   tendencia: "Tendencia de vigor",
   estabilidad: "Estabilidad",
 };
@@ -89,6 +98,11 @@ function describeDetail(key: ComponentKey, raw: Record<string, unknown>) {
     add("Bosque en pie", raw.porcentaje_en_pie, " %");
     add("Pérdida desde T0", raw.ha_perdidas_desde_t0, " ha");
     add("Bosque inicial", raw.ha_bosque_inicial, " ha");
+    add("Pérdida anual desde T0", raw.perdida_anual_pct, " % del bosque inicial");
+  } else if (key === "evolucion_perdida") {
+    add("Pérdida anual antes de T0", raw.perdida_anual_antes_ha, " ha");
+    add("Pérdida anual después de T0", raw.perdida_anual_despues_ha, " ha");
+    add("Cociente después ÷ antes", raw.cociente_despues_antes);
   } else if (key === "tendencia") {
     add("Pendiente del NDVI", raw.pendiente_ndvi_por_anio, " por año");
     add("Meses analizados", raw.meses_usados);
@@ -107,13 +121,15 @@ function describeDetail(key: ComponentKey, raw: Record<string, unknown>) {
 
 /** Convierte el JSON libre de `components` en filas listas para mostrar. */
 export function readComponents(result: AuditResult): ComponentView[] {
-  return (Object.keys(INDEX_MODEL.weights) as ComponentKey[]).map((key) => {
+  const isV1 = "evolucion_perdida" in result.components;
+  const weights: Record<string, number> = isV1 ? INDEX_V1_WEIGHTS : INDEX_MODEL.weights;
+  return (Object.keys(weights) as ComponentKey[]).map((key) => {
     const raw = asRecord(result.components[key]);
     const reason = typeof raw.motivo === "string" ? raw.motivo : null;
     return {
       key,
       label: COMPONENT_LABELS[key],
-      weight: INDEX_MODEL.weights[key],
+      weight: weights[key],
       score: asNumber(raw.puntaje),
       reason,
       detail: describeDetail(key, raw),
@@ -121,9 +137,10 @@ export function readComponents(result: AuditResult): ComponentView[] {
   });
 }
 
-/** Permanencia forestal medida (0-100), o `null` si no se pudo calcular. */
+/** Porcentaje de bosque aún en pie (0-100), o `null` si no se pudo calcular. */
 export function readPermanence(result: AuditResult): number | null {
-  return readComponents(result).find((component) => component.key === "permanencia")?.score ?? null;
+  const raw = asRecord(result.components.permanencia);
+  return asNumber(raw.porcentaje_en_pie) ?? asNumber(raw.puntaje);
 }
 
 /** Sin puntaje global pero con al menos un componente medido (p. ej. solo la permanencia de Hansen). */

@@ -2,22 +2,27 @@ import "server-only";
 
 import { BackendError, liveApi } from "./backend";
 import { mockApi } from "./mock";
+import { snapshotApi } from "./snapshot";
 import type { AuditRun, Category, Declaration, Project, ProjectGeometry, Series } from "./schema";
 import type { BosqueVivoApi } from "./types";
 
 export { BackendError };
-export type DataSource = "mock" | "live";
+export type DataSource = "mock" | "live" | "snapshot";
 
 /**
- * `BV_DATA_SOURCE=live` usa la API real (BACKEND_URL). Cualquier otro valor usa datos de ejemplo.
- * El modo de ejemplo siempre muestra el aviso de "datos ilustrativos".
+ * `BV_DATA_SOURCE=live` usa la API real (BACKEND_URL); `snapshot` usa la copia de solo lectura de
+ * web/snapshot (para publicar sin servidor). Cualquier otro valor usa datos de ejemplo, que siempre
+ * muestran el aviso de "datos ilustrativos".
  */
 export function dataSource(): DataSource {
-  return process.env.BV_DATA_SOURCE === "live" ? "live" : "mock";
+  const source = process.env.BV_DATA_SOURCE;
+  return source === "live" || source === "snapshot" ? source : "mock";
 }
 
+const APIS: Record<DataSource, BosqueVivoApi> = { live: liveApi, snapshot: snapshotApi, mock: mockApi };
+
 export function getApi(): BosqueVivoApi {
-  return dataSource() === "live" ? liveApi : mockApi;
+  return APIS[dataSource()];
 }
 
 /** El aviso se muestra con datos de ejemplo, o en vivo si la base es la de demostración. */
