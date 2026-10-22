@@ -52,6 +52,9 @@ def record(
             "Project Type": project_type,
             "Country": country,
             "Project Start Date": start,
+            "Project End Date": "11/12/2043",
+            "Methodology": "VM0006",
+            "Project Developer Name": "Comunidad de prueba",
             "Processing Approach": "Official",
             "Geometry Type": geometry_type,
             "Project Accounting Area": accounting,
@@ -162,8 +165,9 @@ def test_importar_dos_veces_no_duplica(db, karnik_file):
 
     assert second.created == 0 and second.updated == 3
     assert db.query(Project).count() == 3
-    per_project = db.query(ProjectDeclaration).filter_by(captured_by="import:karnik").count()
-    assert per_project == 3 * 2  # crediting_start + geometry_source por proyecto
+    total = db.query(ProjectDeclaration).filter_by(captured_by="import:karnik").count()
+    # crediting_start, geometry_source, methodology, developer, crediting_end, processing_approach
+    assert total == 3 * 6
 
 
 def test_sin_filtro_de_pais_importa_todo_lo_auditable(db, karnik_file):
@@ -235,3 +239,20 @@ def test_endpoint_de_geometria_limita_las_partes(db, client):
     assert len(shape(light).geoms) == 5
     assert len(shape(full).geoms) == 30
     assert client.get(f"/api/v1/projects/{project.id}/geometry?max_parts=0").status_code == 422
+
+
+def test_la_ficha_del_proyecto_se_expone_por_la_api(db, client, karnik_file):
+    import_karnik(db, karnik_file, country="Colombia")
+    project = ProjectRepository(db).find_by_registry("Verra", "VCS1")
+
+    declarations = client.get(f"/api/v1/projects/{project.id}/declarations").json()
+    by_field = {d["field"]: d["value"] for d in declarations}
+
+    assert by_field["crediting_start"] == "2013-11-13"
+    assert by_field["crediting_end"] == "2043-11-12"
+    assert by_field["methodology"] == "VM0006"
+    assert by_field["developer"] == "Comunidad de prueba"
+    assert by_field["processing_approach"] == "Official"
+    assert by_field["geometry_source"] == "área de contabilidad (Official)"
+    assert all("Karnik" in (d["source_document"] or "") for d in declarations)
+    assert client.get("/api/v1/projects/9999/declarations").status_code == 404

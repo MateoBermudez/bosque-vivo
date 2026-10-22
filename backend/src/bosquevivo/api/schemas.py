@@ -83,3 +83,11 @@ class SeriesOut(BaseModel):
     ndvi: list[SeriesPointOut]
     loss: list[LossOut]
     comparison: list[dict[str, Any]]
+
+
+class DeclarationOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    field: str
+    value: str
+    source_document: str | None

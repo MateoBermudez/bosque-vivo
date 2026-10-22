@@ -5,6 +5,15 @@ def build_narrative(outcome: IndexOutcome, project_name: str) -> str:
     confidence = outcome.confidence.label
     if outcome.category == INSUFFICIENT or outcome.score is None:
         permanence = next((c for c in outcome.components if c.name == "permanencia"), None)
+        if permanence and permanence.score is not None and outcome.confidence.value == 0.0:
+            return (
+                f"Para {project_name} solo se pudo medir la permanencia del bosque: se observa en "
+                f"pie el {permanence.detail['porcentaje_en_pie']} % del bosque inicial desde la "
+                f"fecha de acreditación, según el mapa de pérdida de Hansen. Faltan datos "
+                f"utilizables de verdor (NDVI) para calcular la tendencia y la estabilidad, por "
+                f"eso todavía no hay un puntaje del índice. Es una descripción de lo que se ve "
+                f"desde el satélite, no una conclusión sobre intenciones de nadie."
+            )
         if permanence and permanence.score is None and "motivo" in permanence.detail:
             return (
                 f"En {project_name} no se pudo calcular la permanencia del bosque porque no hay "

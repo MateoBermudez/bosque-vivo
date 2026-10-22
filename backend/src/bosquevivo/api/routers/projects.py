@@ -7,10 +7,10 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from bosquevivo.api.deps import db_session
-from bosquevivo.api.schemas import LossOut, ProjectOut, SeriesOut, SeriesPointOut
+from bosquevivo.api.schemas import DeclarationOut, LossOut, ProjectOut, SeriesOut, SeriesPointOut
 from bosquevivo.audit.compare import compare_declared_observed
 from bosquevivo.audit.service import AuditService
-from bosquevivo.db.models import ForestLoss, NdviObservation
+from bosquevivo.db.models import ForestLoss, NdviObservation, ProjectDeclaration
 from bosquevivo.registry.geometry import simplify_geometry
 from bosquevivo.registry.repository import ProjectRepository
 
@@ -41,6 +41,19 @@ def get_project(project_id: int, session: Session = Depends(db_session)):
     if project is None:
         raise HTTPException(status_code=404, detail="proyecto no encontrado")
     return project
+
+
+@router.get("/{project_id}/declarations", response_model=list[DeclarationOut])
+def get_declarations(project_id: int, session: Session = Depends(db_session)):
+    """Datos declarados o del registro del proyecto (ya revisados): metodología, desarrollador,
+    periodo de acreditación, etc."""
+    if ProjectRepository(session).get(project_id) is None:
+        raise HTTPException(status_code=404, detail="proyecto no encontrado")
+    return session.scalars(
+        select(ProjectDeclaration)
+        .where(ProjectDeclaration.project_id == project_id, ProjectDeclaration.reviewed.is_(True))
+        .order_by(ProjectDeclaration.id)
+    ).all()
 
 
 @router.get("/{project_id}/geometry")

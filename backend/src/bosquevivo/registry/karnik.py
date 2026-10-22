@@ -3,7 +3,7 @@
 Karnik, A., et al. (2025). An open-access database of nature-based carbon offset project
 boundaries. Scientific Data, 12, 581. Datos: Zenodo 10.5281/zenodo.11459391 (CC BY 4.0).
 
-Reglas de selección (ver docs/data/karnik.md):
+Reglas de selección (ver docs/fuentes-de-datos/karnik.md):
 - Se audita el **área de contabilidad** (la usada para emitir créditos) cuando existe; si no,
   el área del proyecto.
 - Los proyectos que solo tienen un punto no se pueden auditar y se omiten.
@@ -129,6 +129,20 @@ def _replace_declaration(session: Session, project_id: int, field_name: str, val
     )
 
 
+def _store_profile(session: Session, project_id: int, row, approach: str) -> None:
+    """Datos de la ficha del proyecto que la web muestra aunque no haya auditoría."""
+    end = parse_us_date(row.get("Project End Date"))
+    fields = {
+        "methodology": _clean(row.get("Methodology")),
+        "developer": _clean(row.get("Project Developer Name")),
+        "crediting_end": end.isoformat() if end else None,
+        "processing_approach": approach if approach != "sin dato" else None,
+    }
+    for name, value in fields.items():
+        if value:
+            _replace_declaration(session, project_id, name, value)
+
+
 def _is_point(row) -> bool:
     return (
         str(row["Geometry Type"]).strip().lower() == "point"
@@ -183,6 +197,7 @@ def _import_row(
     approach = _clean(row.get("Processing Approach")) or "sin dato"
     used = "área de contabilidad" if accounting is not None else "área del proyecto"
     _replace_declaration(session, project.id, "geometry_source", f"{used} ({approach})")
+    _store_profile(session, project.id, row, approach)
     summary.created += int(created)
     summary.updated += int(not created)
 
