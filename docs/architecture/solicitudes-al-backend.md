@@ -9,6 +9,8 @@ impacto. Todas se probaron contra una copia del backend (commit `9999f11`) con e
 
 ## Pedidos
 
+> **Hechos desde la primera versión:** polígonos livianos (#3) y el endpoint `GET /api/v1/projects/{id}/declarations` (ficha del proyecto: metodología, desarrollador, periodo de acreditación, origen del contorno).
+
 ### 1. Miniaturas antes/después (impacto alto)
 Hoy `ver_imagenes` guarda las miniaturas en `data/images`, pero no hay endpoint REST para verlas. El sitio muestra
 «Todavía no están disponibles» en modo `live`.
@@ -20,9 +22,8 @@ El explorador hace 3 llamadas por proyecto (proyecto, geometría y auditoría). 
 - **Propuesta:** `GET /api/v1/projects/summary` con `{id, name, country, project_type, start_year, area_ha, score, category,
   confidence_label, geometry}`, o un parámetro `?include=audit,geometry` en `/projects`.
 
-### 3. Polígonos livianos (impacto medio)
-Los polígonos reales de Karnik (~575 proyectos) pueden tener cientos de vértices y pesar mucho en el explorador.
-- **Propuesta:** parámetro `?simplify=0.001` en `/geometry` (simplificación de shapely) para la vista de mapa.
+### 3. Polígonos livianos — **resuelto**
+`GET /api/v1/projects/{id}/geometry` acepta `?simplify=<grados>` y `?max_parts=<N>`. Los 55 proyectos reales de Colombia pesan 11,5 MB completos (ocho de ellos están formados por cientos o miles de parcelas, uno por 7.258): el explorador pide `simplify=0.005&max_parts=200` y el detalle `simplify=0.0005&max_parts=1000`.
 
 ### 4. Fechas con zona horaria (impacto bajo)
 `created_at` llega sin zona (`2026-10-21T21:29:33.344399`), que el frontend interpreta como UTC.

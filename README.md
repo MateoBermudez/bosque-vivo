@@ -30,7 +30,8 @@ Los nombres de modelo y las cuotas de Gemini cambian: verificar en AI Studio y c
 | [`docs/planning/PLAN_AGENTE_IA.md`](docs/planning/PLAN_AGENTE_IA.md) | Diseño del agente con Gemini: herramientas, análisis de imágenes, conocimiento, voz, cuotas, seguridad, evaluación |
 | [`docs/architecture`](docs/architecture/arquitectura.md) | Arquitectura y [ADRs](docs/architecture/adr/README.md) |
 | [`docs/methodology/indice-v0.md`](docs/methodology/indice-v0.md) | Definición del índice, confianza y limitaciones |
-| [`docs/data/karnik.md`](docs/data/karnik.md) | Fuente de los polígonos (Karnik et al., 2025): licencia, reglas de importación, resultado para Colombia |
+| [`docs/fuentes-de-datos/datos-abiertos.md`](docs/fuentes-de-datos/datos-abiertos.md) | Pérdida de bosque con datos abiertos de Hansen, sin Earth Engine |
+| [`docs/fuentes-de-datos/karnik.md`](docs/fuentes-de-datos/karnik.md) | Fuente de los polígonos (Karnik et al., 2025): licencia, reglas de importación, resultado para Colombia |
 | [`docs/testing`](docs/testing/plan-de-pruebas.md) | Plan de pruebas, matriz RF → pruebas y resultados |
 | [`docs/privacy`](docs/privacy/aviso-de-privacidad.md) | Aviso de privacidad (Ley 1581) |
 
@@ -53,14 +54,20 @@ cd .. && scripts/dev.sh              # en Windows: scripts\dev.ps1
 
 Para probar sin credenciales, use `SATELLITE_PROVIDER=fake` y los datos de demostración. El chat y WhatsApp sí requieren `GEMINI_API_KEY` y `GEMINI_MODEL`. El chat y las trazas del sitio están protegidos con `AUDITOR_ACCESS_CODE` y `SESSION_SECRET` en `web/.env.local` (sin definirlos quedan abiertos en desarrollo). Más detalle en [`web/README.md`](web/README.md).
 
-Importar los polígonos reales de Colombia (base de Karnik et al., ver [`docs/data/karnik.md`](docs/data/karnik.md)) y calcular una auditoría:
+Importar los polígonos reales de Colombia (base de Karnik et al., ver [`docs/fuentes-de-datos/karnik.md`](docs/fuentes-de-datos/karnik.md)) y calcular una auditoría:
 
 ```
 uv run bosquevivo import-karnik ../data/raw/karnik_south_america/south_america.gpkg --country Colombia
 uv run bosquevivo audit 7        # las series empiezan 3 años antes del T0 del proyecto
 ```
 
-`audit` con `SATELLITE_PROVIDER=gee` necesita `GEE_PROJECT` y haber ejecutado `earthengine authenticate`. Para un tipo de archivo distinto use `bosquevivo import <archivo> --source <nombre>`.
+Para calcular **todos** los proyectos de una vez, con datos abiertos y sin cuenta de Google (solo pérdida de bosque y permanencia; ver [`docs/fuentes-de-datos/datos-abiertos.md`](docs/fuentes-de-datos/datos-abiertos.md)):
+
+```
+SATELLITE_PROVIDER=hansen uv run bosquevivo audit-batch --country Colombia
+```
+
+`audit` con `SATELLITE_PROVIDER=gee` (NDVI completo y miniaturas) necesita `GEE_PROJECT` y haber ejecutado `earthengine authenticate`. Para un tipo de archivo distinto use `bosquevivo import <archivo> --source <nombre>`.
 
 Calidad:
 
