@@ -16,6 +16,23 @@ from bosquevivo.registry.repository import ProjectRepository
 
 router = APIRouter(prefix="/api/v1/projects", tags=["proyectos"])
 
+# Aligerar un polígono de miles de partes cuesta y la web lo pide en cada visita: se guarda en
+# memoria. La clave incluye el hash del polígono, así que un polígono actualizado no queda viejo.
+_LIGHT_CACHE: dict[tuple[int, int, float, int | None], dict] = {}
+_LIGHT_CACHE_MAX = 2048
+
+
+def light_geometry(project_id: int, geometry: str, simplify: float, max_parts: int | None) -> dict:
+    key = (project_id, hash(geometry), simplify, max_parts)
+    cached = _LIGHT_CACHE.get(key)
+    if cached is not None:
+        return cached
+    light = mapping(simplify_geometry(shape(json.loads(geometry)), simplify, max_parts))
+    if len(_LIGHT_CACHE) >= _LIGHT_CACHE_MAX:
+        _LIGHT_CACHE.clear()
+    _LIGHT_CACHE[key] = light
+    return light
+
 
 @router.get("", response_model=list[ProjectOut])
 def list_projects(
@@ -76,9 +93,10 @@ def get_geometry(
     project = ProjectRepository(session).get(project_id)
     if project is None:
         raise HTTPException(status_code=404, detail="proyecto no encontrado")
-    geometry = json.loads(project.geometry)
     if simplify or max_parts:
-        geometry = mapping(simplify_geometry(shape(geometry), simplify or 0.0, max_parts))
+        geometry = light_geometry(project.id, project.geometry, simplify or 0.0, max_parts)
+    else:
+        geometry = json.loads(project.geometry)
     return {
         "type": "Feature",
         "properties": {"id": project.id, "name": project.name},
