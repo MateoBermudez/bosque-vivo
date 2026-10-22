@@ -27,6 +27,34 @@ const realPayload: AuditResult = {
   },
 };
 
+describe("índice v1", () => {
+  const v1: AuditResult = {
+    ...realPayload,
+    components: {
+      permanencia: { puntaje: 60, porcentaje_en_pie: 97.4, perdida_anual_pct: 0.4 },
+      evolucion_perdida: {
+        puntaje: 25,
+        perdida_anual_antes_ha: 27,
+        perdida_anual_despues_ha: 219,
+        cociente_despues_antes: 8.1,
+      },
+      tendencia: { puntaje: 100 },
+      estabilidad: { puntaje: 100 },
+    },
+  };
+
+  it("usa los pesos de v1 cuando el resultado trae la evolución de la pérdida", () => {
+    const parts = readComponents(v1);
+    expect(parts.map((part) => part.key)).toEqual(["permanencia", "evolucion_perdida", "tendencia", "estabilidad"]);
+    expect(parts.reduce((total, part) => total + part.weight, 0)).toBeCloseTo(1);
+    expect(parts[1].detail.map((row) => row.label)).toContain("Cociente después ÷ antes");
+  });
+
+  it("muestra el porcentaje de bosque en pie, no el puntaje de la tasa", () => {
+    expect(readPermanence(v1)).toBe(97.4);
+  });
+});
+
 describe("readComponents", () => {
   const components = readComponents(realPayload);
 

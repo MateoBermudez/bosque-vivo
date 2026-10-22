@@ -9,6 +9,8 @@ const securityHeaders = [
 
 const nextConfig: NextConfig = {
   cacheComponents: true,
+  // La copia de datos se lee con rutas dinámicas: hay que pedir que viaje con la función.
+  outputFileTracingIncludes: { "/**": ["./snapshot/**/*"] },
   partialPrefetching: true,
   turbopack: {
     rules: {

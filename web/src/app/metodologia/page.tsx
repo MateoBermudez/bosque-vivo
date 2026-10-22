@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import { PageHeader } from "@/components/common/page-header";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { FAQ, GLOSSARY, REGULATIONS } from "@/content/knowledge";
-import { INDEX_MODEL } from "@/lib/domain";
+import { INDEX_MODEL, INDEX_V1_WEIGHTS } from "@/lib/domain";
 
 export const metadata: Metadata = {
   title: "Metodología",
@@ -14,17 +14,22 @@ export const metadata: Metadata = {
 const COMPONENTS = [
   {
     name: "Permanencia forestal",
-    weight: INDEX_MODEL.weights.permanencia,
-    how: "Qué parte del bosque que había al inicio sigue en pie desde la fecha de acreditación (T0). Se calcula como 100 × (1 − pérdida desde T0 ÷ bosque inicial), con datos de Hansen.",
+    weight: INDEX_V1_WEIGHTS.permanencia,
+    how: "Cuánto bosque se pierde cada año desde la fecha de acreditación (T0), como porcentaje del bosque que había al inicio (datos de Hansen). Una pérdida de 0 % anual da 100 y llega a 0 cuando se pierde el 1 % del bosque inicial por año. El porcentaje de bosque aún en pie se muestra como dato de apoyo.",
+  },
+  {
+    name: "Evolución de la pérdida",
+    weight: INDEX_V1_WEIGHTS.evolucion_perdida,
+    how: "Cómo cambió la pérdida anual de bosque después de T0 frente a los años anteriores en el mismo polígono. Si se mantiene o baja, el puntaje es 100; si se duplica, 50; si se triplica o más, 0. No es un contrafactual: no descarta que el cambio se deba a causas regionales.",
   },
   {
     name: "Tendencia de vigor",
-    weight: INDEX_MODEL.weights.tendencia,
+    weight: INDEX_V1_WEIGHTS.tendencia,
     how: "Hacia dónde va el verdor después de T0. Se mide la pendiente del NDVI (método de Theil-Sen). Si es cero o sube, el puntaje es 100; baja de forma lineal hasta 0 cuando la caída llega a −0,05 por año. Si la tendencia no es estadísticamente significativa (Mann-Kendall, α = 0,05), la penalización se reduce a la mitad.",
   },
   {
     name: "Estabilidad",
-    weight: INDEX_MODEL.weights.estabilidad,
+    weight: INDEX_V1_WEIGHTS.estabilidad,
     how: "Si hubo caídas bruscas del verdor después de T0. Se busca la mayor caída del promedio móvil de 3 meses, ya descontada la estacionalidad. Una caída de 0,05 o menos da 100; llega a 0 en 0,30.",
   },
 ] as const;
@@ -55,8 +60,9 @@ export default function MethodologyPage() {
       <div className="mx-auto max-w-4xl space-y-16 px-5">
         <section aria-labelledby="titulo-estado">
           <p className="rounded-2xl bg-secondary px-5 py-4 text-sm text-secondary-foreground">
-            <strong>Índice {INDEX_MODEL.version} · en validación.</strong> Los pesos y umbrales son una propuesta
-            que se está calibrando con proyectos reales. Cada cálculo guarda la versión del índice con la que se
+            <strong>Índice v1 · en validación.</strong> Los pesos y umbrales son una propuesta pendiente de
+            aprobación académica; el índice v0 (permanencia acumulada, sin evolución de la pérdida) se conserva
+            para comparar. Cada cálculo guarda la versión del índice con la que se
             hizo.
           </p>
           <h2 id="titulo-estado" className="mt-10 text-2xl font-extrabold">
