@@ -36,6 +36,14 @@ def build_narrative(outcome: IndexOutcome, project_name: str) -> str:
             f"Se observa en pie el {permanence.detail['porcentaje_en_pie']} % del bosque "
             f"inicial desde la fecha de acreditación."
         )
+    evolution = next((c for c in outcome.components if c.name == "evolucion_perdida"), None)
+    if evolution and evolution.score is not None and "cociente_despues_antes" in evolution.detail:
+        parts.append(
+            f"La pérdida anual de bosque pasó de {evolution.detail['perdida_anual_antes_ha']} ha "
+            f"antes de la acreditación a {evolution.detail['perdida_anual_despues_ha']} ha después "
+            f"(x{evolution.detail['cociente_despues_antes']}); es una comparación del propio "
+            f"polígono, que no descarta causas regionales."
+        )
     parts.append(
         "Es una descripción de lo que se ve desde el satélite, no una conclusión sobre "
         "intenciones de nadie."

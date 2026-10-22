@@ -9,6 +9,7 @@ from bosquevivo.pipeline import (
     audit_project,
     generate_missing_reports,
     project_kind,
+    recompute_batch,
     run_batch,
     select_projects,
 )
@@ -162,3 +163,16 @@ def test_missing_index_recalcula_solo_lo_que_no_tiene_puntaje(db, projects, tmp_
     assert {p.registry_id for p in select_projects(db)} == {
         "AD-G"
     }  # sin la opción: solo los nunca hechos
+
+
+def test_recompute_crea_corrida_v1_y_conserva_la_v0(db, projects, tmp_path):
+    run_batch(db, FakeProvider(), tmp_path, [projects["chico"]])
+
+    items = recompute_batch(db, "v1")
+    again = recompute_batch(db, "v1")
+
+    versions = [r.index_version for r in db.query(AuditRun).order_by(AuditRun.id)]
+    assert versions == ["v0", "v1"]
+    assert [i.ok for i in items] == [True] and again == []  # la segunda vez no repite
+    latest = db.query(AuditRun).order_by(AuditRun.id.desc()).first()
+    assert "evolucion_perdida" in latest.result.components

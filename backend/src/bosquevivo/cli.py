@@ -15,6 +15,7 @@ from bosquevivo.pipeline import (
     BatchItem,
     audit_project,
     generate_missing_reports,
+    recompute_batch,
     run_batch,
     select_projects,
 )
@@ -79,7 +80,14 @@ def cmd_audit(args: argparse.Namespace) -> int:
     provider = build_provider(settings)
     with get_session() as session:
         start = date.fromisoformat(args.start) if args.start else None
-        run = audit_project(session, provider, settings.images_dir, args.project_id, start=start)
+        run = audit_project(
+            session,
+            provider,
+            settings.images_dir,
+            args.project_id,
+            start=start,
+            index_version=args.index_version or settings.index_version,
+        )
         result = run.result
         print(f"corrida={run.id} categoria={result.category if result else None}")
     return 0
@@ -178,6 +186,7 @@ def cmd_audit_batch(args: argparse.Namespace) -> int:
             settings.images_dir,
             projects,
             start=date.fromisoformat(args.start) if args.start else None,
+            index_version=args.index_version or settings.index_version,
             reports_dir=settings.reports_dir,
             on_item=_print_batch_item,
         )
@@ -186,6 +195,23 @@ def cmd_audit_batch(args: argparse.Namespace) -> int:
         f"terminados: {len(items) - len(failed)} bien, {len(failed)} con error, "
         f"{time.monotonic() - began:.0f}s en total"
     )
+    return 1 if failed else 0
+
+
+def cmd_recompute(args: argparse.Namespace) -> int:
+    init_db()
+    settings = get_settings()
+    version = args.index_version or settings.index_version
+    with get_session() as session:
+        items = recompute_batch(
+            session,
+            version,
+            settings.reports_dir,
+            country=args.country,
+            on_item=_print_batch_item,
+        )
+    failed = [item for item in items if not item.ok]
+    print(f"índice {version} recalculado: {len(items) - len(failed)} bien, {len(failed)} con error")
     return 1 if failed else 0
 
 
@@ -235,7 +261,14 @@ def build_parser() -> argparse.ArgumentParser:
     batch.add_argument(
         "--shard", help="i/n: calcula solo la parte i de n, para correr varios procesos"
     )
+    batch.add_argument("--index-version", help="v0 o v1; por defecto INDEX_VERSION (v1)")
     batch.set_defaults(func=cmd_audit_batch)
+    recompute = sub.add_parser(
+        "recompute", help="Recalcula el índice con otra versión usando los datos ya guardados"
+    )
+    recompute.add_argument("--country")
+    recompute.add_argument("--index-version", help="v0 o v1; por defecto INDEX_VERSION (v1)")
+    recompute.set_defaults(func=cmd_recompute)
     gemini = sub.add_parser("gemini-check", help="Verifica la clave y los modelos de Gemini")
     gemini.set_defaults(func=cmd_gemini_check)
     reports = sub.add_parser("reports", help="Genera los reportes HTML que falten")
@@ -245,6 +278,7 @@ def build_parser() -> argparse.ArgumentParser:
     audit.add_argument(
         "--start", help="AAAA-MM-DD; por defecto, 3 años antes de T0 (mínimo el año 2000)"
     )
+    audit.add_argument("--index-version", help="v0 o v1; por defecto INDEX_VERSION (v1)")
     audit.set_defaults(func=cmd_audit)
     evaluate = sub.add_parser("eval")
     evaluate.add_argument("--output", default="data/eval/report.json")

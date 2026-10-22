@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 
 from bosquevivo.assistant.messages import IncomingMessage
 from bosquevivo.assistant.runtime import build_assistant, build_llm
+from bosquevivo.audit.config import config_for
 from bosquevivo.audit.index import IndexCalculator
 from bosquevivo.audit.service import AuditService, analysis_window_start
 from bosquevivo.core.config import get_settings
@@ -22,7 +23,8 @@ def make_calculate_audit(provider: SatelliteProvider):
         project_id = int(payload["project_id"])
         settings = get_settings()
         satellite = SatelliteService(session, provider, settings.images_dir)
-        audit = AuditService(session, IndexCalculator(), provider.dataset_versions())
+        calculator = IndexCalculator(config_for(settings.index_version))
+        audit = AuditService(session, calculator, provider.dataset_versions())
         project = session.get(Project, project_id)
         if payload.get("start"):
             start = date.fromisoformat(payload["start"])
