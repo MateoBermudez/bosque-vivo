@@ -42,7 +42,7 @@ El índice v0 mide la **permanencia de un bosque que ya existía**: parte de la 
 | Deforestación evitada (AD) y manejo forestal mejorado (IFM) | Soportados |
 | **Reforestación (ARR)** | **No soportado en v0.** Un proyecto que planta árboles sobre tierra degradada casi no tenía bosque en 2000, así que no hay línea base y el resultado es «Insuficiente» con el motivo explícito en el texto (no se atribuye a las nubes) |
 
-En la base de Colombia (ver `docs/data/karnik.md`) son 22 de 55 proyectos (40 %) de tipo ARR.
+En la base de Colombia (ver `docs/fuentes-de-datos/karnik.md`) son 22 de 55 proyectos (40 %) de tipo ARR.
 
 **Propuesta para v1, a validar con el docente (no implementada):** para ARR reemplazar *Permanencia* por *Establecimiento de la cobertura*, es decir, cuánto sube el NDVI medio de los últimos 12 meses con datos respecto al promedio de los 3 años previos a T0, normalizado contra una meta que debe fijarse con casos reales. *Tendencia* y *Estabilidad* se mantienen. No se implementó para no introducir umbrales sin validar.
 
