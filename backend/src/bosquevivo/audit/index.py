@@ -1,7 +1,13 @@
 from dataclasses import dataclass, field
 from typing import Any
 
-from bosquevivo.audit.components import ComponentResult, permanence, stability, trend
+from bosquevivo.audit.components import (
+    ComponentResult,
+    loss_evolution,
+    permanence,
+    stability,
+    trend,
+)
 from bosquevivo.audit.confidence import Confidence, assess_confidence
 from bosquevivo.audit.config import IndexConfig, default_config
 from bosquevivo.audit.inputs import AuditInputs
@@ -46,15 +52,21 @@ class IndexCalculator:
         self.config = config or default_config()
 
     def _weights(self, config: IndexConfig) -> dict[str, float]:
-        return {
+        weights = {
             "permanencia": config.weight_permanence,
             "tendencia": config.weight_trend,
             "estabilidad": config.weight_stability,
         }
+        if config.weight_evolution > 0:
+            weights["evolucion_perdida"] = config.weight_evolution
+        return weights
 
     def calculate(self, inputs: AuditInputs) -> IndexOutcome:
         config = self.config
-        components = [permanence(inputs), trend(inputs, config), stability(inputs, config)]
+        components = [permanence(inputs, config)]
+        if config.weight_evolution > 0:
+            components.append(loss_evolution(inputs, config))
+        components += [trend(inputs, config), stability(inputs, config)]
         confidence = assess_confidence(inputs, config)
         missing_core = components[0].score is None or all(c.score is None for c in components[1:])
         score = weighted_score(components, self._weights(config))

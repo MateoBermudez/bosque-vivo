@@ -99,6 +99,7 @@ def explicar_indice(ctx: ToolContext, args: ProyectoArgs) -> ToolOutput:
         "sensor": run.result.components.get("_sensor"),
         "pesos": {
             "permanencia": run.parameters.get("weight_permanence"),
+            "evolucion_perdida": run.parameters.get("weight_evolution"),
             "tendencia": run.parameters.get("weight_trend"),
             "estabilidad": run.parameters.get("weight_stability"),
         },

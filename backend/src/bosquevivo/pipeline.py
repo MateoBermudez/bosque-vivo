@@ -10,6 +10,8 @@ from pathlib import Path
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from bosquevivo.audit.config import config_for
+from bosquevivo.audit.index import IndexCalculator
 from bosquevivo.audit.service import AuditService, analysis_window_start
 from bosquevivo.core.errors import NotFoundError
 from bosquevivo.core.logging import get_logger
@@ -37,9 +39,14 @@ def audit_project(
     project_id: int,
     *,
     start: date | None = None,
+    index_version: str = "v0",
 ) -> AuditRun:
     """Trae los datos satelitales del proyecto y calcula su índice."""
-    audits = AuditService(session, dataset_versions=provider.dataset_versions())
+    audits = AuditService(
+        session,
+        IndexCalculator(config_for(index_version)),
+        provider.dataset_versions(),
+    )
     project = session.get(Project, project_id)
     if project is None:
         raise NotFoundError(f"proyecto {project_id} no existe")
@@ -117,6 +124,7 @@ def run_batch(
     projects: list[Project],
     *,
     start: date | None = None,
+    index_version: str = "v0",
     reports_dir: Path | None = None,
     on_item: Callable[[int, int, BatchItem], None] | None = None,
 ) -> list[BatchItem]:
@@ -126,7 +134,9 @@ def run_batch(
         began = time.monotonic()
         item = BatchItem(project.id, project.name, project.area_ha, ok=False)
         try:
-            run = audit_project(session, provider, images_dir, project.id, start=start)
+            run = audit_project(
+                session, provider, images_dir, project.id, start=start, index_version=index_version
+            )
             session.commit()
             item.ok = True
             if reports_dir is not None:
@@ -171,3 +181,53 @@ def generate_missing_reports(session: Session, reports_dir: Path) -> int:
         if run_id not in have and _try_report(session, reports_dir, run_id):
             created += 1
     return created
+
+
+def recompute_batch(
+    session: Session,
+    index_version: str,
+    reports_dir: Path | None = None,
+    *,
+    country: str | None = None,
+    on_item: Callable[[int, int, BatchItem], None] | None = None,
+) -> list[BatchItem]:
+    """Recalcula el índice con otra versión usando los datos ya guardados (sin ir al satélite).
+
+    Cada proyecto con una corrida terminada y de otra versión recibe una corrida nueva; las
+    anteriores se conservan para poder comparar versiones."""
+    audits = AuditService(session, IndexCalculator(config_for(index_version)))
+    stmt = (
+        select(Project)
+        .where(Project.id.in_(select(AuditRun.project_id).where(AuditRun.status == "done")))
+        .order_by(Project.area_ha)
+    )
+    if country:
+        stmt = stmt.where(Project.country == country)
+    projects = [
+        p
+        for p in session.scalars(stmt)
+        if p.source_registry != "demo"
+        and (latest := audits.latest(p.id)) is not None
+        and latest.index_version != index_version
+    ]
+    items: list[BatchItem] = []
+    for index, project in enumerate(projects, start=1):
+        began = time.monotonic()
+        item = BatchItem(project.id, project.name, project.area_ha, ok=False)
+        try:
+            run = audits.run(project.id)
+            session.commit()
+            item.ok = True
+            item.category = run.result.category if run.result else None
+            item.score = run.result.score if run.result else None
+            if reports_dir is not None:
+                _try_report(session, reports_dir, run.id)
+        except Exception as exc:  # un proyecto con problemas no debe frenar el lote
+            session.rollback()
+            item.error = f"{type(exc).__name__}: {exc}"
+            log.warning("recompute_item_failed", project_id=project.id, error=item.error)
+        item.seconds = round(time.monotonic() - began, 1)
+        items.append(item)
+        if on_item:
+            on_item(index, len(projects), item)
+    return items
