@@ -3,12 +3,13 @@ import { formatNumber } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
 export function ComparisonTable({ rows }: { rows: ComparisonRow[] }) {
+  const hasNdvi = rows.some((row) => row.ndvi_mean !== null);
   return (
     <div className="card-soft p-6">
       <h2 className="text-xl font-bold">Lo declarado frente a lo observado</h2>
       <p className="mt-1 text-sm text-muted-foreground">
-        Declarado: desde T0 el proyecto está acreditado y se espera que el bosque permanezca. Observado: verdor
-        (NDVI) y hectáreas perdidas cada año.
+        Declarado: desde T0 el proyecto está acreditado y se espera que el bosque permanezca. Observado: hectáreas
+        de bosque perdidas cada año (Hansen) y, cuando está disponible, el verdor (NDVI).
       </p>
       {rows.length === 0 ? (
         <p className="mt-6 text-sm text-muted-foreground">Todavía no hay datos para comparar.</p>
@@ -20,7 +21,7 @@ export function ComparisonTable({ rows }: { rows: ComparisonRow[] }) {
               <tr>
                 <th scope="col" className="py-2 pr-3 font-medium">Año</th>
                 <th scope="col" className="pr-3 font-medium">Declarado</th>
-                <th scope="col" className="pr-3 text-right font-medium">NDVI medio</th>
+                {hasNdvi && <th scope="col" className="pr-3 text-right font-medium">NDVI medio</th>}
                 <th scope="col" className="text-right font-medium">Pérdida (ha)</th>
               </tr>
             </thead>
@@ -38,7 +39,9 @@ export function ComparisonTable({ rows }: { rows: ComparisonRow[] }) {
                       {row.declared_note}
                     </span>
                   </td>
-                  <td className="pr-3 text-right tabular-nums">{row.ndvi_mean === null ? "—" : formatNumber(row.ndvi_mean)}</td>
+                  {hasNdvi && (
+                    <td className="pr-3 text-right tabular-nums">{row.ndvi_mean === null ? "—" : formatNumber(row.ndvi_mean)}</td>
+                  )}
                   <td className="text-right tabular-nums">{formatNumber(row.loss_ha)}</td>
                 </tr>
               ))}

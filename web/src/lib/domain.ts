@@ -46,6 +46,7 @@ export function normalizeConfidence(label: string): ConfidenceLabel {
 export function sensorLabel(sensor: string): string {
   if (sensor === "s2") return "Sentinel-2";
   if (sensor === "landsat") return "Landsat";
+  if (sensor === "modis") return "MODIS (250 m)";
   return sensor;
 }
 
