@@ -1,7 +1,15 @@
 import { describe, expect, it } from "vitest";
 
 import type { AuditResult } from "./api/schema";
-import { normalizeConfidence, readComponents, readSensitivity, readSensor, toolLabel } from "./domain";
+import {
+  isPartialResult,
+  normalizeConfidence,
+  readComponents,
+  readPermanence,
+  readSensitivity,
+  readSensor,
+  toolLabel,
+} from "./domain";
 
 // Forma real que produce `IndexOutcome.components_payload()` del backend.
 const realPayload: AuditResult = {
@@ -68,5 +76,32 @@ describe("otras lecturas", () => {
   it("traduce herramientas conocidas y deja legibles las desconocidas", () => {
     expect(toolLabel("obtener_auditoria")).toBe("Consultó la auditoría");
     expect(toolLabel("herramienta_nueva")).toBe("herramienta nueva");
+  });
+});
+
+describe("resultado parcial", () => {
+  const partial: AuditResult = {
+    score: null,
+    category: "Insuficiente",
+    confidence: 0,
+    confidence_label: "baja",
+    narrative: null,
+    components: {
+      permanencia: { puntaje: 97.4, porcentaje_en_pie: 97.4 },
+      tendencia: { puntaje: null, motivo: "pocos meses con datos posteriores a T0" },
+      estabilidad: { puntaje: null, motivo: "pocos meses con datos posteriores a T0" },
+    },
+  };
+
+  it("lo reconoce cuando solo hay permanencia", () => {
+    expect(isPartialResult(partial)).toBe(true);
+    expect(readPermanence(partial)).toBe(97.4);
+  });
+
+  it("no es parcial si hay puntaje completo ni si no se midió nada", () => {
+    expect(isPartialResult(realPayload)).toBe(false);
+    const nothing: AuditResult = { ...partial, components: {} };
+    expect(isPartialResult(nothing)).toBe(false);
+    expect(readPermanence(nothing)).toBeNull();
   });
 });

@@ -5,6 +5,7 @@ import type { ZodType } from "zod";
 import {
   auditRunSchema,
   chatAnswerSchema,
+  declarationSchema,
   geometrySchema,
   projectSchema,
   seriesSchema,
@@ -117,6 +118,10 @@ export const liveApi: BosqueVivoApi = {
     });
   },
   getSeries: (id) => getJson(`${API_PREFIX}/projects/${id}/series`, seriesSchema, { nullOn: [404] }),
+  getDeclarations: async (id) =>
+    (await getJson(`${API_PREFIX}/projects/${id}/declarations`, declarationSchema.array(), {
+      nullOn: [404],
+    })) ?? [],
   getLatestAudit: (id) =>
     getJson(`${API_PREFIX}/projects/${id}/audit`, auditRunSchema, { nullOn: [404] }),
   chat: (message, sessionRef) =>

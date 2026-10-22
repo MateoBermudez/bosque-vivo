@@ -1,5 +1,5 @@
 import type { AuditResult } from "@/lib/api/schema";
-import { normalizeConfidence, readComponents, readSensitivity, readSensor } from "@/lib/domain";
+import { isPartialResult, normalizeConfidence, readComponents, readSensitivity, readSensor } from "@/lib/domain";
 import { formatNumber, formatPercent } from "@/lib/format";
 
 export function ScoreCard({ result }: { result: AuditResult }) {
@@ -7,6 +7,7 @@ export function ScoreCard({ result }: { result: AuditResult }) {
   const sensitivity = readSensitivity(result);
   const sensor = readSensor(result);
   const confidence = normalizeConfidence(result.confidence_label);
+  const partial = isPartialResult(result);
 
   return (
     <section aria-labelledby="titulo-indice" className="rounded-[2rem] bg-forest p-6 text-forest-foreground">
@@ -24,6 +25,12 @@ export function ScoreCard({ result }: { result: AuditResult }) {
           {result.category}
         </span>
       </div>
+      {partial && (
+        <p className="mt-3 text-sm text-forest-muted">
+          <strong className="text-forest-foreground">Resultado parcial.</strong> Solo se pudo medir la
+          permanencia del bosque (mapa de Hansen). Faltan las series de verdor (NDVI) para el índice completo.
+        </p>
+      )}
       {sensitivity && (
         <p className="mt-3 text-xs text-forest-muted">
           Si se mueven los pesos ±10 puntos, el puntaje queda entre {formatNumber(sensitivity.min)} y{" "}
@@ -33,7 +40,7 @@ export function ScoreCard({ result }: { result: AuditResult }) {
 
       <div className="glass mt-6 rounded-2xl p-4">
         <p className="text-sm font-semibold">
-          Confianza {confidence.toLowerCase()} · {formatPercent(result.confidence)}
+          {partial ? "Confianza del índice: sin calcular" : `Confianza ${confidence.toLowerCase()} · ${formatPercent(result.confidence)}`}
         </p>
         <p className="mt-1 text-xs text-forest-muted">
           Indica qué tan seguros estamos del índice según la cantidad y calidad de imágenes. No califica al

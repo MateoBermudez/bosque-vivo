@@ -54,7 +54,7 @@ export function NdviChart({ points, t0 }: { points: NdviPoint[]; t0: string | nu
   const t0Period = t0 ? rows.find((row) => row.period >= t0)?.period : undefined;
 
   if (rows.length === 0) {
-    return <p className="py-10 text-center text-sm text-muted-foreground">Todavía no hay serie NDVI para este proyecto.</p>;
+    return <p className="py-10 text-center text-sm text-muted-foreground">Las series de verdor (NDVI) aún no se han calculado: requieren imágenes Sentinel-2 y Landsat procesadas con Earth Engine.</p>;
   }
 
   const first = rows[0]!.period;

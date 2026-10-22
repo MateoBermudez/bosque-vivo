@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Código de terceros copiado por scripts/copy-maplibre-worker.mjs.
+    "public/vendor/**",
   ]),
 ]);
 

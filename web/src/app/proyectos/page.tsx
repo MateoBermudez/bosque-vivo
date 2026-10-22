@@ -1,3 +1,4 @@
+import { Info } from "lucide-react";
 import type { Metadata } from "next";
 import { connection } from "next/server";
 import { Suspense } from "react";
@@ -7,7 +8,7 @@ import { SampleBadge } from "@/components/common/sample-badge";
 import { ErrorState, Loading } from "@/components/common/states";
 import { Explorer, type ExplorerRow } from "@/components/projects/explorer";
 import { attempt, isDemoProject, loadExplorerItems, showSampleNotice } from "@/lib/api";
-import { normalizeConfidence } from "@/lib/domain";
+import { isPartialResult, normalizeConfidence, readPermanence } from "@/lib/domain";
 
 export const metadata: Metadata = {
   title: "Explorador de proyectos",
@@ -49,14 +50,24 @@ async function ExplorerLoader() {
     category: audit?.result?.category ?? null,
     confidence: audit?.result ? normalizeConfidence(audit.result.confidence_label) : null,
     geometry: geometry?.geometry ?? null,
+    partialPermanence: audit?.result && isPartialResult(audit.result) ? readPermanence(audit.result) : null,
+    demo: isDemoProject(project),
   }));
-  const sample = showSampleNotice() || result.data.some(({ project }) => isDemoProject(project));
+  const allSample = showSampleNotice();
+  const someDemo = rows.some((row) => row.demo);
   return (
     <>
-      {sample && (
+      {allSample && (
         <div className="mx-auto mb-4 max-w-7xl px-5">
           <SampleBadge />
         </div>
+      )}
+      {!allSample && someDemo && (
+        <p className="mx-auto mb-4 flex max-w-7xl items-start gap-2 px-5 text-sm text-muted-foreground">
+          <Info className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
+          Los proyectos marcados «Demostración» son ficticios: sirven para ver cómo se ve una auditoría completa.
+          Los demás son proyectos reales cuya auditoría aún no se ha calculado.
+        </p>
       )}
       <Explorer rows={rows} />
     </>

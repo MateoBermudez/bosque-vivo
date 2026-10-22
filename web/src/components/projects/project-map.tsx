@@ -2,12 +2,14 @@
 
 import "maplibre-gl/dist/maplibre-gl.css";
 
-import type { GeoJSONSource, Map as MapLibreMap, StyleSpecification } from "maplibre-gl";
+import type { GeoJSONSource, Map as MapLibreMap } from "maplibre-gl";
 import { useEffect, useMemo, useRef, useState } from "react";
 
 import type { Category, ProjectGeometry } from "@/lib/api/schema";
 import { CATEGORIES } from "@/lib/api/schema";
 import { categoryHex } from "@/lib/domain";
+
+import { MAP_STYLE, WORKER_URL, boundsOf } from "./map-style";
 
 export interface MapItem {
   id: number;
@@ -26,31 +28,6 @@ interface ProjectMapProps {
 }
 
 const SOURCE_ID = "projects";
-const DEFAULT_TILES = [
-  "https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png",
-  "https://b.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png",
-  "https://c.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png",
-];
-const TILES = process.env.NEXT_PUBLIC_MAP_TILES_URL ? [process.env.NEXT_PUBLIC_MAP_TILES_URL] : DEFAULT_TILES;
-const FOREST = "#1f3a28";
-
-// Si no hay conexión a los mosaicos, los polígonos se siguen viendo sobre el fondo verde.
-const MAP_STYLE: StyleSpecification = {
-  version: 8,
-  sources: {
-    base: {
-      type: "raster",
-      tiles: TILES,
-      tileSize: 256,
-      maxzoom: 19,
-      attribution: "© OpenStreetMap contributors © CARTO",
-    },
-  },
-  layers: [
-    { id: "fondo", type: "background", paint: { "background-color": FOREST } },
-    { id: "base", type: "raster", source: "base", paint: { "raster-opacity": 0.85 } },
-  ],
-};
 
 function toCollection(items: MapItem[]): GeoJSON.FeatureCollection {
   return {
@@ -65,26 +42,6 @@ function toCollection(items: MapItem[]): GeoJSON.FeatureCollection {
       },
     })),
   };
-}
-
-function boundsOf(items: MapItem[]): [[number, number], [number, number]] | null {
-  let minX = Infinity;
-  let minY = Infinity;
-  let maxX = -Infinity;
-  let maxY = -Infinity;
-  const visit = (position: number[]) => {
-    const [x, y] = position;
-    if (x === undefined || y === undefined) return;
-    minX = Math.min(minX, x);
-    maxX = Math.max(maxX, x);
-    minY = Math.min(minY, y);
-    maxY = Math.max(maxY, y);
-  };
-  for (const { geometry } of items) {
-    const polygons = geometry.type === "Polygon" ? [geometry.coordinates] : geometry.coordinates;
-    for (const polygon of polygons) for (const ring of polygon) ring.forEach(visit);
-  }
-  return Number.isFinite(minX) ? [[minX, minY], [maxX, maxY]] : null;
 }
 
 export function ProjectMap({ items, highlightId, onHighlight, onSelect }: ProjectMapProps) {
@@ -109,6 +66,7 @@ export function ProjectMap({ items, highlightId, onHighlight, onSelect }: Projec
     import("maplibre-gl")
       .then((maplibre) => {
         if (cancelled || !containerRef.current) return;
+        maplibre.setWorkerUrl(WORKER_URL);
         map = new maplibre.Map({
           container: containerRef.current,
           style: MAP_STYLE,
@@ -126,7 +84,7 @@ export function ProjectMap({ items, highlightId, onHighlight, onSelect }: Projec
             source: SOURCE_ID,
             paint: {
               "fill-color": ["get", "color"],
-              "fill-opacity": ["case", ["boolean", ["feature-state", "highlight"], false], 0.95, 0.7],
+              "fill-opacity": ["case", ["boolean", ["feature-state", "highlight"], false], 0.9, 0.55],
             },
           });
           map.addLayer({
@@ -178,7 +136,7 @@ export function ProjectMap({ items, highlightId, onHighlight, onSelect }: Projec
     const map = mapRef.current;
     if (!map || !ready) return;
     (map.getSource(SOURCE_ID) as GeoJSONSource | undefined)?.setData(collection);
-    const bounds = boundsOf(items);
+    const bounds = boundsOf(items.map((item) => item.geometry));
     if (bounds) {
       const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
       map.fitBounds(bounds, { padding: 48, maxZoom: 9, duration: reduceMotion ? 0 : 600 });

@@ -1,6 +1,7 @@
 import type {
   AuditRun,
   ChatAnswer,
+  Declaration,
   Project,
   ProjectGeometry,
   Series,
@@ -20,6 +21,8 @@ export interface BosqueVivoApi {
     options?: { simplify?: number; maxParts?: number },
   ): Promise<ProjectGeometry | null>;
   getSeries(id: number): Promise<Series | null>;
+  /** Datos del registro del proyecto (metodología, desarrollador, periodo de acreditación…). */
+  getDeclarations(id: number): Promise<Declaration[]>;
   /** `null` cuando el proyecto todavía no tiene una auditoría calculada. */
   getLatestAudit(id: number): Promise<AuditRun | null>;
   /** Requiere token de administración en el servidor del backend. */

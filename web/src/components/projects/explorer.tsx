@@ -25,6 +25,10 @@ export interface ExplorerRow {
   category: Category | null;
   confidence: ConfidenceLabel | null;
   geometry: ProjectGeometry["geometry"] | null;
+  /** Permanencia forestal medida cuando aún no hay puntaje completo (resultado parcial). */
+  partialPermanence: number | null;
+  /** Proyecto ficticio de la base de demostración. */
+  demo: boolean;
 }
 
 const field =
@@ -38,6 +42,9 @@ export function Explorer({ rows }: { rows: ExplorerRow[] }) {
   const [category, setCategory] = useState<Category | "">("");
   const [min, setMin] = useState(0);
   const [highlightId, setHighlightId] = useState<number | null>(null);
+
+  // Sin auditorías no hay índice ni categoría que filtrar: los controles se desactivan.
+  const hasScores = useMemo(() => rows.some((row) => row.score !== null), [rows]);
 
   const countries = useMemo(
     () => [...new Set(rows.map((row) => row.country).filter((value): value is string => Boolean(value)))].sort(),
@@ -110,7 +117,8 @@ export function Explorer({ rows }: { rows: ExplorerRow[] }) {
             id={`${ids}-categoria`}
             value={category}
             onChange={(event) => setCategory(event.target.value as Category | "")}
-            className={field}
+            disabled={!hasScores}
+            className={`${field} disabled:opacity-50`}
           >
             <option value="">Todas las categorías</option>
             {CATEGORIES.map((name) => (
@@ -132,18 +140,22 @@ export function Explorer({ rows }: { rows: ExplorerRow[] }) {
             step={5}
             value={min}
             onChange={(event) => setMin(Number(event.target.value))}
-            className="w-full accent-[var(--primary)]"
+            disabled={!hasScores}
+            className="w-full accent-[var(--primary)] disabled:opacity-40"
           />
         </div>
       </form>
 
       <p className="mt-4 text-sm text-muted-foreground" role="status">
         {visible.length} de {rows.length} proyectos
+        {!hasScores && " · los filtros por índice y categoría se activan cuando haya auditorías calculadas"}
       </p>
 
-      <div className="mt-2 grid gap-6 lg:grid-cols-[1.2fr_1fr]">
-        <ProjectMap items={mapItems} highlightId={highlightId} onHighlight={setHighlightId} onSelect={select} />
-        <ul className="space-y-3">
+      <div className="mt-2 grid gap-6 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)]">
+        <div className="min-w-0 lg:sticky lg:top-20 lg:self-start">
+          <ProjectMap items={mapItems} highlightId={highlightId} onHighlight={setHighlightId} onSelect={select} />
+        </div>
+        <ul className="min-w-0 space-y-3">
           {visible.length === 0 && (
             <li>
               <EmptyState title="Sin resultados">Ningún proyecto coincide con los filtros. Prueba ampliarlos.</EmptyState>
@@ -176,10 +188,19 @@ export function Explorer({ rows }: { rows: ExplorerRow[] }) {
                       .join(" · ")}
                   </p>
                   <div className="mt-2 flex flex-wrap gap-2">
-                    {row.category ? (
+                    {row.partialPermanence !== null ? (
+                      <span className="rounded-full bg-lime px-2.5 py-1 text-xs font-semibold text-lime-foreground">
+                        Parcial · bosque en pie {Math.round(row.partialPermanence)} %
+                      </span>
+                    ) : row.category ? (
                       <CategoryPill category={row.category} />
                     ) : (
                       <span className="rounded-full bg-secondary px-2.5 py-1 text-xs font-semibold">Sin auditoría</span>
+                    )}
+                    {row.demo && (
+                      <span className="rounded-full bg-lime px-2.5 py-1 text-xs font-semibold text-lime-foreground">
+                        Demostración
+                      </span>
                     )}
                     {row.confidence && (
                       <span className="rounded-full border border-border px-2.5 py-1 text-xs">
