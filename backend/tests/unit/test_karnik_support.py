@@ -99,7 +99,7 @@ def test_con_pocas_imagenes_el_texto_si_menciona_las_nubes():
         t0=date(2015, 1, 1),
         declared_area_ha=500.0,
         baseline_forest_ha=400.0,
-        series=[],
+        series=[SeriesPoint(date(2016 + i // 12, i % 12 + 1, 1), 0.6, 0.05, 1) for i in range(40)],
         sensor="landsat",
         loss_by_year={},
     )
@@ -135,3 +135,21 @@ def test_conserva_solo_las_partes_mas_grandes():
     }
     assert keep_largest_parts(multi, 10) is multi  # no hace nada si ya cabe
     assert keep_largest_parts(parcels[0], 1) is parcels[0]  # un polígono simple no se toca
+
+
+def test_con_solo_la_permanencia_el_texto_es_un_resultado_parcial():
+    inputs = AuditInputs(
+        t0=date(2015, 1, 1),
+        declared_area_ha=500.0,
+        baseline_forest_ha=400.0,
+        series=[],  # sin NDVI: solo hay datos de Hansen
+        sensor="s2",
+        loss_by_year={2016: 20.0, 2018: 20.0},
+    )
+    outcome = IndexCalculator().calculate(inputs)
+    text = build_narrative(outcome, "Proyecto AD")
+
+    assert outcome.category == INSUFFICIENT and outcome.score is None
+    assert "solo se pudo medir la permanencia" in text
+    assert "90.0 %" in text
+    assert "nubosidad" not in text

@@ -30,6 +30,38 @@ TREE_COVER_THRESHOLD = 30
 MAX_PIXELS = 1_000_000_000
 
 
+BATCH_MONTHS = 12  # meses por llamada; mantiene cada petición bajo el límite de 5 min de getInfo
+
+
+def month_starts(start: date, end: date) -> list[date]:
+    """Primer día de cada mes desde `start` hasta antes de `end`."""
+    months: list[date] = []
+    year, month = start.year, start.month
+    while date(year, month, 1) < end:
+        months.append(date(year, month, 1))
+        year, month = (year + 1, 1) if month == 12 else (year, month + 1)
+    return months
+
+
+def point_from_properties(props: dict, sensor: Sensor) -> TimeSeriesPoint | None:
+    """Convierte las propiedades de un mes (calculadas en el servidor de Earth Engine) en un punto.
+    Los meses sin escenas se descartan."""
+    count = int(props.get("count") or 0)
+    if not count:
+        return None
+    valid = props.get("valid") or 0
+    total = props.get("total") or 0
+    return TimeSeriesPoint(
+        period=date.fromisoformat(str(props["period"])[:10]),
+        sensor=sensor,
+        ndvi_mean=props.get("mean"),
+        ndvi_p10=props.get("p10"),
+        ndvi_p90=props.get("p90"),
+        valid_fraction=min(1.0, valid / total) if total else 0.0,
+        scene_count=count,
+    )
+
+
 def _scale_for(area_ha: float) -> int:
     if area_ha < 2_000:
         return 10
@@ -103,10 +135,72 @@ class GeeProvider:
             merged = merged.merge(part)
         return merged
 
+    def _timeseries_batched(
+        self, collection, region, *, scale: int, start: date, end: date, sensor: Sensor
+    ) -> list[TimeSeriesPoint]:
+        """Calcula las estadísticas mensuales dentro de Earth Engine y trae 12 meses por llamada."""
+        ee = self._ee
+        reducer = (
+            ee.Reducer.mean()
+            .combine(ee.Reducer.percentile([10, 90]), sharedInputs=True)
+            .combine(ee.Reducer.count(), sharedInputs=True)
+        )
+        months = month_starts(start, end)
+        points: list[TimeSeriesPoint] = []
+        for offset in range(0, len(months), BATCH_MONTHS):
+            chunk = months[offset : offset + BATCH_MONTHS]
+            origin = ee.Date(chunk[0].isoformat())
+
+            def per_month(index, origin=origin):
+                first_day = origin.advance(ee.Number(index), "month")
+                monthly = collection.filterDate(first_day, first_day.advance(1, "month"))
+                count = monthly.size()
+                composite = monthly.map(
+                    lambda img: img.select("ndvi").updateMask(img.select("valid"))
+                ).median()
+                stats = composite.reduceRegion(
+                    reducer, region, scale, maxPixels=MAX_PIXELS, bestEffort=True
+                )
+                first_scene_pixels = ee.Number(
+                    ee.Algorithms.If(
+                        count.gt(0),
+                        ee.Dictionary(
+                            monthly.first()
+                            .select("ndvi")
+                            .reduceRegion(
+                                ee.Reducer.count(),
+                                region,
+                                scale,
+                                maxPixels=MAX_PIXELS,
+                                bestEffort=True,
+                            )
+                        ).get("ndvi", 0),
+                        0,
+                    )
+                )
+                return ee.Feature(
+                    None,
+                    {
+                        "period": first_day.format("YYYY-MM-dd"),
+                        "count": count,
+                        "mean": stats.get("ndvi_mean"),
+                        "p10": stats.get("ndvi_p10"),
+                        "p90": stats.get("ndvi_p90"),
+                        "valid": stats.get("ndvi_count"),
+                        "total": first_scene_pixels,
+                    },
+                )
+
+            rows = ee.FeatureCollection(ee.List.sequence(0, len(chunk) - 1).map(per_month))
+            for feature in _info(rows).get("features", []):
+                point = point_from_properties(feature.get("properties", {}), sensor)
+                if point is not None:
+                    points.append(point)
+        return points
+
     def get_timeseries(
         self, geometry: dict, start: date, end: date, sensor: Sensor
     ) -> list[TimeSeriesPoint]:
-        ee = self._ee
         region = self._region(geometry)
         scale = _scale_for(self._area_ha(region))
         collection = (
@@ -114,6 +208,21 @@ class GeeProvider:
             if sensor == Sensor.SENTINEL2
             else self._landsat_collection(region, start, end)
         )
+        try:
+            return self._timeseries_batched(
+                collection, region, scale=scale, start=start, end=end, sensor=sensor
+            )
+        except Exception as exc:  # cualquier fallo de Earth Engine
+            log.warning("gee_batch_failed_using_sequential", error=str(exc), sensor=sensor.value)
+            return self._timeseries_sequential(
+                collection, region, scale=scale, start=start, end=end, sensor=sensor
+            )
+
+    def _timeseries_sequential(
+        self, collection, region, *, scale: int, start: date, end: date, sensor: Sensor
+    ) -> list[TimeSeriesPoint]:
+        """Versión original: tres llamadas bloqueantes por mes. Lenta, pero es el respaldo."""
+        ee = self._ee
         reducer = (
             ee.Reducer.mean()
             .combine(ee.Reducer.percentile([10, 90]), sharedInputs=True)

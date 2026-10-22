@@ -7,6 +7,7 @@ from pydantic import BaseModel, Field
 class Sensor(StrEnum):
     SENTINEL2 = "s2"
     LANDSAT = "landsat"
+    MODIS = "modis"
 
 
 class ThumbnailKind(StrEnum):
