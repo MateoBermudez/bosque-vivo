@@ -62,7 +62,7 @@ async function send(path: string, options: RequestOptions): Promise<Response | n
       headers: buildHeaders(options),
       body: options.body === undefined ? undefined : JSON.stringify(options.body),
       cache: "no-store",
-      signal: AbortSignal.timeout(options.timeoutMs ?? 15_000),
+      signal: AbortSignal.timeout(options.timeoutMs ?? 30_000),
     });
   } catch (error) {
     if (error instanceof BackendError) throw error;

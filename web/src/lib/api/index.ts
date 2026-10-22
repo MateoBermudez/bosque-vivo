@@ -44,6 +44,7 @@ export async function attempt<T>(task: () => Promise<T>): Promise<Attempt<T>> {
  */
 const MAP_SIMPLIFY_DEGREES = 0.005;
 const MAP_MAX_PARTS = 200;
+const EXPLORER_BATCH = 8;
 
 /** Los proyectos de la base de demostración llevan el registro «demo». */
 export function isDemoProject(project: Project): boolean {
@@ -61,13 +62,23 @@ export interface ExplorerItem {
 export async function loadExplorerItems(): Promise<ExplorerItem[]> {
   const api = getApi();
   const projects = await api.listProjects();
-  return Promise.all(
-    projects.map(async (project) => {
-      const [geometry, audit] = await Promise.all([api.getGeometry(project.id, { simplify: MAP_SIMPLIFY_DEGREES, maxParts: MAP_MAX_PARTS }),
-        api.getLatestAudit(project.id),]);
-      return { project, geometry, audit, category: audit?.result?.category ?? null };
-    }),
-  );
+  // Por tandas: pedir todo a la vez (cientos de peticiones) satura la API y vence los tiempos de espera.
+  const items: ExplorerItem[] = [];
+  for (let from = 0; from < projects.length; from += EXPLORER_BATCH) {
+    const batch = projects.slice(from, from + EXPLORER_BATCH);
+    items.push(
+      ...(await Promise.all(
+        batch.map(async (project) => {
+          const [geometry, audit] = await Promise.all([
+            api.getGeometry(project.id, { simplify: MAP_SIMPLIFY_DEGREES, maxParts: MAP_MAX_PARTS }),
+            api.getLatestAudit(project.id),
+          ]);
+          return { project, geometry, audit, category: audit?.result?.category ?? null };
+        }),
+      )),
+    );
+  }
+  return items;
 }
 
 export interface ProjectView {
