@@ -2,7 +2,7 @@ import "server-only";
 
 import { BackendError, liveApi } from "./backend";
 import { mockApi } from "./mock";
-import type { AuditRun, Category, Project, ProjectGeometry, Series } from "./schema";
+import type { AuditRun, Category, Declaration, Project, ProjectGeometry, Series } from "./schema";
 import type { BosqueVivoApi } from "./types";
 
 export { BackendError };
@@ -74,12 +74,20 @@ export interface ProjectView {
   project: Project;
   series: Series | null;
   audit: AuditRun | null;
+  declarations: Declaration[];
+  /** Polígono aligerado para el mapa del proyecto (~55 m de tolerancia). */
+  geometry: ProjectGeometry | null;
 }
 
 export async function loadProjectView(id: number): Promise<ProjectView | null> {
   const api = getApi();
   const project = await api.getProject(id);
   if (!project) return null;
-  const [series, audit] = await Promise.all([api.getSeries(id), api.getLatestAudit(id)]);
-  return { project, series, audit };
+  const [series, audit, declarations, geometry] = await Promise.all([
+    api.getSeries(id),
+    api.getLatestAudit(id),
+    api.getDeclarations(id),
+    api.getGeometry(id, { simplify: 0.0005, maxParts: 1000 }),
+  ]);
+  return { project, series, audit, declarations, geometry };
 }

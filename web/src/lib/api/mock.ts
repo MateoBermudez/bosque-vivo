@@ -7,6 +7,7 @@ import type {
   Category,
   ChatAnswer,
   ComparisonRow,
+  Declaration,
   NdviPoint,
   Project,
   ProjectGeometry,
@@ -289,6 +290,23 @@ const SERIES = new Map<number, Series>(
     ];
   }),
 );
+const DECLARATIONS = new Map<number, Declaration[]>(
+  SPECS.map((s) => {
+    const source = "Datos ilustrativos";
+    const endYear = Number(s.t0.slice(0, 4)) + 30;
+    return [
+      s.project.id,
+      [
+        { field: "crediting_start", value: s.t0, source_document: source },
+        { field: "crediting_end", value: `${endYear}-12-31`, source_document: source },
+        { field: "methodology", value: "VM0007 (ejemplo)", source_document: source },
+        { field: "developer", value: "Desarrollador de ejemplo", source_document: source },
+        { field: "processing_approach", value: "Official", source_document: source },
+        { field: "geometry_source", value: "área del proyecto (Official)", source_document: source },
+      ],
+    ];
+  }),
+);
 const AUDITS = new Map<number, AuditRun>(SPECS.map((s) => [s.project.id, buildAudit(s)]));
 
 const MOCK_TRACES: Trace[] = [
@@ -377,6 +395,7 @@ export const mockApi: BosqueVivoApi = {
   getProject: async (id) => PROJECTS.find((p) => p.id === id) ?? null,
   getGeometry: async (id) => GEOMETRIES.get(id) ?? null,
   getSeries: async (id) => SERIES.get(id) ?? null,
+  getDeclarations: async (id) => DECLARATIONS.get(id) ?? [],
   getLatestAudit: async (id) => AUDITS.get(id) ?? null,
   chat: async (message) => {
     await new Promise((resolve) => setTimeout(resolve, 700));

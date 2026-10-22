@@ -9,17 +9,21 @@ import { EmptyState, ErrorState, Loading } from "@/components/common/states";
 import { SampleBadge } from "@/components/common/sample-badge";
 import { BeforeAfter } from "@/components/projects/before-after";
 import { ComparisonTable } from "@/components/projects/comparison-table";
+import { LocationMap } from "@/components/projects/location-map";
 import { LossChart } from "@/components/projects/loss-chart";
 import { NdviChart } from "@/components/projects/ndvi-chart";
+import { PendingAuditCard } from "@/components/projects/pending-audit-card";
+import { ProjectProfileCard } from "@/components/projects/project-profile";
 import { ScoreCard } from "@/components/projects/score-card";
 import { attempt, dataSource, isDemoProject, loadProjectView, showSampleNotice } from "@/lib/api";
-import { readSensorKey } from "@/lib/domain";
+import { isPartialResult, readSensorKey } from "@/lib/domain";
 import { formatDateTime, formatHa, formatPercent } from "@/lib/format";
+import { buildProfile, projectKind } from "@/lib/profile";
 
 export const metadata: Metadata = {
   title: "Detalle de proyecto",
   description:
-    "Índice de credibilidad, serie NDVI, pérdida de bosque y comparación entre lo declarado y lo observado.",
+    "Ficha del proyecto, su contorno sobre imágenes satelitales, índice de credibilidad, serie NDVI y pérdida de bosque.",
 };
 
 export default function ProjectPage({ params }: PageProps<"/proyectos/[id]">) {
@@ -48,8 +52,12 @@ async function ProjectDetail({ params }: Pick<PageProps<"/proyectos/[id]">, "par
   if (!result.ok) return <ErrorState message={result.message} />;
   if (!result.data) notFound();
 
-  const { project, series, audit } = result.data;
+  const { project, series, audit, declarations, geometry } = result.data;
   const auditResult = audit?.result ?? null;
+  const profile = buildProfile(declarations);
+  const kind = projectKind(project.project_type);
+  const hasSeries = (series?.ndvi.length ?? 0) > 0 || (series?.loss.length ?? 0) > 0;
+
   const sensorKey = auditResult ? readSensorKey(auditResult) : null;
   const usedPoints = series?.ndvi.filter((point) => sensorKey === null || point.sensor === sensorKey) ?? [];
   const averageValid = usedPoints.length
@@ -57,12 +65,23 @@ async function ProjectDetail({ params }: Pick<PageProps<"/proyectos/[id]">, "par
     : null;
   const scenes = usedPoints.reduce((sum, point) => sum + point.scene_count, 0);
   const isMock = dataSource() === "mock";
+  const demo = isDemoProject(project);
 
   return (
     <>
       <header className="mt-4 grid gap-6 lg:grid-cols-[1.5fr_1fr]">
         <div>
-          {(showSampleNotice() || isDemoProject(project)) && <SampleBadge />}
+          <div className="flex flex-wrap gap-2">
+            {(showSampleNotice() || demo) && <SampleBadge />}
+            {!auditResult && (
+              <span className="rounded-full bg-secondary px-3 py-1 text-xs font-medium">Auditoría pendiente</span>
+            )}
+            {auditResult && isPartialResult(auditResult) && (
+              <span className="rounded-full bg-lime px-3 py-1 text-xs font-semibold text-lime-foreground">
+                Resultado parcial · pérdida de bosque real (Hansen)
+              </span>
+            )}
+          </div>
           <h1 className="mt-4 text-4xl font-extrabold md:text-5xl">{project.name}</h1>
           <dl className="mt-4 flex flex-wrap gap-x-6 gap-y-2 text-sm text-muted-foreground">
             <div>
@@ -107,64 +126,80 @@ async function ProjectDetail({ params }: Pick<PageProps<"/proyectos/[id]">, "par
         {auditResult ? (
           <ScoreCard result={auditResult} />
         ) : (
-          <EmptyState title="Este proyecto aún no tiene auditoría">
-            Cuando se calcule el índice, aquí aparecerán el puntaje, la confianza y el detalle por componente.
-          </EmptyState>
+          <PendingAuditCard kind={kind} hasPolygon={Boolean(geometry)} creditingStart={profile.creditingStart} />
         )}
       </header>
 
-      <section className="mt-10 grid gap-6 lg:grid-cols-2" aria-label="Series de tiempo">
-        <div className="card-soft p-6">
-          <h2 className="text-xl font-bold">Verdor (NDVI) en el tiempo</h2>
-          <p className="text-sm text-muted-foreground">La línea punteada marca el inicio de la acreditación (T0).</p>
-          <div className="mt-4">
-            <NdviChart points={series?.ndvi ?? []} t0={series?.t0 ?? null} />
+      <section className="mt-10 grid gap-6 lg:grid-cols-[1fr_1.1fr]" aria-label="Ficha y ubicación">
+        <ProjectProfileCard project={project} profile={profile} />
+        {geometry ? (
+          <div>
+            <LocationMap geometry={geometry} category={auditResult?.category ?? null} name={project.name} />
+            <p className="mt-2 text-xs text-muted-foreground">
+              Contorno del proyecto sobre imágenes satelitales (puede estar simplificado para el mapa).
+            </p>
           </div>
-        </div>
-        <div className="card-soft p-6">
-          <h2 className="text-xl font-bold">Pérdida de bosque por año</h2>
-          <p className="text-sm text-muted-foreground">Hectáreas, según Hansen Global Forest Change.</p>
-          <div className="mt-4">
-            <LossChart loss={series?.loss ?? []} />
-          </div>
-        </div>
-      </section>
-
-      <section className="mt-6 grid gap-6 lg:grid-cols-[1.2fr_1fr]" aria-label="Imágenes y comparación">
-        {isMock ? (
-          <BeforeAfter
-            before="/images/sat-before.jpg"
-            after="/images/sat-after.jpg"
-            beforeLabel="Antes (T0)"
-            afterLabel="Después (reciente)"
-            simulated
-          />
         ) : (
-          <EmptyState title="Imágenes antes y después">
-            Todavía no están disponibles desde el servidor. Aparecerán aquí cuando se generen las miniaturas del
-            proyecto.
-          </EmptyState>
+          <EmptyState title="Sin contorno">Este proyecto no tiene un polígono cargado.</EmptyState>
         )}
-        <ComparisonTable rows={series?.comparison ?? []} />
       </section>
 
-      <section className="mt-6 grid gap-6 md:grid-cols-2" aria-label="Calidad y reproducibilidad">
-        <div className="card-soft p-6">
-          <h2 className="text-xl font-bold">Calidad de los datos</h2>
-          <div className="mt-4 grid grid-cols-2 gap-4">
-            <div className="rounded-2xl bg-secondary p-4">
-              <p className="text-3xl font-extrabold">{averageValid === null ? "—" : formatPercent(averageValid)}</p>
-              <p className="text-sm text-muted-foreground">píxeles válidos (promedio)</p>
+      {hasSeries && (
+        <>
+          <section className="mt-10 grid gap-6 lg:grid-cols-2" aria-label="Series de tiempo">
+            <div className="card-soft p-6">
+              <h2 className="text-xl font-bold">Verdor (NDVI) en el tiempo</h2>
+              <p className="text-sm text-muted-foreground">La línea punteada marca el inicio de la acreditación (T0).</p>
+              <div className="mt-4">
+                <NdviChart points={series?.ndvi ?? []} t0={series?.t0 ?? null} />
+              </div>
             </div>
-            <div className="rounded-2xl bg-secondary p-4">
-              <p className="text-3xl font-extrabold">{scenes.toLocaleString("es-CO")}</p>
-              <p className="text-sm text-muted-foreground">escenas analizadas</p>
+            <div className="card-soft p-6">
+              <h2 className="text-xl font-bold">Pérdida de bosque por año</h2>
+              <p className="text-sm text-muted-foreground">Hectáreas, según Hansen Global Forest Change.</p>
+              <div className="mt-4">
+                <LossChart loss={series?.loss ?? []} />
+              </div>
+            </div>
+          </section>
+
+          <section className="mt-6 grid gap-6 lg:grid-cols-[1.2fr_1fr]" aria-label="Imágenes y comparación">
+            {isMock ? (
+              <BeforeAfter
+                before="/images/sat-before.jpg"
+                after="/images/sat-after.jpg"
+                beforeLabel="Antes (T0)"
+                afterLabel="Después (reciente)"
+                simulated
+              />
+            ) : (
+              <EmptyState title="Imágenes antes y después">
+                Todavía no están disponibles desde el servidor. Aparecerán aquí cuando se generen las miniaturas
+                del proyecto.
+              </EmptyState>
+            )}
+            <ComparisonTable rows={series?.comparison ?? []} />
+          </section>
+        </>
+      )}
+
+      {audit && (
+        <section className="mt-6 grid gap-6 md:grid-cols-2" aria-label="Calidad y reproducibilidad">
+          <div className="card-soft p-6">
+            <h2 className="text-xl font-bold">Calidad de los datos</h2>
+            <div className="mt-4 grid grid-cols-2 gap-4">
+              <div className="rounded-2xl bg-secondary p-4">
+                <p className="text-3xl font-extrabold">{averageValid === null ? "—" : formatPercent(averageValid)}</p>
+                <p className="text-sm text-muted-foreground">píxeles válidos (promedio)</p>
+              </div>
+              <div className="rounded-2xl bg-secondary p-4">
+                <p className="text-3xl font-extrabold">{scenes.toLocaleString("es-CO")}</p>
+                <p className="text-sm text-muted-foreground">escenas analizadas</p>
+              </div>
             </div>
           </div>
-        </div>
-        <div className="card-soft p-6">
-          <h2 className="text-xl font-bold">Reproducibilidad</h2>
-          {audit ? (
+          <div className="card-soft p-6">
+            <h2 className="text-xl font-bold">Reproducibilidad</h2>
             <dl className="mt-4 grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 text-sm">
               <dt className="text-muted-foreground">Corrida</dt>
               <dd className="font-mono">#{audit.id}</dd>
@@ -181,11 +216,9 @@ async function ProjectDetail({ params }: Pick<PageProps<"/proyectos/[id]">, "par
               <dt className="text-muted-foreground">Fecha del cálculo</dt>
               <dd className="font-mono">{formatDateTime(audit.created_at)}</dd>
             </dl>
-          ) : (
-            <p className="mt-4 text-sm text-muted-foreground">Se mostrará cuando exista una auditoría.</p>
-          )}
-        </div>
-      </section>
+          </div>
+        </section>
+      )}
     </>
   );
 }

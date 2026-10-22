@@ -120,6 +120,16 @@ export function readComponents(result: AuditResult): ComponentView[] {
   });
 }
 
+/** Permanencia forestal medida (0-100), o `null` si no se pudo calcular. */
+export function readPermanence(result: AuditResult): number | null {
+  return readComponents(result).find((component) => component.key === "permanencia")?.score ?? null;
+}
+
+/** Sin puntaje global pero con al menos un componente medido (p. ej. solo la permanencia de Hansen). */
+export function isPartialResult(result: AuditResult): boolean {
+  return result.score === null && readComponents(result).some((component) => component.score !== null);
+}
+
 /** Rango del puntaje al mover cada peso ±10 pp (campo `_sensibilidad`). */
 export function readSensitivity(result: AuditResult): { min: number; max: number } | null {
   const raw = asRecord(result.components._sensibilidad);

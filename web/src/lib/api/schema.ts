@@ -41,6 +41,13 @@ export const ndviPointSchema = z.object({
 });
 export type NdviPoint = z.infer<typeof ndviPointSchema>;
 
+export const declarationSchema = z.object({
+  field: z.string(),
+  value: z.string(),
+  source_document: z.string().nullable(),
+});
+export type Declaration = z.infer<typeof declarationSchema>;
+
 export const comparisonRowSchema = z.object({
   year: z.number().int(),
   after_t0: z.boolean(),
