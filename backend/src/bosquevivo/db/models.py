@@ -266,3 +266,48 @@ class KbChunk(Base):
     title: Mapped[str] = mapped_column(String(300))
     content: Mapped[str] = mapped_column(Text)
     embedding: Mapped[list[float] | None] = mapped_column(JSON)
+
+
+class AuditorUser(Base):
+    __tablename__ = "auditor_user"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    email: Mapped[str] = mapped_column(String(254), unique=True)
+    name: Mapped[str] = mapped_column(String(120))
+    password_hash: Mapped[str] = mapped_column(String(200))
+    active: Mapped[bool] = mapped_column(default=True)
+    failed_logins: Mapped[int] = mapped_column(Integer, default=0)
+    locked_until: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    password_changed_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+
+    reset_tokens: Mapped[list["PasswordResetToken"]] = relationship(
+        back_populates="user", cascade="all, delete-orphan"
+    )
+
+
+class PasswordResetToken(Base):
+    __tablename__ = "password_reset_token"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    user_id: Mapped[int] = mapped_column(
+        ForeignKey("auditor_user.id", ondelete="CASCADE"), index=True
+    )
+    token_hash: Mapped[str] = mapped_column(String(64), unique=True)
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    used_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+
+    user: Mapped[AuditorUser] = relationship(back_populates="reset_tokens")
+
+
+class Incident(Base):
+    __tablename__ = "incident"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    component: Mapped[str] = mapped_column(String(60), index=True)
+    origin: Mapped[str] = mapped_column(String(10))
+    severity: Mapped[str] = mapped_column(String(10), default="error")
+    cause: Mapped[str] = mapped_column(Text)
+    started_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    ended_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))

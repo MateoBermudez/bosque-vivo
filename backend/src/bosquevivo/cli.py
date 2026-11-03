@@ -1,13 +1,18 @@
 import argparse
+import getpass
+import os
 import sys
 import time
 from datetime import date
 from pathlib import Path
 
+from bosquevivo.accounts import AccountService, build_mailer
 from bosquevivo.ai.agent import Agent, default_registry
 from bosquevivo.ai.eval import EvalRunner, load_cases
 from bosquevivo.assistant.runtime import build_llm
 from bosquevivo.core.config import get_settings
+from bosquevivo.core.errors import ValidationFailedError
+from bosquevivo.core.incidents import duration_minutes, is_critical, list_incidents, summarize
 from bosquevivo.core.logging import configure_logging
 from bosquevivo.db.session import get_session, init_db
 from bosquevivo.demo import seed_demo
@@ -229,6 +234,103 @@ def cmd_eval(args: argparse.Namespace) -> int:
     return 0
 
 
+def _read_password() -> str:
+    from_env = os.environ.get("BOSQUEVIVO_PASSWORD")
+    if from_env:
+        return from_env
+    first = getpass.getpass("Contraseña: ")
+    if first != getpass.getpass("Repite la contraseña: "):
+        raise ValidationFailedError("las contraseñas no coinciden")
+    return first
+
+
+def _accounts(session) -> AccountService:
+    settings = get_settings()
+    return AccountService(session, build_mailer(settings), settings)
+
+
+def cmd_user_create(args: argparse.Namespace) -> int:
+    init_db()
+    try:
+        password = _read_password()
+        with get_session() as session:
+            user = _accounts(session).create_user(args.email, args.name or "", password)
+            print(f"usuario creado: {user.email} (id {user.id})")
+    except ValidationFailedError as exc:
+        print(f"No se creó el usuario: {exc}")
+        return 1
+    return 0
+
+
+def cmd_user_list(_: argparse.Namespace) -> int:
+    init_db()
+    with get_session() as session:
+        users = _accounts(session).list_users()
+        for user in users:
+            state = "activo" if user.active else "inactivo"
+            print(f"{user.id}\t{user.email}\t{user.name}\t{state}")
+        print(f"{len(users)} usuarios")
+    return 0
+
+
+def cmd_user_state(args: argparse.Namespace) -> int:
+    init_db()
+    try:
+        with get_session() as session:
+            user = _accounts(session).set_active(args.email, args.command == "user-enable")
+            print(f"{user.email}: {'activo' if user.active else 'inactivo'}")
+    except ValidationFailedError as exc:
+        print(str(exc))
+        return 1
+    return 0
+
+
+def cmd_user_reset(args: argparse.Namespace) -> int:
+    init_db()
+    with get_session() as session:
+        print(_accounts(session).request_reset(args.email))
+    return 0
+
+
+def cmd_incidents(args: argparse.Namespace) -> int:
+    init_db()
+    with get_session() as session:
+        incidents = list_incidents(session, days=args.days)
+        for item in incidents:
+            minutes = duration_minutes(item)
+            span = "abierto" if minutes is None else f"{minutes} min"
+            flag = " CRITICO" if is_critical(item) else ""
+            print(
+                f"{item.started_at:%Y-%m-%d %H:%M} [{item.origin}] {item.component} "
+                f"({span}){flag}: {item.cause[:120]}"
+            )
+        totals = summarize(incidents)
+        print(" ".join(f"{key}={value}" for key, value in totals.items()))
+    return 0
+
+
+def _add_account_commands(sub) -> None:
+    user_create = sub.add_parser("user-create", help="Crea una cuenta de auditor del sitio web")
+    user_create.add_argument("email")
+    user_create.add_argument("--name")
+    user_create.set_defaults(func=cmd_user_create)
+    sub.add_parser("user-list", help="Lista las cuentas de auditor").set_defaults(
+        func=cmd_user_list
+    )
+    for name in ("user-enable", "user-disable"):
+        toggle = sub.add_parser(name, help="Activa o desactiva una cuenta de auditor")
+        toggle.add_argument("email")
+        toggle.set_defaults(func=cmd_user_state)
+    user_reset = sub.add_parser(
+        "user-reset", help="Envía el correo de restablecimiento de contraseña"
+    )
+    user_reset.add_argument("email")
+    user_reset.set_defaults(func=cmd_user_reset)
+    incidents = sub.add_parser("incidents", help="Muestra los incidentes registrados")
+    incidents.add_argument("--days", type=int, default=30)
+    incidents.set_defaults(func=cmd_incidents)
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="bosquevivo")
     sub = parser.add_subparsers(dest="command", required=True)
@@ -280,6 +382,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     audit.add_argument("--index-version", help="v0 o v1; por defecto INDEX_VERSION (v1)")
     audit.set_defaults(func=cmd_audit)
+    _add_account_commands(sub)
     evaluate = sub.add_parser("eval")
     evaluate.add_argument("--output", default="data/eval/report.json")
     evaluate.set_defaults(func=cmd_eval)
