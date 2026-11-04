@@ -47,6 +47,7 @@ from bosquevivo.setup import (
     prepare_web_env,
     read_env,
     repo_root,
+    vercel_env_blocks,
 )
 
 
@@ -368,6 +369,28 @@ def cmd_migrate_db(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_vercel_env(args: argparse.Namespace) -> int:
+    root = Path(args.root).resolve() if args.root else repo_root()
+    backend = read_env(root / "backend" / ".env")
+    if not backend.get("DATABASE_URL", "").startswith(("postgres://", "postgresql")):
+        print("DATABASE_URL de backend/.env debe ser la cadena de Supabase (Transaction pooler)")
+        return 1
+    api_block, web_block = vercel_env_blocks(
+        backend, read_env(root / "web" / ".env.local"), args.api_url, args.web_url
+    )
+    out = root / "backend" / "data"
+    out.mkdir(parents=True, exist_ok=True)
+    (out / "vercel-api.env").write_text(api_block, encoding="utf-8")
+    (out / "vercel-web.env").write_text(web_block, encoding="utf-8")
+    print(
+        "Pegue cada archivo en Vercel > Settings > Environment Variables (acepta un .env completo):"
+    )
+    print(f"  proyecto de la API:  {out / 'vercel-api.env'}")
+    print(f"  proyecto del sitio:  {out / 'vercel-web.env'}")
+    print("Contienen secretos: no los suba a git (data/ está ignorada).")
+    return 0
+
+
 def cmd_mail_test(args: argparse.Namespace) -> int:
     init_db()
     settings = get_settings()
@@ -461,6 +484,13 @@ def _add_account_commands(sub) -> None:
     migrate.add_argument("--to", dest="target", help="por defecto, DATABASE_URL")
     migrate.add_argument("--replace", action="store_true", help="borra lo que haya en el destino")
     migrate.set_defaults(func=cmd_migrate_db)
+    vercel_env = sub.add_parser(
+        "vercel-env", help="Prepara las variables para pegar en los dos proyectos de Vercel"
+    )
+    vercel_env.add_argument("--api-url", default="https://bosque-vivo-api.vercel.app")
+    vercel_env.add_argument("--web-url", default="https://bosque-vivo-web.vercel.app")
+    vercel_env.add_argument("--root", help="raíz del repositorio (por defecto se detecta)")
+    vercel_env.set_defaults(func=cmd_vercel_env)
     mail_test = sub.add_parser("mail-test", help="Envía un correo de prueba con la configuración")
     mail_test.add_argument("email")
     mail_test.set_defaults(func=cmd_mail_test)

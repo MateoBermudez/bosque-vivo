@@ -138,3 +138,56 @@ def missing_keys(values: dict[str, str]) -> list[tuple[Requirement, list[str]]]:
         if missing:
             result.append((requirement, missing))
     return result
+
+
+API_KEYS = (
+    "DATABASE_URL",
+    "DATABASE_PASSWORD",
+    "ADMIN_TOKEN",
+    "PHONE_HMAC_KEY",
+    "INDEX_VERSION",
+    "GEMINI_API_KEY",
+    "GEMINI_MODEL",
+    "GEMINI_MODEL_LIGHT",
+    "WHATSAPP_TOKEN",
+    "WHATSAPP_PHONE_NUMBER_ID",
+    "WHATSAPP_VERIFY_TOKEN",
+    "WHATSAPP_APP_SECRET",
+    "WHATSAPP_ALLOWED_PHONES",
+    "WHATSAPP_API_VERSION",
+    "MAIL_BACKEND",
+    "MAIL_FROM",
+    "SMTP_HOST",
+    "SMTP_PORT",
+    "SMTP_USER",
+    "SMTP_PASSWORD",
+    "SMTP_STARTTLS",
+    "SMTP_SSL",
+    "AUTH_TWO_FACTOR",
+    "AUTH_CODE_TTL_MINUTES",
+    "AUTH_LOGIN_ALERTS",
+    "PASSWORD_RESET_TTL_MINUTES",
+    "INVITATION_TTL_HOURS",
+    "AGENT_DAILY_LIMIT_PER_USER",
+)
+WEB_KEYS = ("PRIVACY_CONTACT_EMAIL", "WHATSAPP_PUBLIC_NUMBER")
+
+
+def vercel_env_blocks(
+    backend: dict[str, str], web: dict[str, str], api_url: str, web_url: str
+) -> tuple[str, str]:
+    api = {key: backend[key] for key in API_KEYS if backend.get(key)}
+    api["WEB_BASE_URL"] = web_url.rstrip("/")
+    site = {
+        "BV_DATA_SOURCE": "live",
+        "BACKEND_URL": api_url.rstrip("/"),
+        "ADMIN_TOKEN": backend.get("ADMIN_TOKEN", ""),
+        "SESSION_SECRET": web.get("SESSION_SECRET") or secrets.token_hex(32),
+        "SITE_URL": web_url.rstrip("/"),
+    }
+    site.update({key: web[key] for key in WEB_KEYS if web.get(key)})
+
+    def render(values: dict[str, str]) -> str:
+        return "".join(f"{key}={value}\n" for key, value in values.items())
+
+    return render(api), render(site)

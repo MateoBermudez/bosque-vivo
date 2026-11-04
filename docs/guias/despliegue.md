@@ -45,7 +45,24 @@ Copia las 21 tablas en orden, valida que ningún texto supere el largo de su col
 
 ## 3. Vercel
 
-Cree un token en Vercel (**Account Settings → Tokens**) y ejecute:
+### Opción A (recomendada, sin token): Vercel conectado a GitHub
+
+Así nadie maneja tokens y cada cambio que llega a `main` se despliega solo.
+
+1. Prepare las variables (en el computador con `backend/.env` ya apuntando a Supabase):
+
+   ```
+   cd backend
+   uv run bosquevivo vercel-env
+   ```
+
+   Crea `backend/data/vercel-api.env` y `backend/data/vercel-web.env` (contienen secretos; `data/` no se sube a git).
+2. En [vercel.com/new](https://vercel.com/new) inicie sesión con GitHub e importe `MateoBermudez/bosque-vivo`:
+   - **Proyecto de la API:** nombre `bosque-vivo-api`, *Root Directory* `backend` (Vercel detecta FastAPI). En *Environment Variables* pegue el contenido de `vercel-api.env`. Deploy.
+   - **Proyecto del sitio:** importe el mismo repositorio otra vez, nombre `bosque-vivo-web`, *Root Directory* `web` (Next.js). Pegue `vercel-web.env`. Deploy.
+3. Si Vercel asignó otras direcciones que `bosque-vivo-api.vercel.app` y `bosque-vivo-web.vercel.app`, vuelva a ejecutar `vercel-env --api-url <url-api> --web-url <url-sitio>`, actualice `BACKEND_URL` (sitio) y `WEB_BASE_URL` (API) y use **Redeploy**.
+
+### Opción B: script con token
 
 ```
 VERCEL_TOKEN=<token> scripts/deploy-vercel.sh
@@ -58,8 +75,6 @@ El script (requiere Node para `npx vercel`):
 3. pone la URL del sitio en `WEB_BASE_URL` de la API (enlaces de los correos) y vuelve a desplegarla.
 
 `VERCEL_SCOPE` elige un equipo de Vercel; `VERCEL_API_PROJECT` y `VERCEL_WEB_PROJECT` cambian los nombres.
-
-Alternativa sin script: en Vercel, **Add New → Project**, importe el repositorio dos veces (Root Directory `backend` y `web`) y copie las mismas variables en **Settings → Environment Variables**.
 
 ## 4. Después de desplegar
 

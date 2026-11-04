@@ -9,6 +9,7 @@ from bosquevivo.setup import (
     prepare_backend_env,
     prepare_web_env,
     read_env,
+    vercel_env_blocks,
     write_env,
 )
 
@@ -92,3 +93,31 @@ def test_database_requirement_and_url_option(tmp_path):
     root = make_root(tmp_path)
     backend = prepare_backend_env(root, SetupReport(), url)
     assert read_env(backend)["DATABASE_URL"] == url
+
+
+def test_vercel_env_blocks():
+    backend = {
+        "DATABASE_URL": "postgresql://postgres.ref:[YOUR-PASSWORD]@h:6543/postgres",
+        "DATABASE_PASSWORD": "x",
+        "ADMIN_TOKEN": "admin",
+        "GEMINI_API_KEY": "",
+        "SATELLITE_PROVIDER": "open",
+    }
+    api, web = vercel_env_blocks(
+        backend, {"SESSION_SECRET": "s"}, "https://api.test/", "https://web.test"
+    )
+    assert "DATABASE_PASSWORD=x\n" in api and "WEB_BASE_URL=https://web.test\n" in api
+    assert "GEMINI_API_KEY" not in api and "SATELLITE_PROVIDER" not in api
+    assert "BACKEND_URL=https://api.test\n" in web and "ADMIN_TOKEN=admin\n" in web
+    assert "SESSION_SECRET=s\n" in web and "BV_DATA_SOURCE=live\n" in web
+
+
+def test_vercel_env_command_requires_postgres(tmp_path, capsys):
+    root = make_root(tmp_path)
+    prepare_backend_env(root, SetupReport())
+    assert main(["vercel-env", "--root", str(root)]) == 1
+    url = "postgresql://postgres.ref:[YOUR-PASSWORD]@h:6543/postgres"
+    prepare_backend_env(root, SetupReport(), url)
+    assert main(["vercel-env", "--root", str(root)]) == 0
+    assert (root / "backend" / "data" / "vercel-api.env").exists()
+    assert "Environment Variables" in capsys.readouterr().out
