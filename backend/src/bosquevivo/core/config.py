@@ -27,6 +27,8 @@ class Settings(BaseSettings):
     agent_max_steps: int = 5
     agent_daily_limit_per_user: int = 30
     whatsapp_allowed_phones: str = ""
+    whatsapp_api_url: str = "https://graph.facebook.com"
+    whatsapp_api_version: str = "v25.0"
     cloud_max_percent: float = Field(default=20.0, ge=0.0, le=100.0)
     web_base_url: str = "http://localhost:3000"
     password_reset_ttl_minutes: int = Field(default=30, ge=5, le=1440)

@@ -45,5 +45,10 @@ def build_assistant(
         else None
     )
     agent = Agent(session, llm, default_registry(), settings, satellite)
-    resolved = client or CloudApiClient(settings.whatsapp_token, settings.whatsapp_phone_number_id)
+    resolved = client or CloudApiClient(
+        settings.whatsapp_token,
+        settings.whatsapp_phone_number_id,
+        base_url=settings.whatsapp_api_url,
+        version=settings.whatsapp_api_version,
+    )
     return AssistantService(session, agent, resolved, llm, settings)
