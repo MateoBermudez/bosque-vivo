@@ -322,13 +322,7 @@ def _print_setup(report: SetupReport, values: dict[str, str], projects: int) -> 
         print(f"  [{label}] {requirement.feature}: {', '.join(keys)} ({requirement.guide})")
 
 
-def cmd_setup(args: argparse.Namespace) -> int:
-    root = Path(args.root).resolve() if args.root else repo_root()
-    report = SetupReport()
-    backend_env = prepare_backend_env(root, report, args.database_url)
-    prepare_web_env(root, backend_env, args.api_port, report)
-    os.chdir(root / "backend")
-    get_settings.cache_clear()
+def _prepare_database(args: argparse.Namespace, report: SetupReport) -> int:
     init_db()
     settings = get_settings()
     with get_session() as session:
@@ -340,6 +334,21 @@ def cmd_setup(args: argparse.Namespace) -> int:
         if args.admin and not accounts.find(args.admin):
             _, link = accounts.invite_user(args.admin, args.name or "")
             report.notes.append(f"cuenta de auditor {args.admin}: elija la contraseña en {link}")
+    return projects
+
+
+def cmd_setup(args: argparse.Namespace) -> int:
+    root = Path(args.root).resolve() if args.root else repo_root()
+    report = SetupReport()
+    backend_env = prepare_backend_env(root, report, args.database_url)
+    prepare_web_env(root, backend_env, args.api_port, report)
+    os.chdir(root / "backend")
+    get_settings.cache_clear()
+    projects = 0
+    try:
+        projects = _prepare_database(args, report)
+    except Exception as exc:
+        report.notes.append(f"no se pudo preparar la base de datos: {str(exc).splitlines()[0]}")
     _print_setup(report, read_env(backend_env), projects)
     return 0
 
