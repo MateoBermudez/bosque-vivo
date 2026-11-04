@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { cookies } from "next/headers";
+import { connection } from "next/server";
 import { Suspense } from "react";
 
 import { ErrorState } from "@/components/common/states";
@@ -36,6 +37,7 @@ export default function AccessPage({ searchParams }: PageProps<"/acceso">) {
 }
 
 async function AccessContent({ searchParams }: Pick<PageProps<"/acceso">, "searchParams">) {
+  await connection();
   const mode = auditorAccessMode();
   const { next } = await searchParams;
   const target = safeNextPath(typeof next === "string" ? next : undefined);

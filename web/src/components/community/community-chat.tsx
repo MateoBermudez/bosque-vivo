@@ -80,7 +80,7 @@ export function CommunityChat() {
           <p
             key={bubble.id}
             className={cn(
-              "max-w-[85%] whitespace-pre-line rounded-2xl px-4 py-2 text-sm",
+              "w-fit max-w-[85%] whitespace-pre-line rounded-2xl px-4 py-2 text-sm",
               bubble.from === "persona" && "ml-auto bg-forest text-forest-foreground",
               bubble.from === "asistente" && "bg-secondary text-secondary-foreground",
               bubble.from === "error" && "bg-destructive/10 text-destructive",
