@@ -75,7 +75,7 @@ Hecho en la sesión del 03/11/2026: RF09 del ERS (cuentas de auditor y recuperac
 
 Lo que queda depende del dueño o de personas externas:
 
-1. **Claves**: `GEMINI_API_KEY`/`GEMINI_MODEL` ([guía](guias/gemini.md)) y WhatsApp Cloud API ([guía](guias/whatsapp.md)). Luego ejecutar los casos marcados «Pendiente» del plan de pruebas (CP-26, CP-50).
+1. **Claves**: `GEMINI_API_KEY`/`GEMINI_MODEL` ([guía](guias/gemini.md)) y WhatsApp Cloud API ([guía](guias/whatsapp.md)). Luego ejecutar los casos bloqueados del plan de pruebas (CP-49 WhatsApp, CP-50 Gemini).
 2. **Revisión del docente**: aprobar RA01–RA09 como ampliación del ERS y decidir entre índice v0 y v1.
 3. **Earth Engine real** (`SATELLITE_PROVIDER=gee`): medir tiempo por polígono (CP-39 con `gee`).
 4. **Piloto**: disponibilidad y fiabilidad en el horario acordado (CP-46) y prueba de comprensión con 5 personas no técnicas (CP-29).

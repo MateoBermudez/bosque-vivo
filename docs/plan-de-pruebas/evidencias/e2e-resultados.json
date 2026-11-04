@@ -1,0 +1,122 @@
+[
+  {
+    "id": "CP-30",
+    "description": "el área de auditores redirige a /acceso",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "id": "CP-31",
+    "description": "credenciales inválidas muestran error",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "id": "CP-32",
+    "description": "mismo mensaje genérico para correo registrado y no registrado",
+    "ok": true,
+    "detail": "Si la dirección está registrada, recibirás un correo con las instrucciones para restablecer tu contraseña."
+  },
+  {
+    "id": "CP-33",
+    "description": "el correo contiene un enlace de restablecimiento",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "id": "CP-34",
+    "description": "un token inválido se rechaza",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "id": "CP-35",
+    "description": "contraseñas distintas se rechazan",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "id": "CP-35",
+    "description": "contraseña débil se rechaza",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "id": "CP-36",
+    "description": "la contraseña se actualiza",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "id": "CP-34",
+    "description": "el enlace ya usado se rechaza",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "id": "CP-37",
+    "description": "inicio de sesión con la contraseña nueva",
+    "ok": true,
+    "detail": "http://localhost:3100/trazas"
+  },
+  {
+    "id": "CP-37",
+    "description": "la sesión muestra el correo del auditor",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "id": "CP-21",
+    "description": "primer contacto: saludo y aviso de privacidad",
+    "ok": true,
+    "detail": "[\"Hola, soy el asistente de Bosque Vivo. Soy una inteligencia artificial: puedo contarle qué se ve desde el satélite en proyectos de bosque. Puedo equivocarme.\",\"Su mensaje lo procesa un servicio de un tercero (Google). No envíe cédula, dirección ni datos privados. Para continuar escriba ACEPTO. Puede borrar sus datos cuando quiera escribiendo BORRAR MIS DATOS.\"]"
+  },
+  {
+    "id": "CP-22",
+    "description": "sin autorización no responde consultas",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "id": "CP-23",
+    "description": "AYUDA lista las consultas disponibles",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "id": "CP-24",
+    "description": "PROYECTO <n> registra el polígono de interés",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "id": "CP-27",
+    "description": "ESTADO responde en lenguaje sencillo con el % conservado",
+    "ok": true,
+    "detail": "En Reserva El Roble se conserva el 100 % del bosque que había desde 2018. En general, lo que se ve desde el satélite coincide bien con lo que el proyecto declara. Escriba ALERTAS para ver cambios recientes."
+  },
+  {
+    "id": "CP-28",
+    "description": "sin términos técnicos ni acusaciones",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "id": "CP-25",
+    "description": "ALERTAS responde para el proyecto",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "id": "CP-26",
+    "description": "consulta no reconocida orienta con la ayuda",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "id": "CP-42",
+    "description": "BORRAR MIS DATOS elimina la conversación",
+    "ok": true,
+    "detail": ""
+  }
+]

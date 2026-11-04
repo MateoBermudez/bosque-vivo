@@ -1,0 +1,25 @@
+
+ RUN  v5.0.5 <repo>/web
+
+ ✓ src/lib/api/accounts.test.ts (4 tests) 36ms
+ ✓ src/lib/api/backend.test.ts (9 tests) 51ms
+ ✓ src/lib/profile.test.ts (11 tests) 26ms
+ ✓ src/lib/format.test.ts (6 tests) 17ms
+ ✓ src/lib/auth/session.test.ts (13 tests) 23ms
+ ✓ src/lib/auth/access.test.ts (16 tests) 24ms
+ ✓ src/lib/rich-text.test.ts (6 tests) 11ms
+ ✓ src/lib/domain.test.ts (12 tests) 8ms
+ ✓ src/lib/auth/throttle.test.ts (7 tests) 6ms
+ ✓ src/lib/api/mock.test.ts (9 tests) 2842ms
+   ✓ chat y trazas de ejemplo (3)
+     ✓ las respuestas del chat cumplen el esquema 2807ms
+
+ Test Files  10 passed (10)
+      Tests  93 passed (93)
+   Start at  00:16:23
+   Duration  3.16s (tests 84%, import 12%, transform 2%, worker 2%)
+
+    Isolate  10 workers spawned · ~137ms startup each (spawn + environment, per file)
+             at least ~319ms faster with isolate: false — reuses workers across files instead of one per file
+
+JUNIT report written to <repo>/docs/plan-de-pruebas/evidencias/web-junit.xml

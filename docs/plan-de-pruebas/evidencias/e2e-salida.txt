@@ -1,0 +1,20 @@
+OK    CP-30 el área de auditores redirige a /acceso
+OK    CP-31 credenciales inválidas muestran error
+OK    CP-32 mismo mensaje genérico para correo registrado y no registrado -> Si la dirección está registrada, recibirás un correo con las instrucciones para restablecer tu contraseña.
+OK    CP-33 el correo contiene un enlace de restablecimiento
+OK    CP-34 un token inválido se rechaza
+OK    CP-35 contraseñas distintas se rechazan
+OK    CP-35 contraseña débil se rechaza
+OK    CP-36 la contraseña se actualiza
+OK    CP-34 el enlace ya usado se rechaza
+OK    CP-37 inicio de sesión con la contraseña nueva -> http://localhost:3100/trazas
+OK    CP-37 la sesión muestra el correo del auditor
+OK    CP-21 primer contacto: saludo y aviso de privacidad -> ["Hola, soy el asistente de Bosque Vivo. Soy una inteligencia artificial: puedo contarle qué se ve desde el satélite en proyectos de bosque. Puedo equivocarme.","Su mensaje lo procesa un servicio de un tercero (Google). No envíe cédula, dirección ni datos privados. Para continuar escriba ACEPTO. Puede borrar sus datos cuando quiera escribiendo BORRAR MIS DATOS."]
+OK    CP-22 sin autorización no responde consultas
+OK    CP-23 AYUDA lista las consultas disponibles
+OK    CP-24 PROYECTO <n> registra el polígono de interés
+OK    CP-27 ESTADO responde en lenguaje sencillo con el % conservado -> En Reserva El Roble se conserva el 100 % del bosque que había desde 2018. En general, lo que se ve desde el satélite coincide bien con lo que el proyecto declara. Escriba ALERTAS para ver cambios recientes.
+OK    CP-28 sin términos técnicos ni acusaciones
+OK    CP-25 ALERTAS responde para el proyecto
+OK    CP-26 consulta no reconocida orienta con la ayuda
+OK    CP-42 BORRAR MIS DATOS elimina la conversación
