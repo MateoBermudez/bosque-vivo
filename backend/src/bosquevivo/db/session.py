@@ -3,7 +3,7 @@ from contextlib import contextmanager
 from functools import lru_cache
 from pathlib import Path
 
-from sqlalchemy import Engine, create_engine, event, inspect, text
+from sqlalchemy import Connection, Engine, create_engine, event, inspect, text
 from sqlalchemy.engine import make_url
 from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy.pool import NullPool
@@ -72,27 +72,37 @@ ADDED_COLUMNS: dict[str, dict[str, str]] = {
 }
 
 
-def upgrade_schema(engine: Engine) -> list[str]:
-    inspector = inspect(engine)
+SCHEMA_LOCK = 814_251_026
+
+
+def _upgrade(connection: Connection) -> list[str]:
+    inspector = inspect(connection)
     tables = set(inspector.get_table_names())
     applied: list[str] = []
-    with engine.begin() as connection:
-        for table, columns in ADDED_COLUMNS.items():
-            if table not in tables:
-                continue
-            present = {column["name"] for column in inspector.get_columns(table)}
-            for name, ddl in columns.items():
-                if name not in present:
-                    connection.execute(text(f"ALTER TABLE {table} ADD COLUMN {name} {ddl}"))
-                    applied.append(f"{table}.{name}")
+    for table, columns in ADDED_COLUMNS.items():
+        if table not in tables:
+            continue
+        present = {column["name"] for column in inspector.get_columns(table)}
+        for name, ddl in columns.items():
+            if name not in present:
+                connection.execute(text(f"ALTER TABLE {table} ADD COLUMN {name} {ddl}"))
+                applied.append(f"{table}.{name}")
     return applied
+
+
+def upgrade_schema(engine: Engine) -> list[str]:
+    with engine.begin() as connection:
+        return _upgrade(connection)
 
 
 def init_db(engine: Engine | None = None) -> None:
     assert models.Project
     target = engine or get_engine()
-    Base.metadata.create_all(target)
-    upgrade_schema(target)
+    with target.begin() as connection:
+        if is_postgres(target.url):
+            connection.execute(text("SELECT pg_advisory_xact_lock(:key)"), {"key": SCHEMA_LOCK})
+        Base.metadata.create_all(connection)
+        _upgrade(connection)
 
 
 @contextmanager
