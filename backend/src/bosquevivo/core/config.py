@@ -1,7 +1,8 @@
+import os
 from functools import lru_cache
 from pathlib import Path
 
-from pydantic import Field
+from pydantic import AliasChoices, Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -9,8 +10,24 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
 
     app_env: str = "dev"
-    database_url: str = "sqlite:///data/bosquevivo.db"
-    data_dir: Path = Path("data")
+    database_url: str = Field(
+        default="sqlite:///data/bosquevivo.db",
+        validation_alias=AliasChoices("DATABASE_URL", "POSTGRES_URL"),
+    )
+    database_password: str = Field(
+        default="",
+        validation_alias=AliasChoices(
+            "DATABASE_PASSWORD", "SUPABASE_DB_PASSWORD", "POSTGRES_PASSWORD"
+        ),
+    )
+    db_pool: str = "auto"
+    jobs_mode: str = "auto"
+    data_dir: Path = Field(
+        default_factory=lambda: Path(
+            os.environ.get("DATA_DIR")
+            or ("/tmp/bosquevivo" if os.environ.get("VERCEL") else "data")
+        )
+    )
     gemini_api_key: str = ""
     gemini_model: str = ""
     gemini_model_light: str = ""
@@ -44,6 +61,15 @@ class Settings(BaseSettings):
     auth_code_ttl_minutes: int = Field(default=10, ge=2, le=60)
     auth_login_alerts: bool = True
     invitation_ttl_hours: int = Field(default=72, ge=1, le=720)
+
+    @property
+    def serverless(self) -> bool:
+        return bool(os.environ.get("VERCEL"))
+
+    @property
+    def inline_jobs(self) -> bool:
+        mode = self.jobs_mode.strip().lower()
+        return mode == "inline" or (mode == "auto" and self.serverless)
 
     @property
     def images_dir(self) -> Path:

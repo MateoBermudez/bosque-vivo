@@ -6,21 +6,31 @@ from pathlib import Path
 from sqlalchemy import Engine, create_engine, event, inspect, text
 from sqlalchemy.engine import make_url
 from sqlalchemy.orm import Session, sessionmaker
+from sqlalchemy.pool import NullPool
 
 from bosquevivo.core.config import get_settings
 from bosquevivo.db import models
 from bosquevivo.db.base import Base
+from bosquevivo.db.urls import is_postgres, resolve_database_url
 
 SQLITE_BUSY_SECONDS = 60
 
 
-def build_engine(url: str) -> Engine:
+def build_engine(url: str, *, serverless: bool = False, pool: str = "auto") -> Engine:
     parsed = make_url(url)
+    if is_postgres(parsed):
+        options: dict = {"pool_pre_ping": True}
+        if pool == "null" or (pool == "auto" and serverless):
+            options["poolclass"] = NullPool
+        return create_engine(
+            url,
+            future=True,
+            connect_args={"prepare_threshold": None, "connect_timeout": 15},
+            **options,
+        )
     is_sqlite = parsed.drivername.startswith("sqlite")
     if is_sqlite and parsed.database not in (None, "", ":memory:"):
         Path(parsed.database).parent.mkdir(parents=True, exist_ok=True)
-    # `timeout` es la espera máxima (s) por un bloqueo de escritura: con varios procesos calculando
-    # a la vez, los 5 s por defecto no alcanzan y fallan con «database is locked».
     engine = create_engine(
         url, future=True, connect_args={"check_same_thread": False, "timeout": SQLITE_BUSY_SECONDS}
     )
@@ -36,9 +46,15 @@ def build_engine(url: str) -> Engine:
     return engine
 
 
+def settings_url() -> str:
+    settings = get_settings()
+    return resolve_database_url(settings.database_url, settings.database_password)
+
+
 @lru_cache
 def get_engine() -> Engine:
-    return build_engine(get_settings().database_url)
+    settings = get_settings()
+    return build_engine(settings_url(), serverless=settings.serverless, pool=settings.db_pool)
 
 
 def make_session_factory(engine: Engine) -> sessionmaker[Session]:

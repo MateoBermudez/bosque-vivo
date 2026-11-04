@@ -30,6 +30,7 @@ dependencies = [
     "rasterio>=1.5.2",
     "pystac-client>=0.9.1",
     "planetary-computer>=1.0.0",
+    "psycopg[binary]>=3.2",
 ]
 
 [project.scripts]
