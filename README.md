@@ -71,7 +71,7 @@ Para calcular **todos** los proyectos de una vez, con datos abiertos y sin cuent
 SATELLITE_PROVIDER=hansen uv run bosquevivo audit-batch --country Colombia
 ```
 
-`audit` con `SATELLITE_PROVIDER=gee` (NDVI completo y miniaturas) necesita `GEE_PROJECT` y haber ejecutado `earthengine authenticate`. Para un tipo de archivo distinto use `bosquevivo import <archivo> --source <nombre>`.
+`audit` con `SATELLITE_PROVIDER=gee` (NDVI completo y miniaturas) necesita `GEE_PROJECT` y haber ejecutado `earthengine authenticate`. Para un tipo de archivo distinto use `bosquevivo import <archivo> --source <nombre>` (GeoJSON, KML, GeoPackage o Shapefile). Por defecto la importación es estricta, como pide RF01: cada polígono debe ser válido y traer identificador y fecha de registro (en KML, como `<ExtendedData><Data name="project_id">` y `<Data name="start_year">`), y un identificador repetido se rechaza con su motivo. `--lenient` repara geometrías y actualiza los existentes.
 
 Calidad:
 

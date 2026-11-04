@@ -79,6 +79,7 @@ export function CommunityChat() {
         {bubbles.map((bubble) => (
           <p
             key={bubble.id}
+            data-from={bubble.from}
             className={cn(
               "w-fit max-w-[85%] whitespace-pre-line rounded-2xl px-4 py-2 text-sm",
               bubble.from === "persona" && "ml-auto bg-forest text-forest-foreground",
