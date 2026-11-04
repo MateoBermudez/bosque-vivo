@@ -17,8 +17,10 @@ from bosquevivo.core.config import get_settings
 from bosquevivo.core.errors import ExternalServiceError, ValidationFailedError
 from bosquevivo.core.incidents import duration_minutes, is_critical, list_incidents, summarize
 from bosquevivo.core.logging import configure_logging
+from bosquevivo.db.migrate import copy_database
 from bosquevivo.db.models import Project
-from bosquevivo.db.session import get_session, init_db
+from bosquevivo.db.session import build_engine, get_session, init_db
+from bosquevivo.db.urls import describe, resolve_database_url
 from bosquevivo.demo import seed_demo
 from bosquevivo.measure import (
     Report,
@@ -341,6 +343,31 @@ def cmd_setup(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_migrate_db(args: argparse.Namespace) -> int:
+    settings = get_settings()
+    source_url = resolve_database_url(args.source)
+    target_url = resolve_database_url(
+        args.target or settings.database_url, settings.database_password
+    )
+    if source_url == target_url:
+        print("El origen y el destino son la misma base.")
+        return 1
+    print(f"origen:  {describe(source_url)}")
+    print(f"destino: {describe(target_url)}")
+    report = copy_database(
+        build_engine(source_url),
+        build_engine(target_url, pool="null"),
+        replace=args.replace,
+        on_table=lambda name, count: print(f"  {name}: {count} filas"),
+    )
+    for problem in report.problems:
+        print(f"PROBLEMA: {problem}")
+    if report.problems:
+        return 1
+    print(f"Migración completa: {sum(report.copied.values())} filas en {len(report.copied)} tablas")
+    return 0
+
+
 def cmd_mail_test(args: argparse.Namespace) -> int:
     init_db()
     settings = get_settings()
@@ -423,6 +450,13 @@ def _add_account_commands(sub) -> None:
     setup.add_argument("--no-demo", action="store_true", help="no carga proyectos de demostración")
     setup.add_argument("--root", help="raíz del repositorio (por defecto se detecta)")
     setup.set_defaults(func=cmd_setup)
+    migrate = sub.add_parser(
+        "migrate-db", help="Copia todos los datos de SQLite a PostgreSQL (Supabase)"
+    )
+    migrate.add_argument("--from", dest="source", default="sqlite:///data/bosquevivo.db")
+    migrate.add_argument("--to", dest="target", help="por defecto, DATABASE_URL")
+    migrate.add_argument("--replace", action="store_true", help="borra lo que haya en el destino")
+    migrate.set_defaults(func=cmd_migrate_db)
     mail_test = sub.add_parser("mail-test", help="Envía un correo de prueba con la configuración")
     mail_test.add_argument("email")
     mail_test.set_defaults(func=cmd_mail_test)
