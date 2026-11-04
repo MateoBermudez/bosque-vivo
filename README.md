@@ -37,26 +37,28 @@ Los nombres de modelo y las cuotas de Gemini cambian: verificar en AI Studio y c
 | [`docs/testing`](docs/testing/plan-de-pruebas.md) | Plan de pruebas anterior (reemplazado por `docs/plan-de-pruebas`) |
 | [`docs/privacy`](docs/privacy/aviso-de-privacidad.md) | Aviso de privacidad (Ley 1581) |
 | [`docs/plan-de-pruebas`](docs/plan-de-pruebas/README.md) | **Plan de pruebas IEEE 829**: plan, casos, ejecución, incidencias, evidencias y mediciones |
-| [`docs/guias`](docs/guias) | Guías para terminar la configuración: [WhatsApp](docs/guias/whatsapp.md), [Gemini](docs/guias/gemini.md), [correo](docs/guias/correo.md) |
+| [`docs/guias`](docs/guias) | Guías: [despliegue](docs/guias/despliegue.md), [WhatsApp](docs/guias/whatsapp.md), [Gemini](docs/guias/gemini.md), [correo y 2FA](docs/guias/correo.md) |
 
 ## Ejecución local
 
-Requisitos en cada PC: Python 3.12, [`uv`](https://docs.astral.sh/uv/), Node 22 o superior, Git, una clave de Google AI Studio, acceso a Google Earth Engine y (solo para WhatsApp) cloudflared o ngrok.
+Requisitos en cada PC: Python 3.12, [`uv`](https://docs.astral.sh/uv/), Node 22 o superior y Git.
 
 ```
-cp .env.example backend/.env        # completar claves (en Windows: Copy-Item)
-cd backend && uv sync
-uv run bosquevivo seed-demo          # tres proyectos de demostración
-cd .. && scripts/dev.sh              # en Windows: scripts\dev.ps1
+scripts/dev.sh                       # en Windows: scripts\dev.ps1
 ```
 
-`scripts/dev` levanta la API y el sitio (`web/`), instala las dependencias de `web/` la primera vez y crea `web/.env.local` copiando el `ADMIN_TOKEN` de `backend/.env`.
+La primera vez, `bosquevivo setup` crea `backend/.env` y `web/.env.local` con todos los secretos generados, la base de datos y tres proyectos de demostración, y lista las claves externas que faltan (Gemini, WhatsApp, SMTP). Crear la primera cuenta de auditor:
+
+```
+cd backend && uv run bosquevivo user-invite correo@elpoli.edu.co --name "Nombre"
+```
 
 - API: http://127.0.0.1:8000 (documentación en `/docs`)
 - Sitio: http://localhost:3000
+- Modo producción para el piloto: `scripts/start.sh` (o `scripts\start.ps1`), con `TUNNEL=1` / `-Tunnel` para publicarlo con HTTPS. Ver [guía de despliegue](docs/guias/despliegue.md).
 - Panel Streamlit (en desuso, opcional): `scripts\dev.ps1 -Streamlit` o `STREAMLIT=1 scripts/dev.sh` → http://127.0.0.1:8501
 
-Para probar sin credenciales, use `SATELLITE_PROVIDER=fake` y los datos de demostración. El asistente (WhatsApp y el chat en línea `/asistente`) responde ESTADO, ALERTAS, AYUDA y PROYECTO <número> sin IA; las preguntas libres, fotos y voz requieren `GEMINI_API_KEY` y `GEMINI_MODEL` ([guía](docs/guias/gemini.md)). El área de auditores usa cuentas con correo y contraseña (`uv run bosquevivo user-create correo@dominio`) y `SESSION_SECRET` en `web/.env.local`; la recuperación de contraseña (RF09) se describe en la [guía de correo](docs/guias/correo.md). Más detalle en [`web/README.md`](web/README.md).
+Sin claves externas funciona todo salvo lo que depende de ellas: el asistente (WhatsApp y el chat en línea `/asistente`) responde ESTADO, ALERTAS, AYUDA y PROYECTO <número> sin IA; las preguntas libres, fotos y voz requieren Gemini ([guía](docs/guias/gemini.md)). El área de auditores usa cuentas con correo y contraseña; con SMTP configurado ([guía](docs/guias/correo.md)) se activan la verificación en dos pasos por correo, los avisos de inicio de sesión y el envío real de la recuperación de contraseña (RF09). Más detalle en [`web/README.md`](web/README.md).
 
 Importar los polígonos reales de Colombia (base de Karnik et al., ver [`docs/fuentes-de-datos/karnik.md`](docs/fuentes-de-datos/karnik.md)) y calcular una auditoría:
 

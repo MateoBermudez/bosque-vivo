@@ -9,27 +9,12 @@
 $ErrorActionPreference = "Stop"
 $root = Split-Path -Parent $PSScriptRoot
 
-if (-not (Test-Path "$root\backend\.env")) {
-    Copy-Item "$root\.env.example" "$root\backend\.env"
-    Write-Host "Se creó backend\.env. Complete las claves y vuelva a ejecutar."
-    exit 1
-}
-
-# El sitio (web/) se conecta a la API con el mismo ADMIN_TOKEN del backend.
-# Si web\.env.local no existe, se genera a partir de backend\.env.
-if (-not (Test-Path "$root\web\.env.local")) {
-    $adminToken = ""
-    $line = Select-String -Path "$root\backend\.env" -Pattern '^\s*ADMIN_TOKEN\s*=\s*(.*)$' | Select-Object -First 1
-    if ($line) { $adminToken = $line.Matches[0].Groups[1].Value.Trim() }
-    $envLines = @(
-        "BV_DATA_SOURCE=live",
-        "BACKEND_URL=http://127.0.0.1:$ApiPort",
-        "ADMIN_TOKEN=$adminToken"
-    )
-    # UTF-8 sin BOM: con BOM, Next no reconocería la primera variable.
-    [System.IO.File]::WriteAllLines("$root\web\.env.local", $envLines, (New-Object System.Text.UTF8Encoding($false)))
-    Write-Host "Se creó web\.env.local (modo live). Define SESSION_SECRET y crea una cuenta con: cd backend; uv run bosquevivo user-create correo@dominio"
-}
+Push-Location "$root\backend"
+try {
+    uv sync --quiet
+    uv run bosquevivo setup --api-port $ApiPort
+    if ($LASTEXITCODE -ne 0) { throw "bosquevivo setup falló" }
+} finally { Pop-Location }
 
 if (-not (Test-Path "$root\web\node_modules")) {
     Write-Host "Instalando dependencias de web (npm ci)..."

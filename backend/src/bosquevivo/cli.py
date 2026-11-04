@@ -7,6 +7,8 @@ import time
 from datetime import date
 from pathlib import Path
 
+from sqlalchemy import func, select
+
 from bosquevivo.accounts import AccountService, build_mailer
 from bosquevivo.ai.agent import Agent, default_registry
 from bosquevivo.ai.eval import EvalRunner, load_cases
@@ -15,6 +17,7 @@ from bosquevivo.core.config import get_settings
 from bosquevivo.core.errors import ExternalServiceError, ValidationFailedError
 from bosquevivo.core.incidents import duration_minutes, is_critical, list_incidents, summarize
 from bosquevivo.core.logging import configure_logging
+from bosquevivo.db.models import Project
 from bosquevivo.db.session import get_session, init_db
 from bosquevivo.demo import seed_demo
 from bosquevivo.measure import (
@@ -35,6 +38,14 @@ from bosquevivo.pipeline import (
 from bosquevivo.registry.importer import import_file
 from bosquevivo.registry.karnik import import_karnik
 from bosquevivo.satellite.factory import build_provider
+from bosquevivo.setup import (
+    SetupReport,
+    missing_keys,
+    prepare_backend_env,
+    prepare_web_env,
+    read_env,
+    repo_root,
+)
 
 
 def cmd_init_db(_: argparse.Namespace) -> int:
@@ -280,11 +291,55 @@ def cmd_user_invite(args: argparse.Namespace) -> int:
     init_db()
     try:
         with get_session() as session:
-            user = _accounts(session).invite_user(args.email, args.name or "")
-            print(f"invitación enviada a {user.email}: debe elegir su contraseña con el enlace")
+            user, link = _accounts(session).invite_user(args.email, args.name or "")
+            print(f"invitación creada para {user.email}")
+            if build_mailer(get_settings()).name == "outbox":
+                print(f"sin SMTP configurado, el correo quedó en data/outbox. Enlace: {link}")
     except (ValidationFailedError, ExternalServiceError) as exc:
         print(f"No se envió la invitación: {exc}")
         return 1
+    return 0
+
+
+def _print_setup(report: SetupReport, values: dict[str, str], projects: int) -> None:
+    for item in report.created:
+        print(f"creado: {item}")
+    for key in report.generated:
+        print(f"generado: {key}")
+    for note in report.notes:
+        print(f"nota: {note}")
+    print(f"proyectos en la base: {projects}")
+    pending = missing_keys(values)
+    if not pending:
+        print("Todo configurado.")
+        return
+    print("Para activar estas funciones complete backend/.env:")
+    for requirement, keys in pending:
+        label = "opcional" if requirement.optional else "falta"
+        print(
+            f"  [{label}] {requirement.feature}: {', '.join(keys)} ({requirement.guide})"
+        )
+
+
+def cmd_setup(args: argparse.Namespace) -> int:
+    root = Path(args.root).resolve() if args.root else repo_root()
+    report = SetupReport()
+    backend_env = prepare_backend_env(root, report)
+    prepare_web_env(root, backend_env, args.api_port, report)
+    os.chdir(root / "backend")
+    get_settings.cache_clear()
+    init_db()
+    settings = get_settings()
+    with get_session() as session:
+        projects = session.scalar(select(func.count(Project.id))) or 0
+        if projects == 0 and not args.no_demo:
+            projects = len(seed_demo(session, settings.images_dir))
+            report.notes.append("se cargaron 3 proyectos de demostración (bosquevivo seed-demo)")
+        accounts = AccountService(session, build_mailer(settings), settings)
+        if args.admin and not accounts.find(args.admin):
+            _, link = accounts.invite_user(args.admin, args.name or "")
+            report.notes.append(f"cuenta de auditor {args.admin}: elija la contraseña en {link}")
+    _print_setup(report, read_env(backend_env), projects)
     return 0
 
 
@@ -361,6 +416,15 @@ def _add_account_commands(sub) -> None:
     user_invite.add_argument("email")
     user_invite.add_argument("--name")
     user_invite.set_defaults(func=cmd_user_invite)
+    setup = sub.add_parser(
+        "setup", help="Crea los .env con secretos generados, la base y los datos de demostración"
+    )
+    setup.add_argument("--admin", help="correo de la primera cuenta de auditor (se invita)")
+    setup.add_argument("--name", help="nombre de esa cuenta")
+    setup.add_argument("--api-port", type=int, default=8000)
+    setup.add_argument("--no-demo", action="store_true", help="no carga proyectos de demostración")
+    setup.add_argument("--root", help="raíz del repositorio (por defecto se detecta)")
+    setup.set_defaults(func=cmd_setup)
     mail_test = sub.add_parser("mail-test", help="Envía un correo de prueba con la configuración")
     mail_test.add_argument("email")
     mail_test.set_defaults(func=cmd_mail_test)

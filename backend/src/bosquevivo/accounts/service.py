@@ -151,12 +151,12 @@ class AccountService:
         self._check_password(password, normalize_email(email))
         return self._new_user(email, name, hash_password(password))
 
-    def invite_user(self, email: str, name: str) -> AuditorUser:
+    def invite_user(self, email: str, name: str) -> tuple[AuditorUser, str]:
         user = self._new_user(email, name, UNUSABLE_PREFIX + new_token())
         hours = self.settings.invitation_ttl_hours
-        raw = self._issue_token(user, PURPOSE_INVITATION, timedelta(hours=hours))
-        self._send(templates.invitation_email(user.email, user.name, self._link(raw), hours))
-        return user
+        link = self._link(self._issue_token(user, PURPOSE_INVITATION, timedelta(hours=hours)))
+        self._notify(templates.invitation_email(user.email, user.name, link, hours))
+        return user, link
 
     def set_active(self, email: str, active: bool) -> AuditorUser:
         user = self.find(email)
@@ -191,12 +191,20 @@ class AccountService:
         self.session.flush()
         return LoginOutcome(user)
 
+    def two_factor_enabled(self) -> bool:
+        mode = self.settings.auth_two_factor.strip().lower()
+        if mode in {"on", "true", "1", "si", "sí"}:
+            return True
+        if mode in {"off", "false", "0", "no"}:
+            return False
+        return self.mailer.name == "smtp"
+
     def start_login(self, email: str, password: str, client: str = "") -> LoginStep:
         outcome = self.authenticate(email, password)
         if outcome.user is None:
             return LoginStep(locked=outcome.locked)
         user = outcome.user
-        if not self.settings.auth_two_factor:
+        if not self.two_factor_enabled():
             self.complete_login(user, client)
             return LoginStep(user=user)
         raw = new_token()

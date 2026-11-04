@@ -38,7 +38,7 @@ class Settings(BaseSettings):
     smtp_password: str = ""
     smtp_starttls: bool = True
     smtp_ssl: bool = False
-    auth_two_factor: bool = True
+    auth_two_factor: str = "auto"
     auth_code_ttl_minutes: int = Field(default=10, ge=2, le=60)
     auth_login_alerts: bool = True
     invitation_ttl_hours: int = Field(default=72, ge=1, le=720)

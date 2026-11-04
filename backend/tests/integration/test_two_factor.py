@@ -16,7 +16,7 @@ from bosquevivo.accounts import (
 from bosquevivo.accounts.mailer import build_message, resolved_backend, smtp_endpoint
 from bosquevivo.accounts.service import mask_email
 from bosquevivo.api.routers.auth import get_mailer
-from bosquevivo.core.config import Settings
+from bosquevivo.core.config import Settings, get_settings
 from bosquevivo.core.errors import ExternalServiceError
 from bosquevivo.db.base import utcnow
 from bosquevivo.db.models import Incident
@@ -60,7 +60,9 @@ def mailer():
 
 
 def make_service(db, mailer, clock, **overrides) -> AccountService:
-    settings = Settings(web_base_url="https://bosque.test", **overrides)
+    settings = Settings(
+        web_base_url="https://bosque.test", **{"auth_two_factor": "on", **overrides}
+    )
     return AccountService(db, mailer, settings, clock)
 
 
@@ -132,7 +134,7 @@ def test_resend_replaces_code_with_limit(service, mailer):
 
 
 def test_two_factor_can_be_disabled(db, mailer, clock):
-    accounts = make_service(db, mailer, clock, auth_two_factor=False, auth_login_alerts=False)
+    accounts = make_service(db, mailer, clock, auth_two_factor="off", auth_login_alerts=False)
     accounts.create_user(EMAIL, "Auditor", PASSWORD)
     step = accounts.start_login(EMAIL, PASSWORD)
     assert step.user is not None and not step.needs_code
@@ -153,11 +155,12 @@ def test_password_change_notifies(service, mailer):
 
 def test_invitation_sets_first_password(db, mailer, clock):
     accounts = make_service(db, mailer, clock, invitation_ttl_hours=72)
-    user = accounts.invite_user("nueva@elpoli.edu.co", "Nueva")
+    user, link = accounts.invite_user("nueva@elpoli.edu.co", "Nueva")
     invitation = mailer.sent[-1]
     assert "activa tu cuenta" in invitation.subject and "72 horas" in invitation.body
     assert not accounts.authenticate("nueva@elpoli.edu.co", user.password_hash).user
     token = link_from(invitation)
+    assert link.endswith(token)
     assert accounts.token_purpose(token) == "invitacion"
     accounts.confirm_reset(token, "PrimeraClave2026")
     assert accounts.authenticate("nueva@elpoli.edu.co", "PrimeraClave2026").user is not None
@@ -245,6 +248,9 @@ def test_smtp_retries_and_explains_auth_errors():
 @pytest.fixture
 def api(client, db, mailer):
     client.app.dependency_overrides[get_mailer] = lambda: mailer
+    client.app.dependency_overrides[get_settings] = lambda: Settings(
+        admin_token="secreto", auth_two_factor="on"
+    )
     AccountService(db, mailer, Settings()).create_user(EMAIL, "Auditor", PASSWORD)
     db.commit()
     return client
@@ -288,3 +294,11 @@ def test_verify_reports_purpose(api, mailer):
         "/api/v1/auth/password-reset/verify", headers=ADMIN, json={"token": token}
     ).json()
     assert body == {"status": "valido", "detail": None, "purpose": "reset"}
+
+
+def test_auto_two_factor_follows_smtp(db, mailer, clock):
+    accounts = make_service(db, mailer, clock, auth_two_factor="auto")
+    accounts.create_user(EMAIL, "Auditor", PASSWORD)
+    assert not accounts.two_factor_enabled()
+    mailer.name = "smtp"
+    assert accounts.two_factor_enabled()
