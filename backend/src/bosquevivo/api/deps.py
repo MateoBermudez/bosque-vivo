@@ -8,12 +8,19 @@ from sqlalchemy.orm import Session
 from bosquevivo.ai.llm import LLMProvider
 from bosquevivo.assistant.runtime import build_llm, build_llm_or_unavailable
 from bosquevivo.core.config import Settings, get_settings
-from bosquevivo.db.session import get_session
+from bosquevivo.db.session import get_engine, get_session, init_db
 from bosquevivo.satellite.factory import build_provider
 from bosquevivo.satellite.provider import SatelliteProvider
 
 
+@lru_cache
+def ensure_schema() -> bool:
+    init_db(get_engine())
+    return True
+
+
 def db_session() -> Iterator[Session]:
+    ensure_schema()
     with get_session() as session:
         yield session
 
