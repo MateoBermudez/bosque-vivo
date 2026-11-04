@@ -16,7 +16,9 @@ from bosquevivo.ai.llm.errors import QuotaExceededError
 from bosquevivo.ai.prompts import PROMPT_VERSION, system_prompt
 from bosquevivo.core.config import Settings
 from bosquevivo.core.errors import ExternalServiceError
+from bosquevivo.core.incidents import record_incident
 from bosquevivo.core.logging import get_logger
+from bosquevivo.db.base import utcnow
 from bosquevivo.db.models import AgentRun, AgentStep
 from bosquevivo.satellite.service import SatelliteService
 
@@ -123,7 +125,10 @@ class Agent:
         try:
             text, tools_called, passed = self._loop(run, request, ctx)
         except (QuotaExceededError, ExternalServiceError) as exc:
-            log.warning("agent_degraded", error=str(exc))
+            log.warning("agent_degraded", error=str(exc), origin="externo")
+            record_incident(
+                self.session, "ia", exc, origin="externo", severity="aviso", ended_at=utcnow()
+            )
             text, tools_called, passed = None, [], None
         if text is None or passed is False:
             fallback = fallback_answer(evidence.items, request.role)

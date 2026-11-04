@@ -230,6 +230,9 @@ class WaUser(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     phone_hmac: Mapped[str] = mapped_column(String(64), unique=True)
+    project_id: Mapped[int | None] = mapped_column(
+        ForeignKey("project.id", ondelete="SET NULL"), nullable=True
+    )
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
     deleted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 

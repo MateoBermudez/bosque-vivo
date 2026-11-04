@@ -5,7 +5,11 @@ from bosquevivo.ai.agent import Agent, AgentRequest
 from bosquevivo.ai.llm import LLMProvider, MediaPart
 from bosquevivo.assistant import texts
 from bosquevivo.assistant.client import WhatsAppClient
+from bosquevivo.assistant.community import alerts_message, status_message
 from bosquevivo.assistant.dialogue import (
+    detect_intent,
+    is_authorized,
+    registered_project_id,
     split_message,
     wants_consent,
     wants_deletion,
@@ -17,7 +21,15 @@ from bosquevivo.core.config import Settings
 from bosquevivo.core.errors import ExternalServiceError
 from bosquevivo.core.logging import get_logger
 from bosquevivo.core.privacy import phone_hmac
-from bosquevivo.db.models import AgentRun, ConsentLog, Evidence, ProcessedMessage, WaUser
+from bosquevivo.db.models import (
+    AgentRun,
+    ConsentLog,
+    Evidence,
+    ProcessedMessage,
+    Project,
+    WaUser,
+)
+from bosquevivo.registry.repository import ProjectRepository
 
 log = get_logger(__name__)
 
@@ -96,28 +108,79 @@ class AssistantService:
     def handle(self, message: IncomingMessage) -> None:
         if not self.mark_processed(message.message_id):
             return
+        user = self._admit(message)
+        if user is None:
+            return
         phone = message.phone
-        if wants_deletion(message.text):
-            self.delete_user(phone)
-            self._reply(phone, texts.DELETED)
-            return
-        user, created = self._user(phone)
-        if created:
-            self._reply(phone, texts.WELCOME)
-            self._reply(phone, texts.NOTICE)
-            return
-        if wants_consent(message.text):
-            self._grant(user, PURPOSE_DATA)
-            self._reply(phone, texts.CONSENT_GRANTED)
-            return
-        if not self._granted(user, PURPOSE_DATA):
-            self._reply(phone, texts.CONSENT_PENDING)
-            return
         if wants_media_consent(message.text):
             self._grant(user, PURPOSE_MEDIA)
             self._reply(phone, texts.MEDIA_GRANTED)
             return
+        if message.kind == "text":
+            reply = self._intent_reply(user, message.text)
+            if reply is not None:
+                self._reply(phone, reply)
+                return
+        if message.kind == "location" and message.latitude is not None:
+            self._register_by_location(user, message.latitude, message.longitude or 0.0)
         self._respond(user, message)
+
+    def _admit(self, message: IncomingMessage) -> WaUser | None:
+        phone = message.phone
+        reply: str | None = None
+        user: WaUser | None = None
+        if not is_authorized(phone, self.settings.whatsapp_allowed_phones):
+            log.info("whatsapp_unauthorized")
+            reply = texts.NOT_AUTHORIZED
+        elif wants_deletion(message.text):
+            self.delete_user(phone)
+            reply = texts.DELETED
+        else:
+            user, created = self._user(phone)
+            if created:
+                self._reply(phone, texts.WELCOME)
+                reply = texts.NOTICE
+            elif wants_consent(message.text):
+                self._grant(user, PURPOSE_DATA)
+                reply = texts.CONSENT_GRANTED
+            elif not self._granted(user, PURPOSE_DATA):
+                reply = texts.CONSENT_PENDING
+        if reply is not None:
+            self._reply(phone, reply)
+            return None
+        return user
+
+    def _project_of(self, user: WaUser) -> Project | None:
+        return self.session.get(Project, user.project_id) if user.project_id else None
+
+    def _intent_reply(self, user: WaUser, text: str | None) -> str | None:
+        intent = detect_intent(text)
+        if intent == "ayuda":
+            return texts.HELP
+        if intent == "registro":
+            return self._register(user, registered_project_id(text) or 0)
+        if intent not in {"alertas", "estado"}:
+            return None
+        project = self._project_of(user)
+        if project is None:
+            return texts.NEED_PROJECT if intent == "alertas" else None
+        if intent == "alertas":
+            return alerts_message(self.session, project)
+        return status_message(self.session, project)
+
+    def _register(self, user: WaUser, project_id: int) -> str:
+        project = self.session.get(Project, project_id)
+        if project is None:
+            return texts.PROJECT_NOT_FOUND
+        user.project_id = project.id
+        self.session.flush()
+        return texts.project_registered(project.name)
+
+    def _register_by_location(self, user: WaUser, latitude: float, longitude: float) -> None:
+        project = ProjectRepository(self.session).locate(float(latitude), float(longitude))
+        if project is not None:
+            user.project_id = project.id
+            self.session.flush()
 
     def _respond(self, user: WaUser, message: IncomingMessage) -> None:
         phone = message.phone
@@ -139,6 +202,8 @@ class AssistantService:
             return
         answer = self.agent.answer(request)
         self._reply(phone, answer.text)
+        if answer.used_fallback and not answer.evidence_ids:
+            self._reply(phone, texts.HELP)
 
     def _build_request(
         self, user: WaUser, message: IncomingMessage, media_ok: bool
