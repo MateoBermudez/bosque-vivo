@@ -3,7 +3,13 @@ import { cookies } from "next/headers";
 import { Suspense } from "react";
 
 import { ErrorState } from "@/components/common/states";
-import { SESSION_COOKIE, auditorAccessMode, hasAuditorAccess, safeNextPath } from "@/lib/auth/access";
+import {
+  SESSION_COOKIE,
+  auditorAccessMode,
+  auditorLoginMethod,
+  auditorSession,
+  safeNextPath,
+} from "@/lib/auth/access";
 
 import { logout } from "./actions";
 import { LoginForm } from "./login-form";
@@ -20,7 +26,7 @@ export default function AccessPage({ searchParams }: PageProps<"/acceso">) {
       <h1 className="mt-2 text-3xl font-extrabold">Acceso</h1>
       <p className="mt-3 text-muted-foreground">
         El chat del auditor y las trazas del agente usan la cuota de IA y muestran preguntas de usuarios, por eso
-        requieren un código.
+        requieren iniciar sesión.
       </p>
       <Suspense>
         <AccessContent searchParams={searchParams} />
@@ -39,7 +45,7 @@ async function AccessContent({ searchParams }: Pick<PageProps<"/acceso">, "searc
       <div className="mt-8">
         <ErrorState
           retry={false}
-          message="El área de auditores está desactivada: falta configurar AUDITOR_ACCESS_CODE y SESSION_SECRET en el servidor."
+          message="El área de auditores está desactivada: falta configurar SESSION_SECRET (y AUDITOR_ACCESS_CODE si no hay API en vivo) en el servidor."
         />
       </div>
     );
@@ -48,22 +54,25 @@ async function AccessContent({ searchParams }: Pick<PageProps<"/acceso">, "searc
     return (
       <p className="card-soft mt-8 p-6 text-sm text-muted-foreground">
         Estás en desarrollo y el acceso de auditores no está configurado, así que el área está abierta. Define{" "}
-        <code className="font-mono">AUDITOR_ACCESS_CODE</code> y <code className="font-mono">SESSION_SECRET</code> para
-        protegerla.
+        <code className="font-mono">SESSION_SECRET</code> para protegerla con las cuentas de auditor del backend (o{" "}
+        <code className="font-mono">AUDITOR_ACCESS_CODE</code> sin API en vivo).
       </p>
     );
   }
 
-  const signedIn = await hasAuditorAccess((await cookies()).get(SESSION_COOKIE)?.value);
-  if (signedIn) {
+  const session = await auditorSession((await cookies()).get(SESSION_COOKIE)?.value);
+  if (session) {
+    const who = session.subject.includes("@") ? session.subject : "auditor";
     return (
       <form action={logout} className="card-soft mt-8 space-y-4 p-6">
-        <p className="text-sm">Ya iniciaste sesión como auditor.</p>
+        <p className="text-sm">
+          Ya iniciaste sesión como <strong>{who}</strong>.
+        </p>
         <button type="submit" className="btn-outline">
           Cerrar sesión
         </button>
       </form>
     );
   }
-  return <LoginForm next={target} />;
+  return <LoginForm next={target} method={auditorLoginMethod()} />;
 }

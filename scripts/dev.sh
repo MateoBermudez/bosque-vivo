@@ -20,7 +20,7 @@ if [ ! -f "$root/web/.env.local" ]; then
         echo "BACKEND_URL=http://127.0.0.1:$api_port"
         echo "ADMIN_TOKEN=$admin_token"
     } > "$root/web/.env.local"
-    echo "Se creó web/.env.local (modo live). Defina AUDITOR_ACCESS_CODE y SESSION_SECRET para proteger el área de auditores."
+    echo "Se creó web/.env.local (modo live). Defina SESSION_SECRET y cree una cuenta con: cd backend && uv run bosquevivo user-create correo@dominio"
 fi
 
 if [ ! -d "$root/web/node_modules" ]; then

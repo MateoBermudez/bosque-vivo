@@ -1,6 +1,6 @@
 import "server-only";
 
-import type { ZodType } from "zod";
+import { z, type ZodType } from "zod";
 
 import {
   auditRunSchema,
@@ -144,4 +144,47 @@ export const liveApi: BosqueVivoApi = {
       contentType: response.headers.get("content-type") ?? "application/octet-stream",
     };
   },
+};
+
+const authUserSchema = z.object({ email: z.string(), name: z.string() });
+const messageSchema = z.object({ detail: z.string() });
+const tokenStatusSchema = z.object({
+  status: z.enum(["valido", "invalido", "expirado", "usado"]),
+  detail: z.string().nullable(),
+});
+
+export type AuthUser = z.infer<typeof authUserSchema>;
+export type ResetTokenStatus = z.infer<typeof tokenStatusSchema>;
+
+const AUTH_PREFIX = `${API_PREFIX}/auth`;
+
+export const accountsApi = {
+  login: (email: string, password: string): Promise<AuthUser> =>
+    requireJson(`${AUTH_PREFIX}/login`, authUserSchema, {
+      admin: true,
+      method: "POST",
+      body: { email, password },
+    }),
+  requestReset: async (email: string): Promise<string> =>
+    (
+      await requireJson(`${AUTH_PREFIX}/password-reset`, messageSchema, {
+        admin: true,
+        method: "POST",
+        body: { email },
+      })
+    ).detail,
+  verifyReset: (token: string): Promise<ResetTokenStatus> =>
+    requireJson(`${AUTH_PREFIX}/password-reset/verify`, tokenStatusSchema, {
+      admin: true,
+      method: "POST",
+      body: { token },
+    }),
+  confirmReset: async (token: string, password: string): Promise<string> =>
+    (
+      await requireJson(`${AUTH_PREFIX}/password-reset/confirm`, messageSchema, {
+        admin: true,
+        method: "POST",
+        body: { token, password },
+      })
+    ).detail,
 };

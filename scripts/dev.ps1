@@ -28,7 +28,7 @@ if (-not (Test-Path "$root\web\.env.local")) {
     )
     # UTF-8 sin BOM: con BOM, Next no reconocería la primera variable.
     [System.IO.File]::WriteAllLines("$root\web\.env.local", $envLines, (New-Object System.Text.UTF8Encoding($false)))
-    Write-Host "Se creó web\.env.local (modo live). Define AUDITOR_ACCESS_CODE y SESSION_SECRET para proteger el área de auditores."
+    Write-Host "Se creó web\.env.local (modo live). Define SESSION_SECRET y crea una cuenta con: cd backend; uv run bosquevivo user-create correo@dominio"
 }
 
 if (-not (Test-Path "$root\web\node_modules")) {
