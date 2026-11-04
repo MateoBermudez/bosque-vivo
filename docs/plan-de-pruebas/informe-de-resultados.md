@@ -7,9 +7,9 @@ Ejecución del [plan de pruebas](plan-de-pruebas.md) sobre la rama de trabajo qu
 | Indicador | Resultado |
 |---|---|
 | Casos especificados | 62 |
-| Casos aprobados | 56 (90 %) |
+| Casos aprobados | 57 (92 %) |
 | Casos fallidos | 0 |
-| Casos bloqueados por dependencias externas | 6 (CP-29, CP-46, CP-49, CP-50, el envío SMTP real de CP-57 y el despliegue real de CP-62) |
+| Casos bloqueados por dependencias externas | 5 (CP-29, CP-46, CP-49, CP-50 y el envío SMTP real de CP-57) |
 | Requisitos funcionales RF01–RF09 con casos aprobados | 9 de 9 (100 %) |
 | Pruebas automáticas del backend | 330 aprobadas, 0 fallidas, tanto en SQLite como en PostgreSQL 16 |
 | Cobertura de líneas del backend | 88 % (5.438 sentencias) |
@@ -18,7 +18,7 @@ Ejecución del [plan de pruebas](plan-de-pruebas.md) sobre la rama de trabajo qu
 | Verificaciones E2E en navegador | 30 de 30 aprobadas |
 | Análisis estático | `ruff` y `pyright`: 0 errores; `eslint` y `tsc`: 0 errores |
 | Compilación de producción del sitio | Correcta |
-| Incidencias registradas | 14 (todas cerradas; ver [`incidencias.md`](incidencias.md)) |
+| Incidencias registradas | 16 (todas cerradas; ver [`incidencias.md`](incidencias.md)) |
 
 ## 2. Resultados por suite
 
@@ -88,6 +88,7 @@ Prueba manual adicional (CP-58): `scripts/start.sh` en un clon sin `.env` gener�
 | `migrate-db` de una base SQLite con datos de demostración, cuentas e invitaciones | 233 filas en 21 tablas; registros nuevos sin conflicto de secuencias |
 | Entorno solo con el núcleo de dependencias | 274 MB (límite de Vercel: 500 MB) |
 | API en modo Vercel (`VERCEL=1`) contra PostgreSQL | `/health`, proyectos, reporte PDF y HTML generados al vuelo, chat comunitario; auditoría rechazada con el mensaje de usar la CLI |
+| Producción (Vercel + Supabase) | Sitio https://bosque-vivo-web.vercel.app y API https://bosque-vivo-api.vercel.app; 58 proyectos cargados con `push-db`; `/proyectos` en 1–2 s; reporte PDF, chat en línea y acceso responden |
 
 ## 5. Evaluación de los criterios de aceptación
 

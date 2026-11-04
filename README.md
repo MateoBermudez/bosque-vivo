@@ -1,5 +1,7 @@
 # Bosque Vivo
 
+**En línea:** https://bosque-vivo-web.vercel.app (API: https://bosque-vivo-api.vercel.app)
+
 Proyecto Integrador · Ingeniería Informática · ODS 15 (Vida de ecosistemas terrestres)
 Politécnico Colombiano Jaime Isaza Cadavid · Segundo semestre de 2026
 

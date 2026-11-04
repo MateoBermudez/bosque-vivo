@@ -12,7 +12,7 @@ Objetivo específico 4 del proyecto: probar Bosque Vivo con un plan que verifiqu
 | [`evidencias/`](evidencias) | Reportes JUnit, salidas de las herramientas, mediciones (`rnf-*.json`), resultado E2E y capturas |
 | [`scripts/`](scripts) | `ejecutar-e2e.sh` y `e2e.cjs` (Playwright), `disponibilidad.sh` (piloto), `generar-documento.sh` (Word y PDF) |
 
-Resultado al 04/11/2026: 56 de 62 casos aprobados, 0 fallidos y 6 bloqueados por credenciales o usuarios del piloto (CP-29, CP-46, CP-49, CP-50, el SMTP real de CP-57 y el despliegue real de CP-62).
+Resultado al 04/11/2026: 57 de 62 casos aprobados, 0 fallidos y 5 bloqueados por credenciales o usuarios del piloto (CP-29, CP-46, CP-49, CP-50 y el SMTP real de CP-57). El sistema está desplegado en https://bosque-vivo-web.vercel.app.
 
 Regenerar el `.docx` y el `.pdf` después de editar los Markdown (requiere pandoc y Playwright):
 

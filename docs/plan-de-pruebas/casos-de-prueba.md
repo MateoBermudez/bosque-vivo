@@ -27,8 +27,8 @@ Estados: **Aprobado**, **Fallido**, **Bloqueado** (depende de credenciales o usu
 | 3.3.6 Portabilidad | CP-48 | 1 | 0 |
 | Interfaces externas y regresión | CP-49 a CP-52 | 2 | 2 |
 | Correo SMTP, 2FA y configuración | CP-53 a CP-58 | 5 | 1 |
-| PostgreSQL, migración y despliegue | CP-59 a CP-62 | 3 | 1 |
-| **Total** | **62** | **56** | **6** |
+| PostgreSQL, migración y despliegue | CP-59 a CP-62 | 4 | 0 |
+| **Total** | **62** | **57** | **5** |
 
 ## RF01 — Importar polígonos públicos
 
@@ -475,7 +475,7 @@ Estados: **Aprobado**, **Fallido**, **Bloqueado** (depende de credenciales o usu
 - **Prioridad:** 2
 - **Resultado esperado:** `DATABASE_URL` con `[YOUR-PASSWORD]` se completa con `DATABASE_PASSWORD` codificada; `postgres://` y `postgresql://` usan el controlador psycopg; los hosts remotos exigen `sslmode=require`; en funciones sin estado se usa `NullPool` y sin sentencias preparadas (compatible con el *Transaction pooler*); la contraseña no aparece en los registros.
 - **Automatización:** `unit/test_database_urls.py` (5 pruebas)
-- **Resultado:** Aprobado. La conexión a la instancia real de Supabase se verifica al desplegar (CP-62).
+- **Resultado:** Aprobado. Verificado contra Supabase en producción (pooler `aws-0-us-east-1`).
 
 ### CP-61 Migración de SQLite a PostgreSQL
 
@@ -492,5 +492,6 @@ Estados: **Aprobado**, **Fallido**, **Bloqueado** (depende de credenciales o usu
 - **Pasos:** instalar solo el núcleo de dependencias, arrancar la API con `VERCEL=1` contra PostgreSQL y recorrer salud, proyectos, reportes, chat comunitario y solicitud de auditoría; luego `VERCEL_TOKEN=… scripts/deploy-vercel.sh`.
 - **Resultado esperado:** el núcleo pesa menos de 500 MB; la API arranca sin las librerías de cálculo; las tareas se procesan en la misma petición; los reportes PDF y HTML se generan al vuelo; una auditoría pedida a la API desplegada falla con el mensaje de usar la CLI.
 - **Resultado obtenido:** núcleo de 274 MB; API en modo Vercel respondió `/health`, proyectos, reporte PDF (200) y HTML (200), chat comunitario y la auditoría quedó «failed» con el mensaje esperado. `integration/test_inline_jobs.py` (4 pruebas).
-- **Resultado:** Aprobado en local. El despliegue real queda Bloqueado hasta tener el token de Vercel y la cadena del pooler de Supabase.
+- **Despliegue real (04/11/2026):** API en https://bosque-vivo-api.vercel.app y sitio en https://bosque-vivo-web.vercel.app sobre Supabase. Se detectó y corrigió una colisión al crear el esquema con varias instancias a la vez (INC-15). `push-db` subió 7.163 filas en 6 s; `/api/v1/projects` devolvió 58 proyectos; reporte PDF 200 en 1,1 s; chat en línea respondió el saludo y el aviso; `/proyectos` pasó de 15–25 s a 1–2 s con el endpoint `/api/v1/explorer` (INC-16).
+- **Resultado:** Aprobado.
 

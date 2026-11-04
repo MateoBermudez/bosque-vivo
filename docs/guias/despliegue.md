@@ -1,5 +1,17 @@
 # Guía: despliegue en Vercel con Supabase (PostgreSQL)
 
+## Estado actual (04/11/2026)
+
+| Parte | URL |
+|---|---|
+| Sitio | https://bosque-vivo-web.vercel.app |
+| API | https://bosque-vivo-api.vercel.app (`/health`, documentación en `/docs`) |
+| Base de datos | Supabase, proyecto `ovdjtikxtbsipzahnapq`, región us-east-1, *Transaction pooler* `aws-0-us-east-1.pooler.supabase.com:6543` |
+
+Datos cargados desde `web/snapshot`: 58 proyectos (55 de Karnik et al. y 3 de demostración), 5.883 observaciones NDVI, 784 registros de pérdida, 36 auditorías y 330 declaraciones. Los polígonos de esa copia están aligerados (tolerancia de 0,0005°); para tener los polígonos completos suba la base SQLite original con `push-db --replace` (sección 2).
+
+Los proyectos de Vercel se desplegaron con la CLI y todavía no están conectados al repositorio: para que cada cambio en `main` se despliegue solo, en cada proyecto de Vercel vaya a **Settings → Git → Connect Git Repository** y elija `MateoBermudez/bosque-vivo`, con *Root Directory* `backend` (API) o `web` (sitio).
+
 ## Arquitectura
 
 | Parte | Dónde corre | Qué hace |
@@ -34,7 +46,18 @@ En Vercel las tareas (mensajes de WhatsApp, reportes) se procesan dentro de la m
 
 ## 2. Pasar los datos existentes de SQLite a Supabase
 
-Desde el computador que tiene la base local (`backend/data/bosquevivo.db`, con los 55 polígonos de Karnik y las auditorías):
+Desde el computador que tiene la base local (`backend/data/bosquevivo.db`, con los 55 polígonos de Karnik y las auditorías), hay dos caminos:
+
+**Por HTTPS, a través de la API desplegada** (no necesita el puerto de Postgres ni IPv6):
+
+```
+cd backend
+uv run bosquevivo push-db --api https://bosque-vivo-api.vercel.app --token <ADMIN_TOKEN> --replace
+```
+
+Usa los endpoints `/api/v1/admin/restore`, protegidos con el `ADMIN_TOKEN` de la API. `--replace` borra lo que haya en la base remota antes de subir. `uv run bosquevivo import-snapshot` reconstruye una base a partir de `web/snapshot` si no se tiene la original.
+
+**Directo a PostgreSQL** (necesita alcanzar el pooler):
 
 ```
 cd backend

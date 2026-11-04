@@ -71,14 +71,17 @@ Variables de entorno: ver `.env.example`. Las claves reales no están en git y l
 
 ## 6. Pendiente
 
-Producción prevista: sitio y API en Vercel, base PostgreSQL en Supabase ([ADR 0014](architecture/adr/0014-postgresql-en-supabase-y-vercel.md), [guía](guias/despliegue.md)). El código ya soporta PostgreSQL (suite completa en Postgres, también en la CI), `migrate-db` y la API liviana para Vercel. Falta, con credenciales del dueño:
+**Producción en línea** desde el 04/11/2026: sitio https://bosque-vivo-web.vercel.app y API https://bosque-vivo-api.vercel.app sobre Supabase (PostgreSQL, us-east-1). Datos cargados desde `web/snapshot` con `push-db`. Ver [guía de despliegue](guias/despliegue.md).
 
-1. **Supabase**: poner en `backend/.env` la cadena del *Transaction pooler* (`DATABASE_URL`) y `DATABASE_PASSWORD`; ejecutar `uv run bosquevivo migrate-db` desde el computador con la base SQLite real.
-2. **Vercel**: `VERCEL_TOKEN=<token> scripts/deploy-vercel.sh` (crea los dos proyectos, copia variables y despliega).
-3. **Claves**: Gemini ([guía](guias/gemini.md)), WhatsApp ([guía](guias/whatsapp.md)), SMTP ([guía](guias/correo.md)). Luego CP-49, CP-50, CP-57 y CP-62 del plan de pruebas.
-4. **Revisión del docente**: aprobar RA01–RA09, decidir índice v0/v1 y firmar el plan de pruebas.
-5. **Piloto**: disponibilidad (CP-46) y comprensión con 5 personas (CP-29).
-6. **RA03, RA06, RA08**: evolución prevista. Decisión metodológica sobre ARR.
+Falta, con credenciales o decisiones del equipo:
+
+1. **Claves en Vercel** (proyecto `bosque-vivo-api` → Settings → Environment Variables, y luego Redeploy): `GEMINI_API_KEY` y `GEMINI_MODEL`; `WHATSAPP_TOKEN`, `WHATSAPP_PHONE_NUMBER_ID`, `WHATSAPP_APP_SECRET`; `SMTP_USER` y `SMTP_PASSWORD`. Luego CP-49, CP-50 y CP-57.
+2. **Polígonos completos**: subir la base SQLite original con `push-db --replace` (la copia del sitio tiene polígonos aligerados).
+3. **Cuenta de auditor en producción**: desde un computador con `DATABASE_URL` de Supabase, `uv run bosquevivo user-invite correo` (sin SMTP imprime el enlace).
+4. **Despliegue automático**: conectar los dos proyectos de Vercel al repositorio (Settings → Git).
+5. **Seguridad**: rotar la contraseña de la base y el token de Vercel que se compartieron por chat, y actualizar `DATABASE_PASSWORD` en Vercel.
+6. **Revisión del docente**: aprobar RA01–RA09, decidir índice v0/v1 y firmar el plan de pruebas.
+7. **Piloto**: disponibilidad (CP-46) y comprensión con 5 personas (CP-29). RA03, RA06 y RA08 quedan como evolución.
 
 ## 7. Trampas conocidas
 
