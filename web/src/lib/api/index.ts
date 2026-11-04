@@ -66,6 +66,15 @@ export interface ExplorerItem {
 /** Carga el listado con su geometría y su última auditoría (una consulta por proyecto). */
 export async function loadExplorerItems(): Promise<ExplorerItem[]> {
   const api = getApi();
+  const bulk = await api.explorer?.({ simplify: MAP_SIMPLIFY_DEGREES, maxParts: MAP_MAX_PARTS });
+  if (bulk) {
+    return bulk.map(({ project, geometry, audit }) => ({
+      project,
+      geometry,
+      audit,
+      category: audit?.result?.category ?? null,
+    }));
+  }
   const projects = await api.listProjects();
   // Por tandas: pedir todo a la vez (cientos de peticiones) satura la API y vence los tiempos de espera.
   const items: ExplorerItem[] = [];

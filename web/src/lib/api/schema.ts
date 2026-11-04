@@ -118,3 +118,11 @@ export const chatRequestSchema = z.object({
   session_ref: z.string().min(1).max(60).default("web"),
 });
 export type ChatRequest = z.infer<typeof chatRequestSchema>;
+
+export const explorerSchema = z.array(
+  z.object({
+    project: projectSchema,
+    geometry: geometrySchema.nullable(),
+    audit: auditRunSchema.nullable(),
+  }),
+);

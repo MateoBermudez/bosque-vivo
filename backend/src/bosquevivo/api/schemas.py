@@ -95,3 +95,9 @@ class DeclarationOut(BaseModel):
     field: str
     value: str
     source_document: str | None
+
+
+class ExplorerItemOut(BaseModel):
+    project: ProjectOut
+    geometry: dict[str, Any] | None
+    audit: AuditRunOut | None

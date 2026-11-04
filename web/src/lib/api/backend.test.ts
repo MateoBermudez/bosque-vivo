@@ -107,4 +107,14 @@ describe("cliente del backend", () => {
     fetchMock.mockResolvedValueOnce(json({ detail: "reporte no generado" }, 404));
     expect(await liveApi.getReport(8, "pdf")).toBeNull();
   });
+
+  it("pide el explorador completo en una sola llamada y acepta su ausencia", async () => {
+    const feature = { type: "Feature", properties: {}, geometry: { type: "Polygon", coordinates: [[[0, 0], [1, 0], [1, 1], [0, 0]]] } };
+    fetchMock.mockResolvedValueOnce(json([{ project, geometry: feature, audit: null }]));
+    const items = await liveApi.explorer!({ simplify: 0.005, maxParts: 200 });
+    expect(items?.[0]?.project.name).toBe("Proyecto");
+    expect(String(fetchMock.mock.calls[0]![0])).toBe("http://backend.test/api/v1/explorer?simplify=0.005&max_parts=200");
+    fetchMock.mockResolvedValueOnce(json({ detail: "Not Found" }, 404));
+    expect(await liveApi.explorer!({ simplify: 0.005, maxParts: 200 })).toBeNull();
+  });
 });

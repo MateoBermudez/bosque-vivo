@@ -31,6 +31,14 @@ export interface BosqueVivoApi {
   traces(limit?: number): Promise<Trace[]>;
   /** Devuelve el reporte de una corrida, o `null` si todavía no se generó. */
   getReport(runId: number, format: "html" | "pdf"): Promise<ReportFile | null>;
+  /** Todos los proyectos con polígono aligerado y última auditoría en una sola llamada; `null` si no está disponible. */
+  explorer?(options: { simplify: number; maxParts: number }): Promise<ExplorerEntry[] | null>;
+}
+
+export interface ExplorerEntry {
+  project: Project;
+  geometry: ProjectGeometry | null;
+  audit: AuditRun | null;
 }
 
 export interface ReportFile {

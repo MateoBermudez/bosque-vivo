@@ -4,6 +4,7 @@ from pathlib import Path
 
 import pytest
 
+from bosquevivo.audit import AuditService
 from bosquevivo.db.models import Job, Project
 from bosquevivo.satellite import SatelliteService, Sensor
 from bosquevivo.satellite.providers import FakeProvider
@@ -101,3 +102,20 @@ def test_geometry_and_series_endpoints(client, db, project):
     assert len(series["ndvi"]) == 6
     assert series["loss"] == [{"year": 2021, "ha_lost": 2.0}]
     assert client.get("/api/v1/projects/999/series").status_code == 404
+
+
+def test_explorer_returns_projects_with_geometry_and_latest_audit(client, db, project, tmp_path):
+    sat = SatelliteService(db, FakeProvider(), tmp_path)
+    sat.refresh_timeseries(
+        project.id, date(2016, 1, 1), date(2024, 12, 31), sensors=(Sensor.SENTINEL2,)
+    )
+    sat.refresh_forest_loss(project.id)
+    AuditService(db).run(project.id)
+    second = AuditService(db).run(project.id)
+    db.commit()
+    items = client.get("/api/v1/explorer").json()
+    assert len(items) == 1
+    item = items[0]
+    assert item["project"]["id"] == project.id
+    assert item["geometry"]["geometry"]["type"] in {"Polygon", "MultiPolygon"}
+    assert item["audit"]["id"] == second.id and item["audit"]["result"]["category"]

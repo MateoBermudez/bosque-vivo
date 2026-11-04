@@ -4,6 +4,7 @@ import { z, type ZodType } from "zod";
 
 import {
   auditRunSchema,
+  explorerSchema,
   chatAnswerSchema,
   declarationSchema,
   geometrySchema,
@@ -133,6 +134,11 @@ export const liveApi: BosqueVivoApi = {
     }),
   traces: (limit = 50) =>
     requireJson(`${API_PREFIX}/traces?limit=${limit}`, traceSchema.array(), { admin: true }),
+  explorer: ({ simplify, maxParts }) =>
+    getJson(`${API_PREFIX}/explorer?simplify=${simplify}&max_parts=${maxParts}`, explorerSchema, {
+      nullOn: [404, 405],
+      timeoutMs: 60_000,
+    }),
   async getReport(runId, format): Promise<ReportFile | null> {
     const response = await send(`${API_PREFIX}/audits/${runId}/report?format=${format}`, {
       nullOn: [404],
