@@ -7,6 +7,7 @@ import time
 from datetime import date
 from pathlib import Path
 
+import httpx
 from sqlalchemy import func, select
 
 from bosquevivo.accounts import AccountService, build_mailer
@@ -19,7 +20,9 @@ from bosquevivo.core.incidents import duration_minutes, is_critical, list_incide
 from bosquevivo.core.logging import configure_logging
 from bosquevivo.db.migrate import copy_database
 from bosquevivo.db.models import Project
+from bosquevivo.db.remote import push_database
 from bosquevivo.db.session import build_engine, get_session, init_db
+from bosquevivo.db.snapshot import load_snapshot
 from bosquevivo.db.urls import describe, resolve_database_url
 from bosquevivo.demo import seed_demo
 from bosquevivo.measure import (
@@ -400,6 +403,47 @@ def cmd_vercel_env(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_import_snapshot(args: argparse.Namespace) -> int:
+    init_db()
+    with get_session() as session:
+        if session.scalar(select(func.count(Project.id))):
+            print("La base ya tiene proyectos; use una base vacía (DATABASE_URL).")
+            return 1
+        summary = load_snapshot(session, Path(args.folder))
+    print(
+        f"proyectos={summary.projects} observaciones={summary.observations} "
+        f"perdidas={summary.losses} auditorias={summary.audits} "
+        f"declaraciones={summary.declarations}"
+    )
+    return 0
+
+
+def cmd_push_db(args: argparse.Namespace) -> int:
+    settings = get_settings()
+    token = args.token or os.environ.get("BOSQUEVIVO_ADMIN_TOKEN") or settings.admin_token
+    if not token:
+        print("Falta el ADMIN_TOKEN de la API remota (--token o BOSQUEVIVO_ADMIN_TOKEN).")
+        return 1
+    source_url = resolve_database_url(args.source)
+    print(f"origen:  {describe(source_url)}")
+    print(f"destino: {args.api}")
+    with httpx.Client(
+        base_url=args.api.rstrip("/"), headers={"X-Admin-Token": token}, timeout=120
+    ) as client:
+        report = push_database(
+            build_engine(source_url),
+            client,
+            replace=args.replace,
+            on_table=lambda name, count: print(f"  {name}: {count} filas"),
+        )
+    for problem in report.problems:
+        print(f"PROBLEMA: {problem}")
+    if report.problems:
+        return 1
+    print(f"Subida completa: {sum(report.sent.values())} filas en {len(report.sent)} tablas")
+    return 0
+
+
 def cmd_mail_test(args: argparse.Namespace) -> int:
     init_db()
     settings = get_settings()
@@ -462,6 +506,39 @@ def cmd_incidents(args: argparse.Namespace) -> int:
     return 0
 
 
+def _add_database_commands(sub) -> None:
+    migrate = sub.add_parser(
+        "migrate-db", help="Copia todos los datos de SQLite a PostgreSQL (Supabase)"
+    )
+    migrate.add_argument("--from", dest="source", default="sqlite:///data/bosquevivo.db")
+    migrate.add_argument("--to", dest="target", help="por defecto, DATABASE_URL")
+    migrate.add_argument("--replace", action="store_true", help="borra lo que haya en el destino")
+    migrate.set_defaults(func=cmd_migrate_db)
+    vercel_env = sub.add_parser(
+        "vercel-env", help="Prepara las variables para pegar en los dos proyectos de Vercel"
+    )
+    vercel_env.add_argument("--api-url", default="https://bosque-vivo-api.vercel.app")
+    vercel_env.add_argument("--web-url", default="https://bosque-vivo-web.vercel.app")
+    vercel_env.add_argument("--root", help="raíz del repositorio (por defecto se detecta)")
+    vercel_env.set_defaults(func=cmd_vercel_env)
+    snapshot = sub.add_parser(
+        "import-snapshot", help="Carga la copia web/snapshot en una base vacía"
+    )
+    snapshot.add_argument("folder", nargs="?", default="../web/snapshot")
+    snapshot.set_defaults(func=cmd_import_snapshot)
+    push = sub.add_parser(
+        "push-db",
+        help="Sube una base SQLite a la API desplegada por HTTPS (sin puerto de Postgres)",
+    )
+    push.add_argument(
+        "--api", required=True, help="URL de la API, p. ej. https://bosque-vivo-api.vercel.app"
+    )
+    push.add_argument("--from", dest="source", default="sqlite:///data/bosquevivo.db")
+    push.add_argument("--token", help="ADMIN_TOKEN de la API remota")
+    push.add_argument("--replace", action="store_true", help="borra lo que haya en el destino")
+    push.set_defaults(func=cmd_push_db)
+
+
 def _add_account_commands(sub) -> None:
     user_create = sub.add_parser("user-create", help="Crea una cuenta de auditor del sitio web")
     user_create.add_argument("email")
@@ -486,20 +563,6 @@ def _add_account_commands(sub) -> None:
     setup.add_argument("--no-demo", action="store_true", help="no carga proyectos de demostración")
     setup.add_argument("--root", help="raíz del repositorio (por defecto se detecta)")
     setup.set_defaults(func=cmd_setup)
-    migrate = sub.add_parser(
-        "migrate-db", help="Copia todos los datos de SQLite a PostgreSQL (Supabase)"
-    )
-    migrate.add_argument("--from", dest="source", default="sqlite:///data/bosquevivo.db")
-    migrate.add_argument("--to", dest="target", help="por defecto, DATABASE_URL")
-    migrate.add_argument("--replace", action="store_true", help="borra lo que haya en el destino")
-    migrate.set_defaults(func=cmd_migrate_db)
-    vercel_env = sub.add_parser(
-        "vercel-env", help="Prepara las variables para pegar en los dos proyectos de Vercel"
-    )
-    vercel_env.add_argument("--api-url", default="https://bosque-vivo-api.vercel.app")
-    vercel_env.add_argument("--web-url", default="https://bosque-vivo-web.vercel.app")
-    vercel_env.add_argument("--root", help="raíz del repositorio (por defecto se detecta)")
-    vercel_env.set_defaults(func=cmd_vercel_env)
     mail_test = sub.add_parser("mail-test", help="Envía un correo de prueba con la configuración")
     mail_test.add_argument("email")
     mail_test.set_defaults(func=cmd_mail_test)
@@ -607,6 +670,7 @@ def build_parser() -> argparse.ArgumentParser:
     audit.add_argument("--index-version", help="v0 o v1; por defecto INDEX_VERSION (v1)")
     audit.set_defaults(func=cmd_audit)
     _add_account_commands(sub)
+    _add_database_commands(sub)
     evaluate = sub.add_parser("eval")
     evaluate.add_argument("--output", default="data/eval/report.json")
     evaluate.set_defaults(func=cmd_eval)

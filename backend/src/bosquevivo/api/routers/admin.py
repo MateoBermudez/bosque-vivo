@@ -1,10 +1,19 @@
 from pathlib import Path
+from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException
+from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from bosquevivo.api.deps import db_session, require_admin
 from bosquevivo.api.schemas import ImportOut, ImportRequest
+from bosquevivo.db.remote import (
+    CLEAR_CONFIRMATION,
+    clear_all,
+    finish_restore,
+    restore_rows,
+    table_counts,
+)
 
 router = APIRouter(
     prefix="/api/v1/admin", tags=["administración"], dependencies=[Depends(require_admin)]
@@ -39,3 +48,41 @@ def import_projects(body: ImportRequest, session: Session = Depends(db_session))
         created_ids=summary.created_ids,
         errors=summary.errors,
     )
+
+
+class RestoreIn(BaseModel):
+    table: str
+    rows: list[dict[str, Any]]
+
+
+class ClearIn(BaseModel):
+    confirm: str
+
+
+@router.get("/restore")
+def restore_status(session: Session = Depends(db_session)):
+    return {"counts": table_counts(session)}
+
+
+@router.post("/restore")
+def restore(body: RestoreIn, session: Session = Depends(db_session)):
+    try:
+        inserted = restore_rows(session, body.table, body.rows)
+    except KeyError as exc:
+        raise HTTPException(status_code=422, detail=f"tabla desconocida: {body.table}") from exc
+    return {"table": body.table, "inserted": inserted}
+
+
+@router.post("/restore/clear")
+def restore_clear(body: ClearIn, session: Session = Depends(db_session)):
+    if body.confirm != CLEAR_CONFIRMATION:
+        raise HTTPException(
+            status_code=422, detail=f'escriba "{CLEAR_CONFIRMATION}" para confirmar'
+        )
+    clear_all(session)
+    return {"counts": table_counts(session)}
+
+
+@router.post("/restore/finish")
+def restore_finish(session: Session = Depends(db_session)):
+    return {"counts": finish_restore(session)}

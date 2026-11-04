@@ -1,0 +1,45 @@
+from pathlib import Path
+
+from bosquevivo.db.models import AuditRun, Project
+from bosquevivo.db.remote import push_database
+from bosquevivo.db.session import build_engine, init_db, make_session_factory
+from bosquevivo.db.snapshot import load_snapshot
+
+SNAPSHOT = Path(__file__).resolve().parents[3] / "web" / "snapshot"
+ADMIN = {"X-Admin-Token": "secreto"}
+
+
+def snapshot_engine(tmp_path):
+    engine = build_engine(f"sqlite:///{tmp_path / 'snapshot.db'}")
+    init_db(engine)
+    with make_session_factory(engine)() as session:
+        summary = load_snapshot(session, SNAPSHOT)
+        session.commit()
+    return engine, summary
+
+
+def test_snapshot_loads_projects_series_and_audits(tmp_path):
+    _, summary = snapshot_engine(tmp_path)
+    assert summary.projects >= 50 and summary.audits > 0 and summary.observations > 0
+
+
+def test_push_database_through_the_api(client, db, tmp_path):
+    engine, summary = snapshot_engine(tmp_path)
+    client.headers.update(ADMIN)
+    report = push_database(engine, client)
+    assert report.problems == []
+    assert db.query(Project).count() == summary.projects
+    assert db.query(AuditRun).count() == summary.audits
+    again = push_database(engine, client)
+    assert again.problems and "ya tiene datos" in again.problems[0]
+    replaced = push_database(engine, client, replace=True)
+    assert replaced.problems == []
+    assert db.query(Project).count() == summary.projects
+
+
+def test_restore_requires_admin_and_known_table(client):
+    assert client.get("/api/v1/admin/restore").status_code == 401
+    bad = client.post("/api/v1/admin/restore", headers=ADMIN, json={"table": "x", "rows": []})
+    assert bad.status_code == 422
+    wrong = client.post("/api/v1/admin/restore/clear", headers=ADMIN, json={"confirm": "si"})
+    assert wrong.status_code == 422
