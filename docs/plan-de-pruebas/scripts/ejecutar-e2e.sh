@@ -16,11 +16,11 @@ for port in "$api_port" "$web_port"; do
 done
 
 export DATABASE_URL="sqlite:///$work/bv.db" DATA_DIR="$work/data" ADMIN_TOKEN="token-e2e"
-export SATELLITE_PROVIDER=fake WEB_BASE_URL="http://localhost:$web_port"
+export SATELLITE_PROVIDER=fake WEB_BASE_URL="http://localhost:$web_port" AUTH_TWO_FACTOR=on
 
 cd "$root/backend"
 uv run bosquevivo seed-demo
-BOSQUEVIVO_PASSWORD=BosqueVivo2026 uv run bosquevivo user-create auditora@elpoli.edu.co --name "Auditora Prueba"
+uv run bosquevivo user-invite auditora@elpoli.edu.co --name "Auditora Prueba"
 setsid uv run uvicorn bosquevivo.api.app:app --port "$api_port" > "$work/api.log" 2>&1 &
 api_pid=$!
 

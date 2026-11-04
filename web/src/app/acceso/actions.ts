@@ -140,7 +140,6 @@ export async function login(previous: LoginState, formData: FormData): Promise<L
       step: "codigo",
       challenge: result.challenge,
       destination: result.destination,
-      notice: `Enviamos un código de 6 dígitos a ${result.destination}.`,
     };
   }
   return startSession(result.user.email, next);

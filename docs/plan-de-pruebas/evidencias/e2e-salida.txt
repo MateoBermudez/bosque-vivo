@@ -1,3 +1,6 @@
+OK    CP-56 la invitación llega con un enlace para activar la cuenta
+OK    CP-56 la página de la invitación da la bienvenida
+OK    CP-56 la cuenta queda activa con la contraseña elegida
 OK    CP-30 el área de auditores redirige a /acceso
 OK    CP-31 credenciales inválidas muestran error
 OK    CP-32 mismo mensaje genérico para correo registrado y no registrado -> Si la dirección está registrada, recibirás un correo con las instrucciones para restablecer tu contraseña.
@@ -7,9 +10,16 @@ OK    CP-35 contraseñas distintas se rechazan
 OK    CP-35 contraseña débil se rechaza
 OK    CP-36 la contraseña se actualiza
 OK    CP-34 el enlace ya usado se rechaza
-OK    CP-37 inicio de sesión con la contraseña nueva -> http://localhost:3100/trazas
+OK    CP-53 después de la contraseña se pide el código enviado por correo
+OK    CP-53 el correo contiene un código de 6 dígitos
+OK    CP-54 un código incorrecto se rechaza
+OK    CP-54 se puede reenviar el código
+OK    CP-37 con la contraseña nueva y el código se entra al área de auditores -> http://localhost:3100/trazas
 OK    CP-37 la sesión muestra el correo del auditor
-OK    CP-21 primer contacto: saludo y aviso de privacidad -> ["Hola, soy el asistente de Bosque Vivo. Soy una inteligencia artificial: puedo contarle qué se ve desde el satélite en proyectos de bosque. Puedo equivocarme.","Su mensaje lo procesa un servicio de un tercero (Google). No envíe cédula, dirección ni datos privados. Para continuar escriba ACEPTO. Puede borrar sus datos cuando quiera escribiendo BORRAR MIS DATOS."]
+OK    CP-55 llega el aviso de nuevo inicio de sesión
+OK    CP-55 llega el aviso de cambio de contraseña
+OK    CP-55 los correos tienen versión HTML
+OK    CP-21 primer contacto: saludo y aviso de privacidad
 OK    CP-22 sin autorización no responde consultas
 OK    CP-23 AYUDA lista las consultas disponibles
 OK    CP-24 PROYECTO <n> registra el polígono de interés

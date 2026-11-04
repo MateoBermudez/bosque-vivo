@@ -1,5 +1,23 @@
 [
   {
+    "id": "CP-56",
+    "description": "la invitación llega con un enlace para activar la cuenta",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "id": "CP-56",
+    "description": "la página de la invitación da la bienvenida",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "id": "CP-56",
+    "description": "la cuenta queda activa con la contraseña elegida",
+    "ok": true,
+    "detail": ""
+  },
+  {
     "id": "CP-30",
     "description": "el área de auditores redirige a /acceso",
     "ok": true,
@@ -54,8 +72,32 @@
     "detail": ""
   },
   {
+    "id": "CP-53",
+    "description": "después de la contraseña se pide el código enviado por correo",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "id": "CP-53",
+    "description": "el correo contiene un código de 6 dígitos",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "id": "CP-54",
+    "description": "un código incorrecto se rechaza",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "id": "CP-54",
+    "description": "se puede reenviar el código",
+    "ok": true,
+    "detail": ""
+  },
+  {
     "id": "CP-37",
-    "description": "inicio de sesión con la contraseña nueva",
+    "description": "con la contraseña nueva y el código se entra al área de auditores",
     "ok": true,
     "detail": "http://localhost:3100/trazas"
   },
@@ -66,10 +108,28 @@
     "detail": ""
   },
   {
+    "id": "CP-55",
+    "description": "llega el aviso de nuevo inicio de sesión",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "id": "CP-55",
+    "description": "llega el aviso de cambio de contraseña",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "id": "CP-55",
+    "description": "los correos tienen versión HTML",
+    "ok": true,
+    "detail": ""
+  },
+  {
     "id": "CP-21",
     "description": "primer contacto: saludo y aviso de privacidad",
     "ok": true,
-    "detail": "[\"Hola, soy el asistente de Bosque Vivo. Soy una inteligencia artificial: puedo contarle qué se ve desde el satélite en proyectos de bosque. Puedo equivocarme.\",\"Su mensaje lo procesa un servicio de un tercero (Google). No envíe cédula, dirección ni datos privados. Para continuar escriba ACEPTO. Puede borrar sus datos cuando quiera escribiendo BORRAR MIS DATOS.\"]"
+    "detail": ""
   },
   {
     "id": "CP-22",
