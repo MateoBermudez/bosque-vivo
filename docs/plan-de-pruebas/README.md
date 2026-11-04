@@ -5,14 +5,14 @@ Objetivo específico 4 del proyecto: probar Bosque Vivo con un plan que verifiqu
 | Documento | Contenido |
 |---|---|
 | [`plan-de-pruebas.md`](plan-de-pruebas.md) | El plan: historial, información del proyecto, aprobaciones, alcance y estrategia, criterios de aceptación, entregables, recursos, organización, riesgos, referencias y glosario |
-| [`casos-de-prueba.md`](casos-de-prueba.md) | 58 casos de prueba (CP-01 a CP-58) con requisito, pasos, resultado esperado, prueba automática y resultado |
+| [`casos-de-prueba.md`](casos-de-prueba.md) | 62 casos de prueba (CP-01 a CP-62) con requisito, pasos, resultado esperado, prueba automática y resultado |
 | [`informe-de-resultados.md`](informe-de-resultados.md) | Resultados de la ejecución, cobertura, mediciones de rendimiento y determinismo, E2E y evaluación de los criterios de aceptación |
 | [`incidencias.md`](incidencias.md) | Incidencias encontradas y su corrección |
 | [`Plan_de_Pruebas_Bosque_Vivo.docx`](Plan_de_Pruebas_Bosque_Vivo.docx) · [`.pdf`](Plan_de_Pruebas_Bosque_Vivo.pdf) | Los cuatro documentos anteriores en un solo archivo para entregar (Word y PDF) |
 | [`evidencias/`](evidencias) | Reportes JUnit, salidas de las herramientas, mediciones (`rnf-*.json`), resultado E2E y capturas |
 | [`scripts/`](scripts) | `ejecutar-e2e.sh` y `e2e.cjs` (Playwright), `disponibilidad.sh` (piloto), `generar-documento.sh` (Word y PDF) |
 
-Resultado del 03/11/2026: 53 de 58 casos aprobados, 0 fallidos y 5 bloqueados por credenciales o usuarios del piloto (CP-29, CP-46, CP-49, CP-50 y el envío SMTP real de CP-57).
+Resultado al 04/11/2026: 56 de 62 casos aprobados, 0 fallidos y 6 bloqueados por credenciales o usuarios del piloto (CP-29, CP-46, CP-49, CP-50, el SMTP real de CP-57 y el despliegue real de CP-62).
 
 Regenerar el `.docx` y el `.pdf` después de editar los Markdown (requiere pandoc y Playwright):
 

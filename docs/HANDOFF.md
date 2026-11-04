@@ -71,20 +71,20 @@ Variables de entorno: ver `.env.example`. Las claves reales no están en git y l
 
 ## 6. Pendiente
 
-Hecho el 03/11/2026: RF09 del ERS (cuentas de auditor, recuperación de contraseña, invitaciones), correo SMTP con verificación en dos pasos y avisos de seguridad, brechas de RF01–RF08, registro de incidentes, chat en línea `/asistente`, configuración automática (`bosquevivo setup`, `scripts/dev`, `scripts/start`), renumeración de la ampliación (RA01–RA09) y plan de pruebas IEEE 829 en `docs/plan-de-pruebas` (Word y PDF).
+Producción prevista: sitio y API en Vercel, base PostgreSQL en Supabase ([ADR 0014](architecture/adr/0014-postgresql-en-supabase-y-vercel.md), [guía](guias/despliegue.md)). El código ya soporta PostgreSQL (suite completa en Postgres, también en la CI), `migrate-db` y la API liviana para Vercel. Falta, con credenciales del dueño:
 
-`bosquevivo setup` genera todos los secretos y la configuración local. Solo faltan credenciales de servicios externos:
-
-1. **Claves en `backend/.env`**: `GEMINI_API_KEY`/`GEMINI_MODEL` ([guía](guias/gemini.md)), WhatsApp Cloud API ([guía](guias/whatsapp.md)) y `SMTP_USER`/`SMTP_PASSWORD` ([guía](guias/correo.md)). Luego ejecutar los casos bloqueados del plan de pruebas (CP-49 WhatsApp, CP-50 Gemini, CP-57 SMTP real con `bosquevivo mail-test`).
-2. **Despliegue del piloto**: no hay servidor público; se publica desde un computador del equipo con `scripts/start` y túnel ([guía](guias/despliegue.md)).
-3. **Revisión del docente**: aprobar RA01–RA09 como ampliación del ERS, decidir entre índice v0 y v1 y firmar el plan de pruebas.
-4. **Piloto**: disponibilidad (CP-46) y comprensión con 5 personas no técnicas (CP-29). Opcional: Earth Engine real (CP-39 con `gee`).
-5. **RA03, RA06, RA08**: evolución prevista, fuera del alcance de esta entrega. Decisión metodológica sobre ARR.
+1. **Supabase**: poner en `backend/.env` la cadena del *Transaction pooler* (`DATABASE_URL`) y `DATABASE_PASSWORD`; ejecutar `uv run bosquevivo migrate-db` desde el computador con la base SQLite real.
+2. **Vercel**: `VERCEL_TOKEN=<token> scripts/deploy-vercel.sh` (crea los dos proyectos, copia variables y despliega).
+3. **Claves**: Gemini ([guía](guias/gemini.md)), WhatsApp ([guía](guias/whatsapp.md)), SMTP ([guía](guias/correo.md)). Luego CP-49, CP-50, CP-57 y CP-62 del plan de pruebas.
+4. **Revisión del docente**: aprobar RA01–RA09, decidir índice v0/v1 y firmar el plan de pruebas.
+5. **Piloto**: disponibilidad (CP-46) y comprensión con 5 personas (CP-29).
+6. **RA03, RA06, RA08**: evolución prevista. Decisión metodológica sobre ARR.
 
 ## 7. Trampas conocidas
 
 - `Formato_ieee830.pdf` y los PDF de la raíz están en `.gitignore`; el ERS vive en `docs/ers/`.
 - No pasar el token en la URL del remoto ni dejarlo en `git config`: usar autenticación del entorno.
 - El historial de commits fue limpiado de cualquier coautoría; verificar con `git log --format=%B | grep -i -E "co-authored|claude"` antes de cada push (debe dar cero).
-- SQLite: hay un trabajador en hilo y escrituras concurrentes; ya se espera el bloqueo de escritura. Para cálculos en lote usar `audit-batch --shard i/n`.
+- SQLite (local): hay un trabajador en hilo y escrituras concurrentes; ya se espera el bloqueo de escritura. Para cálculos en lote usar `audit-batch --shard i/n`.
+- Supabase: usar siempre el *Transaction pooler* (IPv4); el host `db.<ref>.supabase.co` es solo IPv6. Las dependencias de cálculo son el extra `procesamiento` (`uv sync --all-extras`); Vercel instala solo el núcleo.
 - Los umbrales del índice no se deben ajustar para «producir variedad»: si el índice no distingue, se cambia lo que se mide y se documenta.

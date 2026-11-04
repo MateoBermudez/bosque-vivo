@@ -1,8 +1,8 @@
-........................................................................ [ 22%]
-........................................................................ [ 45%]
-........................................................................ [ 68%]
-........................................................................ [ 90%]
-.............................                                            [100%]
+........................................................................ [ 21%]
+........................................................................ [ 43%]
+........................................................................ [ 65%]
+........................................................................ [ 87%]
+..........................................                               [100%]
 ================================ tests coverage ================================
 _______________ coverage: platform linux, python 3.12.3-final-0 ________________
 
@@ -46,20 +46,20 @@ src/bosquevivo/ai/prompts/templates.py               7      0   100%
 src/bosquevivo/ai/vision/__init__.py                 2      0   100%
 src/bosquevivo/ai/vision/quality.py                 43      6    86%
 src/bosquevivo/api/__init__.py                       0      0   100%
-src/bosquevivo/api/app.py                           55      4    93%
+src/bosquevivo/api/app.py                           51      5    90%
 src/bosquevivo/api/deps.py                          30      3    90%
 src/bosquevivo/api/routers/__init__.py               0      0   100%
-src/bosquevivo/api/routers/admin.py                 11      0   100%
-src/bosquevivo/api/routers/audits.py                41     11    73%
+src/bosquevivo/api/routers/admin.py                 14      2    86%
+src/bosquevivo/api/routers/audits.py                51      7    86%
 src/bosquevivo/api/routers/auth.py                  89      8    91%
 src/bosquevivo/api/routers/chat.py                  44      0   100%
 src/bosquevivo/api/routers/community.py             24      0   100%
 src/bosquevivo/api/routers/health.py                 6      0   100%
 src/bosquevivo/api/routers/projects.py              64      2    97%
-src/bosquevivo/api/routers/whatsapp.py              26      0   100%
+src/bosquevivo/api/routers/whatsapp.py              25      0   100%
 src/bosquevivo/api/schemas.py                       72      0   100%
 src/bosquevivo/assistant/__init__.py                 4      0   100%
-src/bosquevivo/assistant/client.py                  32     15    53%
+src/bosquevivo/assistant/client.py                  34      9    74%
 src/bosquevivo/assistant/community.py               71      7    90%
 src/bosquevivo/assistant/dialogue.py                52      1    98%
 src/bosquevivo/assistant/messages.py                34      0   100%
@@ -77,45 +77,48 @@ src/bosquevivo/audit/index.py                       70      3    96%
 src/bosquevivo/audit/inputs.py                      16      0   100%
 src/bosquevivo/audit/narrative.py                   19      1    95%
 src/bosquevivo/audit/service.py                     78      5    94%
-src/bosquevivo/cli.py                              376    197    48%
+src/bosquevivo/cli.py                              400    212    47%
 src/bosquevivo/core/__init__.py                      3      0   100%
-src/bosquevivo/core/config.py                       54      1    98%
+src/bosquevivo/core/config.py                       67      0   100%
 src/bosquevivo/core/errors.py                        8      0   100%
 src/bosquevivo/core/incidents.py                    52      0   100%
 src/bosquevivo/core/logging.py                       8      0   100%
 src/bosquevivo/core/privacy.py                       5      0   100%
 src/bosquevivo/db/__init__.py                        3      0   100%
 src/bosquevivo/db/base.py                            6      0   100%
+src/bosquevivo/db/migrate.py                        66     10    85%
 src/bosquevivo/db/models.py                        222      0   100%
-src/bosquevivo/db/session.py                        63      3    95%
+src/bosquevivo/db/session.py                        74      3    96%
+src/bosquevivo/db/urls.py                           23      0   100%
 src/bosquevivo/demo.py                              42      0   100%
 src/bosquevivo/jobs/__init__.py                      3      0   100%
+src/bosquevivo/jobs/dispatch.py                     59      9    85%
 src/bosquevivo/jobs/kinds.py                         3      0   100%
 src/bosquevivo/jobs/queue.py                        32      0   100%
 src/bosquevivo/jobs/tasks.py                        44     22    50%
 src/bosquevivo/jobs/worker.py                       61      1    98%
 src/bosquevivo/measure.py                           83      2    98%
 src/bosquevivo/pipeline.py                         135     14    90%
-src/bosquevivo/registry/__init__.py                  5      0   100%
+src/bosquevivo/registry/__init__.py                 10      1    90%
 src/bosquevivo/registry/geometry.py                101     15    85%
 src/bosquevivo/registry/importer.py                121     16    87%
 src/bosquevivo/registry/karnik.py                  121      8    93%
 src/bosquevivo/registry/repository.py               52     10    81%
 src/bosquevivo/reports/__init__.py                   2      0   100%
-src/bosquevivo/reports/charts.py                    27      1    96%
+src/bosquevivo/reports/charts.py                    27      2    93%
 src/bosquevivo/reports/pdf.py                       47      0   100%
-src/bosquevivo/reports/service.py                   47      1    98%
+src/bosquevivo/reports/service.py                   54      3    94%
 src/bosquevivo/satellite/__init__.py                 5      0   100%
-src/bosquevivo/satellite/factory.py                 14      1    93%
+src/bosquevivo/satellite/factory.py                 19      4    79%
 src/bosquevivo/satellite/models.py                  27      0   100%
 src/bosquevivo/satellite/ndvi.py                    40      0   100%
 src/bosquevivo/satellite/provider.py                 5      0   100%
-src/bosquevivo/satellite/providers/__init__.py       3      0   100%
+src/bosquevivo/satellite/providers/__init__.py       8      1    88%
 src/bosquevivo/satellite/providers/fake.py          48      0   100%
 src/bosquevivo/satellite/providers/gee.py          161    111    31%
 src/bosquevivo/satellite/providers/hansen.py        99      1    99%
 src/bosquevivo/satellite/providers/opendata.py     116     20    83%
 src/bosquevivo/satellite/service.py                 82      0   100%
-src/bosquevivo/setup.py                             77      1    99%
+src/bosquevivo/setup.py                             86      1    99%
 --------------------------------------------------------------------
-TOTAL                                             5201    623    88%
+TOTAL                                             5438    657    88%

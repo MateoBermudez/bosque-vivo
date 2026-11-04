@@ -15,3 +15,4 @@
 | [0011](0011-base-de-conocimiento-sin-vectores.md) | Base de conocimiento sin vectores |
 | [0012](0012-modelo-propio-de-vision-como-evolucion.md) | Modelo propio de visión como evolución |
 | [0013](0013-nextjs-para-el-frontend.md) | Next.js para el frontend (propuesta) |
+| [0014](0014-postgresql-en-supabase-y-vercel.md) | PostgreSQL en Supabase y despliegue en Vercel |

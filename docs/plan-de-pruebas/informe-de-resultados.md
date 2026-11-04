@@ -6,13 +6,13 @@ Ejecución del [plan de pruebas](plan-de-pruebas.md) sobre la rama de trabajo qu
 
 | Indicador | Resultado |
 |---|---|
-| Casos especificados | 58 |
-| Casos aprobados | 53 (91 %) |
+| Casos especificados | 62 |
+| Casos aprobados | 56 (90 %) |
 | Casos fallidos | 0 |
-| Casos bloqueados por dependencias externas | 5 (CP-29, CP-46, CP-49, CP-50 y el envío SMTP real de CP-57) |
+| Casos bloqueados por dependencias externas | 6 (CP-29, CP-46, CP-49, CP-50, el envío SMTP real de CP-57 y el despliegue real de CP-62) |
 | Requisitos funcionales RF01–RF09 con casos aprobados | 9 de 9 (100 %) |
-| Pruebas automáticas del backend | 317 aprobadas, 0 fallidas (108 unitarias, 200 de integración, 5 golden, 4 del arnés de evaluación) |
-| Cobertura de líneas del backend | 88 % (5.201 sentencias) |
+| Pruebas automáticas del backend | 330 aprobadas, 0 fallidas, tanto en SQLite como en PostgreSQL 16 |
+| Cobertura de líneas del backend | 88 % (5.438 sentencias) |
 | Pruebas del sitio (Vitest) | 94 aprobadas en 10 archivos |
 | Pruebas del panel | 5 aprobadas |
 | Verificaciones E2E en navegador | 30 de 30 aprobadas |
@@ -26,7 +26,7 @@ Ejecución del [plan de pruebas](plan-de-pruebas.md) sobre la rama de trabajo qu
 |---|---|---|---|
 | Backend: estilo | `uv run ruff check . && uv run ruff format --check .` | Sin errores, 158 archivos con formato | `evidencias/backend-ruff.txt` |
 | Backend: tipos | `uv run pyright` | 0 errores | `evidencias/backend-pyright.txt` |
-| Backend: pruebas y cobertura | `uv run pytest --cov=bosquevivo --junitxml=...` | 317 aprobadas en 29 s, cobertura 88 % | `evidencias/backend-pytest.txt`, `backend-junit.xml` |
+| Backend: pruebas y cobertura | `uv run pytest --cov=bosquevivo --junitxml=...` | 330 aprobadas en 28 s, cobertura 88 %; las mismas 330 en PostgreSQL 16 | `evidencias/backend-pytest.txt`, `backend-junit.xml`, `backend-postgres-junit.xml` |
 | Sitio: estilo | `npm run lint` | Sin errores | `evidencias/web-lint.txt` |
 | Sitio: pruebas | `npx vitest run` | 94 aprobadas | `evidencias/web-vitest.txt`, `web-junit.xml` |
 | Sitio: compilación | `npm run build` | Correcta | `evidencias/web-build.txt` |
@@ -80,11 +80,20 @@ Capturas: `evidencias/capturas/00-invitacion-activada.png` a `08-codigo-2fa.png`
 
 Prueba manual adicional (CP-58): `scripts/start.sh` en un clon sin `.env` generó los secretos, la base y los datos de demostración, compiló el sitio y dejó la API (`/health`), el sitio y el chat en línea respondiendo en modo producción.
 
+## 4.1 PostgreSQL y despliegue (versión 1.2)
+
+| Prueba | Resultado |
+|---|---|
+| Suite completa contra PostgreSQL 16 (`TEST_DATABASE_URL`) | 330 de 330 aprobadas |
+| `migrate-db` de una base SQLite con datos de demostración, cuentas e invitaciones | 233 filas en 21 tablas; registros nuevos sin conflicto de secuencias |
+| Entorno solo con el núcleo de dependencias | 274 MB (límite de Vercel: 500 MB) |
+| API en modo Vercel (`VERCEL=1`) contra PostgreSQL | `/health`, proyectos, reporte PDF y HTML generados al vuelo, chat comunitario; auditoría rechazada con el mensaje de usar la CLI |
+
 ## 5. Evaluación de los criterios de aceptación
 
 | Criterio (plan, 4.5.1) | Resultado | Cumple |
 |---|---|---|
-| 1. 100 % de pruebas automáticas aprobadas y análisis estático sin errores | 317 + 94 + 5 aprobadas, 0 errores | Sí |
+| 1. 100 % de pruebas automáticas aprobadas y análisis estático sin errores | 330 (SQLite y PostgreSQL) + 94 + 5 aprobadas, 0 errores | Sí |
 | 2. Cobertura del backend ≥ 80 % | 88 % | Sí |
 | 3. RF01–RF09 con al menos un caso aprobado | 9 de 9 | Sí |
 | 4. Casos de prioridad 1 y 2 ejecutados | Todos, salvo CP-29 (usuarios del piloto) | Sí, con la excepción prevista |

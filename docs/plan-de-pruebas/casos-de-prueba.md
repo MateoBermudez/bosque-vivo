@@ -1,6 +1,6 @@
 # Especificación de casos de prueba
 
-Acompaña al [plan de pruebas](plan-de-pruebas.md). Versión 1.1 (03/11/2026): se añaden CP-53 a CP-58 (correo SMTP, verificación en dos pasos y configuración automática). Cada caso indica el requisito del ERS que verifica, la técnica, las precondiciones, los pasos, los datos, el resultado esperado, la prueba automática que lo ejecuta y el resultado de la ejecución del 03/11/2026.
+Acompaña al [plan de pruebas](plan-de-pruebas.md). Versión 1.2 (04/11/2026): se añaden CP-59 a CP-62 (PostgreSQL en Supabase, migración y despliegue en Vercel). Versión 1.1: CP-53 a CP-58 (correo SMTP, verificación en dos pasos y configuración automática). Cada caso indica el requisito del ERS que verifica, la técnica, las precondiciones, los pasos, los datos, el resultado esperado, la prueba automática que lo ejecuta y el resultado de la ejecución del 03/11/2026.
 
 Rutas de las pruebas: `backend/tests/...` (pytest), `web/src/...` (Vitest) y `docs/plan-de-pruebas/scripts/e2e.cjs` (Playwright, «E2E»).
 
@@ -27,7 +27,8 @@ Estados: **Aprobado**, **Fallido**, **Bloqueado** (depende de credenciales o usu
 | 3.3.6 Portabilidad | CP-48 | 1 | 0 |
 | Interfaces externas y regresión | CP-49 a CP-52 | 2 | 2 |
 | Correo SMTP, 2FA y configuración | CP-53 a CP-58 | 5 | 1 |
-| **Total** | **58** | **53** | **5** |
+| PostgreSQL, migración y despliegue | CP-59 a CP-62 | 3 | 1 |
+| **Total** | **62** | **56** | **6** |
 
 ## RF01 — Importar polígonos públicos
 
@@ -458,4 +459,38 @@ Estados: **Aprobado**, **Fallido**, **Bloqueado** (depende de credenciales o usu
 - **Resultado esperado:** `bosquevivo setup` crea `backend/.env` y `web/.env.local`, genera `ADMIN_TOKEN`, `PHONE_HMAC_KEY`, `WHATSAPP_VERIFY_TOKEN` y `SESSION_SECRET`, elige datos abiertos si no hay Earth Engine, crea la base con 3 proyectos de demostración, conserva comentarios y valores existentes al repetirse, y lista solo las claves externas que faltan.
 - **Automatización:** `integration/test_setup.py` (4 pruebas); prueba manual de `scripts/start.sh` en modo producción (API, sitio y chat en línea respondiendo).
 - **Resultado:** Aprobado.
+
+## PostgreSQL, migración y despliegue
+
+### CP-59 Suite completa contra PostgreSQL
+
+- **Requisito:** 3.3.6 Portabilidad, 3.3.3 Fiabilidad · **Prioridad:** 2
+- **Pasos:** `TEST_DATABASE_URL=postgresql://… uv run pytest` sobre un PostgreSQL 16 vacío.
+- **Resultado esperado:** las mismas pruebas que con SQLite pasan con PostgreSQL (tipos con zona horaria, largo de columnas, migración ligera, secuencias).
+- **Resultado obtenido:** 330 de 330 aprobadas en PostgreSQL 16; la CI ejecuta las dos variantes en cada cambio.
+- **Resultado:** Aprobado.
+
+### CP-60 Conexión a Supabase por el pooler
+
+- **Prioridad:** 2
+- **Resultado esperado:** `DATABASE_URL` con `[YOUR-PASSWORD]` se completa con `DATABASE_PASSWORD` codificada; `postgres://` y `postgresql://` usan el controlador psycopg; los hosts remotos exigen `sslmode=require`; en funciones sin estado se usa `NullPool` y sin sentencias preparadas (compatible con el *Transaction pooler*); la contraseña no aparece en los registros.
+- **Automatización:** `unit/test_database_urls.py` (5 pruebas)
+- **Resultado:** Aprobado. La conexión a la instancia real de Supabase se verifica al desplegar (CP-62).
+
+### CP-61 Migración de SQLite a PostgreSQL
+
+- **Prioridad:** 2
+- **Pasos:** `uv run bosquevivo migrate-db --from sqlite:///… --to postgresql://…`
+- **Resultado esperado:** copia las 21 tablas en orden de dependencias, informa los valores que superan el largo de su columna antes de copiar, se niega a sobrescribir sin `--replace`, reinicia las secuencias y verifica los conteos; después se pueden crear registros nuevos.
+- **Resultado obtenido:** 233 filas en 21 tablas copiadas a PostgreSQL 16; luego se crearon un usuario (id 3) y una auditoría (corrida 4) sin conflictos de identificador.
+- **Automatización:** `integration/test_migrate.py` (2 pruebas)
+- **Resultado:** Aprobado.
+
+### CP-62 API liviana y despliegue en Vercel
+
+- **Prioridad:** 2
+- **Pasos:** instalar solo el núcleo de dependencias, arrancar la API con `VERCEL=1` contra PostgreSQL y recorrer salud, proyectos, reportes, chat comunitario y solicitud de auditoría; luego `VERCEL_TOKEN=… scripts/deploy-vercel.sh`.
+- **Resultado esperado:** el núcleo pesa menos de 500 MB; la API arranca sin las librerías de cálculo; las tareas se procesan en la misma petición; los reportes PDF y HTML se generan al vuelo; una auditoría pedida a la API desplegada falla con el mensaje de usar la CLI.
+- **Resultado obtenido:** núcleo de 274 MB; API en modo Vercel respondió `/health`, proyectos, reporte PDF (200) y HTML (200), chat comunitario y la auditoría quedó «failed» con el mensaje esperado. `integration/test_inline_jobs.py` (4 pruebas).
+- **Resultado:** Aprobado en local. El despliegue real queda Bloqueado hasta tener el token de Vercel y la cadena del pooler de Supabase.
 

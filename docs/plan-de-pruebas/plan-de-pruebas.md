@@ -17,7 +17,7 @@ Documentos que lo acompañan:
 
 | Documento | Contenido |
 |---|---|
-| [`casos-de-prueba.md`](casos-de-prueba.md) | Especificación de los 58 casos de prueba (CP-01 a CP-58) |
+| [`casos-de-prueba.md`](casos-de-prueba.md) | Especificación de los 62 casos de prueba (CP-01 a CP-62) |
 | [`informe-de-resultados.md`](informe-de-resultados.md) | Ejecución, métricas, mediciones de requisitos no funcionales y evaluación de los criterios de aceptación |
 | [`incidencias.md`](incidencias.md) | Registro de incidencias encontradas durante la ejecución |
 | [`evidencias/`](evidencias) | Salidas de las herramientas, reportes JUnit, cobertura, mediciones y capturas |
@@ -30,6 +30,7 @@ Documentos que lo acompañan:
 | 20/10/2026 | 0.1 | Equipo Bosque Vivo | Primer plan (`docs/testing/plan-de-pruebas.md`): capas de prueba y matriz RF → pruebas, sin el formato IEEE 829 |
 | 03/11/2026 | 1.0 | Equipo Bosque Vivo | Plan completo según la plantilla IEEE 829, alineado con el ERS del 20/10/2026 (RF01–RF09 y requisitos no funcionales), casos de prueba, ejecución y resultados |
 | 03/11/2026 | 1.1 | Equipo Bosque Vivo | Correo SMTP con verificación en dos pasos, avisos de seguridad e invitaciones; configuración automática; casos CP-53 a CP-58 |
+| 04/11/2026 | 1.2 | Equipo Bosque Vivo | PostgreSQL en Supabase, migración desde SQLite y despliegue en Vercel; casos CP-59 a CP-62 |
 |  |  |  |  |
 
 ## 2. Información del Proyecto
@@ -69,6 +70,7 @@ El objeto de prueba es la versión de Bosque Vivo de la rama `main` del reposito
 | Cuentas y recuperación de contraseña | `backend/src/bosquevivo/accounts`, `api/routers/auth.py`, `web/src/app/acceso` | RF09 | Inicio de sesión; mensaje genérico; token de un solo uso con vencimiento; validación de la contraseña nueva; confirmación; bloqueo por intentos; invitaciones |
 | Correo SMTP y verificación en dos pasos | `accounts/mailer.py`, `accounts/templates.py`, `accounts/service.py` | RF09, 3.3.2 | Código de 6 dígitos por correo (intentos, vencimiento, reenvío); avisos de inicio de sesión, cambio de contraseña y bloqueo; detección del servidor SMTP, TLS, reintentos; buzón local sin SMTP |
 | Configuración automática | `bosquevivo/setup.py`, `scripts/dev.*`, `scripts/start.*` | 3.3.5, 3.3.6 | Generación de secretos y `.env`, base y datos de demostración, lista de claves externas pendientes, modo producción |
+| Base de datos y despliegue | `db/session.py`, `db/urls.py`, `db/migrate.py`, `jobs/dispatch.py`, `backend/index.py`, `scripts/deploy-vercel.sh` | 3.3.3, 3.3.6 | Suite completa en PostgreSQL, conexión por el pooler de Supabase, migración desde SQLite, API liviana en modo Vercel |
 | Agente de IA (ampliación) | `backend/src/bosquevivo/ai` | RA01–RA09 | Herramientas, validador de fidelidad, neutralidad, inyección de instrucciones, respaldo determinista (regresión con modelo guionizado) |
 | Incidentes y mediciones | `core/incidents.py`, `measure.py` | 3.3.1, 3.3.3, 3.3.5 | Registro de incidentes con origen externo/interno y duración; tiempos de respuesta y de cálculo; determinismo |
 | Sitio web | `web/` | 3.1.1 | Contrato de la API (zod), sesión firmada, componentes de dominio, compilación de producción |
@@ -182,7 +184,7 @@ Los casos o partes que dependen de credenciales o usuarios externos (CP-29, CP-4
 | Python | 3.12 | Backend y panel |
 | uv | 0.5 o superior | Entornos y dependencias de Python |
 | Node.js | 22 o superior (CI con 24) | Sitio web |
-| Base de datos | SQLite (incluida en Python) | Base de pruebas en memoria y bases temporales por ejecución |
+| Base de datos | SQLite (incluida en Python) y PostgreSQL 16 | Base de pruebas en memoria, bases temporales y la misma suite contra PostgreSQL (`TEST_DATABASE_URL`, servicio de la CI); producción en Supabase |
 | Chromium + Playwright | Versión preinstalada | Pruebas de extremo a extremo |
 | Git y GitHub | — | Control de versiones y CI |
 | Accesos (piloto) | — | Clave de Google AI Studio, app de Meta para WhatsApp, cuenta de Earth Engine, cuenta de correo SMTP |

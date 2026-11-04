@@ -13,12 +13,12 @@ Sistema de información que contrasta lo que declaran los proyectos de carbono f
 
 | Tema | Decisión |
 |---|---|
-| **Dónde corre** | **Todo en un computador local (Windows 11).** Sin máquinas virtuales, sin servidores, sin nube propia. |
+| **Dónde corre** | **Producción: Vercel** (sitio y API) **+ Supabase** (PostgreSQL), [ADR 0014](docs/architecture/adr/0014-postgresql-en-supabase-y-vercel.md). Desarrollo y cálculo satelital: un computador local (Windows 11 o Linux). |
 | **Docker** | **No se usa.** En Windows corre sobre WSL2/Hyper-V (una VM). |
 | **IA** | **Gemini de Google AI Studio, capa gratuita, por API** (SDK `google-genai`). **No se usa Ollama ni modelos locales.** |
 | **Nivel del proyecto** | **Proyecto universitario, no tesis.** Se prioriza que funcione, se pueda demostrar, esté probado y documentado. |
 | **Código abierto** | Todo el código propio es abierto. Gemini, Google Earth Engine y WhatsApp Cloud API son servicios gratuitos de terceros (el ERS contempla "servicios gratuitos de terceros"). |
-| **Base de datos** | SQLite + shapely (sin PostgreSQL/PostGIS). |
+| **Base de datos** | PostgreSQL en Supabase en producción; SQLite para desarrollo y pruebas (`DATABASE_URL`). Geometrías con shapely, sin PostGIS. |
 | **Frontend** | Next.js en `web/` ([ADR 0013](docs/architecture/adr/0013-nextjs-para-el-frontend.md), propuesta). El panel Streamlit (`panel/`) queda en desuso hasta que se apruebe. |
 | **Alcance** | ERS (RF01–RF09) + agente de IA que razona, analiza imágenes y concluye con evidencia (RA01–RA09, pendiente de aprobación del docente). |
 
@@ -55,7 +55,8 @@ cd backend && uv run bosquevivo user-invite correo@elpoli.edu.co --name "Nombre"
 
 - API: http://127.0.0.1:8000 (documentación en `/docs`)
 - Sitio: http://localhost:3000
-- Modo producción para el piloto: `scripts/start.sh` (o `scripts\start.ps1`), con `TUNNEL=1` / `-Tunnel` para publicarlo con HTTPS. Ver [guía de despliegue](docs/guias/despliegue.md).
+- **Despliegue en Vercel + Supabase:** `VERCEL_TOKEN=<token> scripts/deploy-vercel.sh`, después de poner la cadena de Supabase en `DATABASE_URL` y migrar los datos con `uv run bosquevivo migrate-db`. Ver [guía de despliegue](docs/guias/despliegue.md).
+- Modo producción local: `scripts/start.sh` (o `scripts\start.ps1`), con `TUNNEL=1` / `-Tunnel` para publicarlo con HTTPS.
 - Panel Streamlit (en desuso, opcional): `scripts\dev.ps1 -Streamlit` o `STREAMLIT=1 scripts/dev.sh` → http://127.0.0.1:8501
 
 Sin claves externas funciona todo salvo lo que depende de ellas: el asistente (WhatsApp y el chat en línea `/asistente`) responde ESTADO, ALERTAS, AYUDA y PROYECTO <número> sin IA; las preguntas libres, fotos y voz requieren Gemini ([guía](docs/guias/gemini.md)). El área de auditores usa cuentas con correo y contraseña; con SMTP configurado ([guía](docs/guias/correo.md)) se activan la verificación en dos pasos por correo, los avisos de inicio de sesión y el envío real de la recuperación de contraseña (RF09). Más detalle en [`web/README.md`](web/README.md).
@@ -78,7 +79,8 @@ SATELLITE_PROVIDER=hansen uv run bosquevivo audit-batch --country Colombia
 Calidad:
 
 ```
-cd backend && uv run ruff check . && uv run pyright && uv run pytest
+cd backend && uv sync --all-extras && uv run ruff check . && uv run pyright && uv run pytest
+TEST_DATABASE_URL=postgresql://usuario:clave@localhost:5432/prueba uv run pytest   # la misma suite contra PostgreSQL
 cd web && npm run lint && npm run typecheck && npm test && npm run build
 ```
 
