@@ -85,7 +85,7 @@ def duration_minutes(incident: Incident) -> float | None:
     if incident.ended_at is None:
         return None
     delta = as_aware(incident.ended_at) - as_aware(incident.started_at)
-    return round(delta.total_seconds() / 60, 2)
+    return round(max(delta.total_seconds(), 0.0) / 60, 2)
 
 
 def is_critical(incident: Incident) -> bool:

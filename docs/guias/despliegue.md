@@ -75,6 +75,30 @@ Se abren dos túneles `https://…trycloudflare.com`: el del sitio (póngalo en 
 
 El computador debe quedar encendido, sin suspensión y con Internet estable durante el piloto. La disponibilidad se mide con `docs/plan-de-pruebas/scripts/disponibilidad.sh`.
 
+## ¿Vercel? ¿Supabase?
+
+Bosque Vivo tiene dos partes: el **sitio** (Next.js, `web/`) y la **API** (FastAPI, `backend/`) con su base **SQLite** (`backend/data/bosquevivo.db`).
+
+| Opción | ¿Sirve? | Por qué |
+|---|---|---|
+| Sitio en Vercel | Sí | Es Next.js; Vercel lo compila tal cual. Necesita `BACKEND_URL` apuntando a una API pública |
+| API en Vercel | No | Vercel ejecuta funciones efímeras: no guarda un archivo SQLite entre peticiones, no mantiene el trabajador de tareas en segundo plano (WhatsApp, auditorías) y las librerías geoespaciales (GDAL, rasterio) superan el tamaño permitido |
+| API en un computador del equipo + túnel | Sí (recomendado, ADR 0002) | Gratis, ya probado con `scripts/start` y cloudflared |
+| API en un servidor con disco (VM gratuita de Oracle Cloud, Fly.io con volumen, Render con disco de pago) | Sí | Mismo código; la base SQLite vive en el disco persistente |
+| Supabase (PostgreSQL) | No es necesario | SQLite alcanza para el piloto. Pasar a PostgreSQL es posible porque el código usa SQLAlchemy (`DATABASE_URL`), pero habría que revisar las partes propias de SQLite (PRAGMA, migración ligera, bloqueo de escritura) y probarlo; no se ha hecho |
+
+Combinación sugerida si se quiere una URL estable sin depender de un computador encendido: sitio en Vercel y API en una VM gratuita con disco, con `BACKEND_URL`, `ADMIN_TOKEN` y `SESSION_SECRET` configurados en Vercel.
+
+### SQLite: ventajas y riesgos
+
+| Ventajas | Riesgos y límites |
+|---|---|
+| Cero instalación ni servidor: un archivo | Una sola escritura a la vez: suficiente para un piloto, no para cientos de usuarios simultáneos (se espera hasta 60 s por el bloqueo y se usa modo WAL) |
+| Gratis y abierto, igual en Windows y Linux | El archivo debe estar en un disco persistente: no sirve en plataformas sin disco (Vercel, Render gratuito) |
+| Copia de seguridad = copiar el archivo | Si el disco se pierde, se pierden los datos: haga copias periódicas de `backend/data/` |
+| Rápido para las consultas del proyecto (decenas de proyectos, miles de observaciones) | Sin acceso de varios servidores a la vez: la API debe correr en una sola máquina |
+| Pruebas con base en memoria, sin servicios externos | Migraciones de esquema limitadas (se resuelven con `upgrade_schema` al arrancar) |
+
 ## Copia estática para mostrar sin servidor
 
 `web/snapshot` contiene una copia de solo lectura de los proyectos. Con `BV_DATA_SOURCE=snapshot` el sitio se puede publicar gratis en Vercel o Netlify sin la API (sin chat ni área de auditores). Ver `web/README.md`.
