@@ -3,6 +3,8 @@ from datetime import date
 import numpy as np
 
 from bosquevivo.satellite import Sensor, monthly_composite, ndvi
+from bosquevivo.satellite.models import TimeSeriesPoint
+from bosquevivo.satellite.ndvi import is_valid_point
 
 
 def test_ndvi_basic_values():
@@ -14,9 +16,17 @@ def test_ndvi_basic_values():
     assert np.isnan(result[2])
 
 
-def test_ndvi_is_bounded():
-    result = ndvi(np.array([10.0]), np.array([-9.9]))
-    assert -1.0 <= result[0] <= 1.0
+def test_ndvi_out_of_range_is_discarded():
+    result = ndvi(np.array([10.0, 0.5]), np.array([-9.9, 0.1]))
+    assert np.isnan(result[0])
+    assert -1.0 <= result[1] <= 1.0
+
+
+def test_invalid_points_are_detected():
+    good = TimeSeriesPoint(period=date(2024, 1, 1), sensor=Sensor.SENTINEL2, ndvi_mean=0.8)
+    bad = TimeSeriesPoint(period=date(2024, 2, 1), sensor=Sensor.SENTINEL2, ndvi_mean=1.4)
+    assert is_valid_point(good)
+    assert not is_valid_point(bad)
 
 
 def test_monthly_composite_groups_scenes_and_uses_median():

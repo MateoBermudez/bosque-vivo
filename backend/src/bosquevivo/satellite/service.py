@@ -7,6 +7,8 @@ from sqlalchemy import delete
 from sqlalchemy.orm import Session
 
 from bosquevivo.core.errors import NotFoundError
+from bosquevivo.core.incidents import record_incident
+from bosquevivo.core.logging import get_logger
 from bosquevivo.db.models import (
     ForestBaselineRecord,
     ForestLoss,
@@ -15,7 +17,10 @@ from bosquevivo.db.models import (
     Project,
 )
 from bosquevivo.satellite.models import Sensor, ThumbnailKind
+from bosquevivo.satellite.ndvi import is_valid_point
 from bosquevivo.satellite.provider import SatelliteProvider
+
+log = get_logger(__name__)
 
 SENTINEL2_START = date(2017, 1, 1)
 LANDSAT_START = date(1999, 1, 1)
@@ -27,6 +32,7 @@ class SatelliteService:
         self.session = session
         self.provider = provider
         self.images_dir = images_dir
+        self.invalid_points = 0
 
     def _project(self, project_id: int) -> Project:
         project = self.session.get(Project, project_id)
@@ -42,6 +48,7 @@ class SatelliteService:
         default = getattr(self.provider, "default_sensors", (Sensor.LANDSAT, Sensor.SENTINEL2))
         chosen = sensors or default
         stored = 0
+        self.invalid_points = 0
         for sensor in chosen:
             floor = {
                 Sensor.SENTINEL2: SENTINEL2_START,
@@ -50,7 +57,18 @@ class SatelliteService:
             sensor_start = max(start, floor)
             if sensor_start >= end:
                 continue
-            points = self.provider.get_timeseries(geometry, sensor_start, end, sensor)
+            received = self.provider.get_timeseries(geometry, sensor_start, end, sensor)
+            points = [point for point in received if is_valid_point(point)]
+            discarded = len(received) - len(points)
+            if discarded:
+                self.invalid_points += discarded
+                log.warning(
+                    "escena_invalida",
+                    project_id=project_id,
+                    sensor=sensor.value,
+                    discarded=discarded,
+                    reason="NDVI fuera de [-1, 1]",
+                )
             self.session.execute(
                 delete(NdviObservation).where(
                     NdviObservation.project_id == project_id,
@@ -73,6 +91,15 @@ class SatelliteService:
                     )
                 )
             stored += len(points)
+        if stored == 0:
+            record_incident(
+                self.session,
+                "series_satelitales",
+                f"sin escenas utilizables para el proyecto {project_id} entre {start} y {end}; "
+                "el índice no puede calcularse con la confianza mínima",
+                origin="externo",
+                severity="aviso",
+            )
         self.session.flush()
         return stored
 

@@ -13,4 +13,4 @@ def build_provider(settings: Settings) -> SatelliteProvider:
         return OpenDataProvider()
     if settings.satellite_provider == "hansen":
         return HansenOpenProvider()
-    return GeeProvider(settings.gee_project)
+    return GeeProvider(settings.gee_project, settings.cloud_max_percent)

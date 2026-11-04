@@ -53,12 +53,18 @@ def cmd_import(args: argparse.Namespace) -> int:
             source_version=args.version,
             country=args.country,
             limit=args.limit,
+            strict=not args.lenient,
         )
         print(
             f"creados={summary.created} actualizados={summary.updated} "
-            f"reparados={summary.repaired} omitidos={summary.skipped}"
+            f"reparados={summary.repaired} omitidos={summary.skipped} "
+            f"rechazados={summary.rejected}"
         )
-    return 0
+        for project_id in summary.created_ids:
+            print(f"  importado con id interno {project_id}")
+        for error in summary.errors:
+            print(f"  {error}")
+    return 1 if summary.rejected and not summary.total else 0
 
 
 def cmd_import_karnik(args: argparse.Namespace) -> int:
@@ -342,6 +348,11 @@ def build_parser() -> argparse.ArgumentParser:
     imp.add_argument("--version")
     imp.add_argument("--country")
     imp.add_argument("--limit", type=int)
+    imp.add_argument(
+        "--lenient",
+        action="store_true",
+        help="actualiza proyectos existentes y repara geometrías en vez de rechazarlos",
+    )
     imp.set_defaults(func=cmd_import)
     karnik = sub.add_parser("import-karnik", help="Importa la base de Karnik et al. (2025)")
     karnik.add_argument("path", help="GeoPackage continental, p. ej. south_america.gpkg")

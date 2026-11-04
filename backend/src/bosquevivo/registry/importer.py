@@ -5,6 +5,7 @@ from pathlib import Path
 import geopandas as gpd
 from pyproj import CRS
 from shapely.geometry import mapping
+from shapely.validation import explain_validity
 from sqlalchemy.orm import Session
 
 from bosquevivo.core.errors import ValidationFailedError
@@ -26,9 +27,16 @@ COLUMN_ALIASES: dict[str, tuple[str, ...]] = {
         "start_date",
         "project_start_date",
         "year",
+        "registration_date",
+        "fecha_registro",
+        "begin",
+        "timestamp",
     ),
     "source_registry": ("registry", "standard", "source_registry", "program", "registry_name"),
 }
+
+
+SUPPORTED_SUFFIXES = {".geojson", ".json", ".kml", ".gpkg", ".shp", ".zip"}
 
 
 @dataclass
@@ -37,7 +45,9 @@ class ImportSummary:
     updated: int = 0
     repaired: int = 0
     skipped: int = 0
+    rejected: int = 0
     errors: list[str] = field(default_factory=list)
+    created_ids: list[int] = field(default_factory=list)
 
     @property
     def total(self) -> int:
@@ -83,10 +93,9 @@ def import_file(
     default_registry: str = "karnik",
     country: str | None = None,
     limit: int | None = None,
+    strict: bool = False,
 ) -> ImportSummary:
-    if not path.exists():
-        raise ValidationFailedError(f"no existe el archivo {path}")
-    frame = gpd.read_file(path)
+    frame = _read_frame(path)
     if frame.crs is None:
         frame = frame.set_crs(WGS84)
     columns = resolve_columns(list(frame.columns))
@@ -102,6 +111,16 @@ def import_file(
         if country and (row_country or "").lower() != country.lower():
             summary.skipped += 1
             continue
+        registry_id = _clean(row[columns["registry_id"]]) if "registry_id" in columns else None
+        name = _clean(row[columns["name"]]) if "name" in columns else None
+        start_year = _to_year(row[columns["start_year"]]) if "start_year" in columns else None
+        registry = _registry(row, columns, default_registry)
+        if strict:
+            reason = _strict_rejection(repository, row.geometry, registry, registry_id, start_year)
+            if reason:
+                summary.rejected += 1
+                summary.errors.append(f"fila {index}: rechazada, {reason}")
+                continue
         try:
             report = normalize_geometry(row.geometry, source_crs)
         except ValidationFailedError as exc:
@@ -110,31 +129,66 @@ def import_file(
             continue
         if report.repaired:
             summary.repaired += 1
-        registry_id = _clean(row[columns["registry_id"]]) if "registry_id" in columns else None
-        name = _clean(row[columns["name"]]) if "name" in columns else None
         data = {
-            "source_registry": (
-                (_clean(row[columns["source_registry"]]) or default_registry).lower()
-                if "source_registry" in columns
-                else default_registry
-            ),
+            "source_registry": registry,
             "registry_id": registry_id or f"row-{index}",
             "name": name or f"Proyecto {registry_id or index}",
             "country": row_country,
             "project_type": _clean(row[columns["project_type"]])
             if "project_type" in columns
             else None,
-            "start_year": _to_year(row[columns["start_year"]]) if "start_year" in columns else None,
+            "start_year": start_year,
             "area_ha": round(report.area_ha, 2),
             "geometry": json.dumps(mapping(report.geometry)),
             "source": source,
             "source_version": source_version,
         }
-        _, created = repository.upsert(data)
+        project, created = repository.upsert(data)
         if created:
             summary.created += 1
+            session.flush()
+            summary.created_ids.append(project.id)
         else:
             summary.updated += 1
     session.flush()
     log.info("import_finished", created=summary.created, updated=summary.updated)
     return summary
+
+
+def _read_frame(path: Path) -> gpd.GeoDataFrame:
+    if not path.exists():
+        raise ValidationFailedError(f"no existe el archivo {path}")
+    if path.suffix.lower() not in SUPPORTED_SUFFIXES:
+        raise ValidationFailedError(
+            f"formato no soportado: {path.suffix} (use GeoJSON, KML, GeoPackage o Shapefile)"
+        )
+    try:
+        return gpd.read_file(path)
+    except Exception as exc:
+        raise ValidationFailedError(f"no se pudo leer el archivo: {exc}") from exc
+
+
+def _registry(row, columns: dict[str, str], default: str) -> str:
+    if "source_registry" not in columns:
+        return default
+    return (_clean(row[columns["source_registry"]]) or default).lower()
+
+
+def _strict_rejection(
+    repository: ProjectRepository,
+    geometry,
+    registry: str,
+    registry_id: str | None,
+    start_year: int | None,
+) -> str | None:
+    if not registry_id:
+        return "falta el identificador del proyecto"
+    if start_year is None:
+        return "falta la fecha de registro del proyecto"
+    if geometry is None or geometry.is_empty:
+        return "la geometría está vacía"
+    if not geometry.is_valid:
+        return f"la geometría no es válida ({explain_validity(geometry)})"
+    if repository.find_by_registry(registry, registry_id):
+        return f"el identificador {registry_id} ya existe en el repositorio"
+    return None

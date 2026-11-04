@@ -64,7 +64,12 @@ def test_report_format_validation(client):
 def test_admin_import(client, db, tmp_path: Path):
     feature = {
         "type": "Feature",
-        "properties": {"project_id": "Z1", "project_name": "Importado", "country": "Peru"},
+        "properties": {
+            "project_id": "Z1",
+            "project_name": "Importado",
+            "country": "Peru",
+            "start_year": 2015,
+        },
         "geometry": {"type": "Polygon", "coordinates": [RING]},
     }
     path = tmp_path / "p.geojson"
@@ -73,7 +78,13 @@ def test_admin_import(client, db, tmp_path: Path):
         "/api/v1/admin/import", headers=ADMIN, json={"path": str(path), "source": "test"}
     )
     assert response.status_code == 200
-    assert response.json()["created"] == 1
+    body = response.json()
+    assert body["created"] == 1 and len(body["created_ids"]) == 1
+    again = client.post(
+        "/api/v1/admin/import", headers=ADMIN, json={"path": str(path), "source": "test"}
+    ).json()
+    assert again["created"] == 0 and again["rejected"] == 1
+    assert "ya existe" in again["errors"][0]
     assert client.post("/api/v1/admin/import", json={"path": "x", "source": "y"}).status_code == 401
 
 

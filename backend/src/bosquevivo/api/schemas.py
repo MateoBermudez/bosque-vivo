@@ -56,6 +56,7 @@ class ImportRequest(BaseModel):
     source_version: str | None = None
     country: str | None = None
     limit: int | None = None
+    strict: bool = True
 
 
 class ImportOut(BaseModel):
@@ -63,6 +64,9 @@ class ImportOut(BaseModel):
     updated: int
     repaired: int
     skipped: int
+    rejected: int = 0
+    created_ids: list[int] = []
+    errors: list[str] = []
 
 
 class SeriesPointOut(BaseModel):
