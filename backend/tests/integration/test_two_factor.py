@@ -189,11 +189,13 @@ def test_mask_email():
 
 
 def test_smtp_presets_and_auto_backend(tmp_path):
-    gmail = Settings(smtp_user="equipo@gmail.com", smtp_password="app", data_dir=tmp_path)
+    gmail = Settings(
+        smtp_user="equipo@gmail.com", smtp_password="app", mail_backend="auto", data_dir=tmp_path
+    )
     assert smtp_endpoint(gmail) == ("smtp.gmail.com", 587)
     assert resolved_backend(gmail) == "smtp"
     assert isinstance(build_mailer(gmail), SmtpMailer)
-    assert resolved_backend(Settings(data_dir=tmp_path)) == "outbox"
+    assert resolved_backend(Settings(mail_backend="auto", data_dir=tmp_path)) == "outbox"
     custom = Settings(smtp_host="mail.test", smtp_port=465, smtp_user="a@b.co")
     assert smtp_endpoint(custom) == ("mail.test", 465)
 

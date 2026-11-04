@@ -316,9 +316,7 @@ def _print_setup(report: SetupReport, values: dict[str, str], projects: int) -> 
     print("Para activar estas funciones complete backend/.env:")
     for requirement, keys in pending:
         label = "opcional" if requirement.optional else "falta"
-        print(
-            f"  [{label}] {requirement.feature}: {', '.join(keys)} ({requirement.guide})"
-        )
+        print(f"  [{label}] {requirement.feature}: {', '.join(keys)} ({requirement.guide})")
 
 
 def cmd_setup(args: argparse.Namespace) -> int:

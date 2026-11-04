@@ -6,38 +6,41 @@ Ejecución del [plan de pruebas](plan-de-pruebas.md) sobre la rama de trabajo qu
 
 | Indicador | Resultado |
 |---|---|
-| Casos especificados | 52 |
-| Casos aprobados | 48 (92 %) |
+| Casos especificados | 58 |
+| Casos aprobados | 53 (91 %) |
 | Casos fallidos | 0 |
-| Casos bloqueados por dependencias externas | 4 (CP-29, CP-46, CP-49, CP-50) |
+| Casos bloqueados por dependencias externas | 5 (CP-29, CP-46, CP-49, CP-50 y el envío SMTP real de CP-57) |
 | Requisitos funcionales RF01–RF09 con casos aprobados | 9 de 9 (100 %) |
-| Pruebas automáticas del backend | 296 aprobadas, 0 fallidas (108 unitarias, 179 de integración, 5 golden, 4 del arnés de evaluación) |
-| Cobertura de líneas del backend | 88 % (4.783 sentencias) |
-| Pruebas del sitio (Vitest) | 93 aprobadas en 10 archivos |
+| Pruebas automáticas del backend | 317 aprobadas, 0 fallidas (108 unitarias, 200 de integración, 5 golden, 4 del arnés de evaluación) |
+| Cobertura de líneas del backend | 88 % (5.201 sentencias) |
+| Pruebas del sitio (Vitest) | 94 aprobadas en 10 archivos |
 | Pruebas del panel | 5 aprobadas |
-| Verificaciones E2E en navegador | 20 de 20 aprobadas |
+| Verificaciones E2E en navegador | 30 de 30 aprobadas |
 | Análisis estático | `ruff` y `pyright`: 0 errores; `eslint` y `tsc`: 0 errores |
-| Compilación de producción del sitio | Correcta (20 rutas) |
-| Incidencias registradas | 11 (todas cerradas; ver [`incidencias.md`](incidencias.md)) |
+| Compilación de producción del sitio | Correcta |
+| Incidencias registradas | 14 (todas cerradas; ver [`incidencias.md`](incidencias.md)) |
 
 ## 2. Resultados por suite
 
 | Suite | Comando | Resultado | Evidencia |
 |---|---|---|---|
-| Backend: estilo | `uv run ruff check . && uv run ruff format --check .` | Sin errores, 154 archivos con formato | `evidencias/backend-ruff.txt` |
+| Backend: estilo | `uv run ruff check . && uv run ruff format --check .` | Sin errores, 158 archivos con formato | `evidencias/backend-ruff.txt` |
 | Backend: tipos | `uv run pyright` | 0 errores | `evidencias/backend-pyright.txt` |
-| Backend: pruebas y cobertura | `uv run pytest --cov=bosquevivo --junitxml=...` | 296 aprobadas en 22 s, cobertura 88 % | `evidencias/backend-pytest.txt`, `backend-junit.xml` |
+| Backend: pruebas y cobertura | `uv run pytest --cov=bosquevivo --junitxml=...` | 317 aprobadas en 29 s, cobertura 88 % | `evidencias/backend-pytest.txt`, `backend-junit.xml` |
 | Sitio: estilo | `npm run lint` | Sin errores | `evidencias/web-lint.txt` |
-| Sitio: pruebas | `npx vitest run` | 93 aprobadas | `evidencias/web-vitest.txt`, `web-junit.xml` |
+| Sitio: pruebas | `npx vitest run` | 94 aprobadas | `evidencias/web-vitest.txt`, `web-junit.xml` |
 | Sitio: compilación | `npm run build` | Correcta | `evidencias/web-build.txt` |
 | Panel | `uv run pytest` | 5 aprobadas | — |
-| E2E | `docs/plan-de-pruebas/scripts/ejecutar-e2e.sh` | 20 de 20 | `evidencias/e2e-salida.txt`, `e2e-resultados.json`, `evidencias/capturas/` |
+| E2E | `docs/plan-de-pruebas/scripts/ejecutar-e2e.sh` | 30 de 30 | `evidencias/e2e-salida.txt`, `e2e-resultados.json`, `evidencias/capturas/` |
 
 ### Cobertura de los módulos nuevos o modificados
 
 | Módulo | Cobertura |
 |---|---|
-| `accounts/service.py` (RF09) | 98 % |
+| `accounts/service.py` (RF09, 2FA, avisos, invitaciones) | 98 % |
+| `accounts/mailer.py`, `accounts/templates.py` (SMTP) | 98 % |
+| `setup.py` (configuración automática) | 99 % |
+| `api/routers/auth.py` | 91 % |
 | `accounts/passwords.py` | 95 % |
 | `core/incidents.py` | 100 % |
 | `satellite/ndvi.py` | 100 % |
@@ -46,8 +49,7 @@ Ejecución del [plan de pruebas](plan-de-pruebas.md) sobre la rama de trabajo qu
 | `assistant/service.py` | 95 % |
 | `assistant/community.py` | 90 % |
 | `registry/importer.py` | 87 % |
-| `accounts/mailer.py`, `api/routers/community.py` | 100 % |
-| `api/routers/auth.py` | 96 % |
+| `api/routers/community.py` | 100 % |
 
 La cobertura más baja corresponde a clientes de servicios externos que no se llaman en las pruebas por diseño (`satellite/providers/gee.py`, `assistant/client.py` de Meta y `ai/llm/gemini.py`).
 
@@ -65,20 +67,24 @@ Comando: `uv run bosquevivo medir-rnf --rounds <n> --projects 3`. El asistente s
 
 ## 4. Pruebas de extremo a extremo
 
-`scripts/ejecutar-e2e.sh` crea una base temporal con los proyectos de demostración y una cuenta de auditor, levanta la API y el sitio compilado, y recorre en Chromium:
+`scripts/ejecutar-e2e.sh` crea una base temporal con los proyectos de demostración, invita una cuenta de auditor (`bosquevivo user-invite`), activa la verificación en dos pasos con el buzón local (`AUTH_TWO_FACTOR=on`), levanta la API y el sitio compilado, y recorre en Chromium:
 
 | Flujo | Casos | Resultado |
 |---|---|---|
-| Recuperación de contraseña (RF09): acceso restringido, credenciales inválidas, mensaje genérico, enlace por correo, token inválido, contraseñas distintas y débiles, actualización, enlace reutilizado, inicio de sesión con la contraseña nueva | CP-30 a CP-37 | 11 verificaciones aprobadas |
+| Invitación: correo con enlace, bienvenida, primera contraseña | CP-56 | 3 verificaciones aprobadas |
+| Recuperación de contraseña (RF09): acceso restringido, credenciales inválidas, mensaje genérico, enlace por correo, token inválido, contraseñas distintas y débiles, actualización, enlace reutilizado | CP-30 a CP-36 | 10 verificaciones aprobadas |
+| Verificación en dos pasos y avisos: código por correo, código incorrecto, reenvío, entrada con la contraseña nueva, sesión con el correo, aviso de inicio de sesión, aviso de cambio de contraseña, correos con HTML | CP-37, CP-53 a CP-55 | 8 verificaciones aprobadas |
 | Chat en línea (RF07, RF08, Ley 1581): saludo y aviso, consentimiento, ayuda, registro del proyecto, estado, lenguaje sencillo, alertas, consulta no reconocida, borrado | CP-21 a CP-28, CP-42 | 9 verificaciones aprobadas |
 
-Capturas: `evidencias/capturas/01-login-error.png` a `07-chat-en-linea.png`.
+Capturas: `evidencias/capturas/00-invitacion-activada.png` a `08-codigo-2fa.png`.
+
+Prueba manual adicional (CP-58): `scripts/start.sh` en un clon sin `.env` generó los secretos, la base y los datos de demostración, compiló el sitio y dejó la API (`/health`), el sitio y el chat en línea respondiendo en modo producción.
 
 ## 5. Evaluación de los criterios de aceptación
 
 | Criterio (plan, 4.5.1) | Resultado | Cumple |
 |---|---|---|
-| 1. 100 % de pruebas automáticas aprobadas y análisis estático sin errores | 296 + 93 + 5 aprobadas, 0 errores | Sí |
+| 1. 100 % de pruebas automáticas aprobadas y análisis estático sin errores | 317 + 94 + 5 aprobadas, 0 errores | Sí |
 | 2. Cobertura del backend ≥ 80 % | 88 % | Sí |
 | 3. RF01–RF09 con al menos un caso aprobado | 9 de 9 | Sí |
 | 4. Casos de prioridad 1 y 2 ejecutados | Todos, salvo CP-29 (usuarios del piloto) | Sí, con la excepción prevista |
@@ -87,7 +93,7 @@ Capturas: `evidencias/capturas/01-login-error.png` a `07-chat-en-linea.png`.
 | 7. Determinismo | 3 de 3 | Sí |
 | 8. Compilación de producción | Correcta | Sí |
 
-**Conclusión.** Se cumplen los criterios para dar por completado el plan en esta etapa. Quedan cuatro casos bloqueados por dependencias externas (credenciales de Meta y de Google AI Studio, y usuarios del piloto); tienen guía de ejecución en [`docs/guias`](../guias) y en este plan, y no afectan los requisitos funcionales comprometidos, que se verificaron sin ellos.
+**Conclusión.** Se cumplen los criterios para dar por completado el plan en esta etapa. Quedan cinco casos o partes bloqueados por dependencias externas (credenciales de Meta, de Google AI Studio y de correo SMTP, y usuarios del piloto); tienen guía de ejecución en [`docs/guias`](../guias) y en este plan, y no afectan los requisitos funcionales comprometidos, que se verificaron sin ellos.
 
 ## 6. Cómo repetir la ejecución
 

@@ -1,8 +1,8 @@
-........................................................................ [ 24%]
-........................................................................ [ 48%]
-........................................................................ [ 72%]
-........................................................................ [ 97%]
-........                                                                 [100%]
+........................................................................ [ 22%]
+........................................................................ [ 45%]
+........................................................................ [ 68%]
+........................................................................ [ 90%]
+.............................                                            [100%]
 ================================ tests coverage ================================
 _______________ coverage: platform linux, python 3.12.3-final-0 ________________
 
@@ -10,9 +10,10 @@ Name                                             Stmts   Miss  Cover
 --------------------------------------------------------------------
 src/bosquevivo/__init__.py                           1      0   100%
 src/bosquevivo/accounts/__init__.py                  3      0   100%
-src/bosquevivo/accounts/mailer.py                   71      0   100%
+src/bosquevivo/accounts/mailer.py                  119      2    98%
 src/bosquevivo/accounts/passwords.py                56      3    95%
-src/bosquevivo/accounts/service.py                 145      3    98%
+src/bosquevivo/accounts/service.py                 267      5    98%
+src/bosquevivo/accounts/templates.py                40      1    98%
 src/bosquevivo/ai/__init__.py                        0      0   100%
 src/bosquevivo/ai/agent/__init__.py                  3      0   100%
 src/bosquevivo/ai/agent/evidence.py                 28      0   100%
@@ -50,7 +51,7 @@ src/bosquevivo/api/deps.py                          30      3    90%
 src/bosquevivo/api/routers/__init__.py               0      0   100%
 src/bosquevivo/api/routers/admin.py                 11      0   100%
 src/bosquevivo/api/routers/audits.py                41     11    73%
-src/bosquevivo/api/routers/auth.py                  55      2    96%
+src/bosquevivo/api/routers/auth.py                  89      8    91%
 src/bosquevivo/api/routers/chat.py                  44      0   100%
 src/bosquevivo/api/routers/community.py             24      0   100%
 src/bosquevivo/api/routers/health.py                 6      0   100%
@@ -76,17 +77,17 @@ src/bosquevivo/audit/index.py                       70      3    96%
 src/bosquevivo/audit/inputs.py                      16      0   100%
 src/bosquevivo/audit/narrative.py                   19      1    95%
 src/bosquevivo/audit/service.py                     78      5    94%
-src/bosquevivo/cli.py                              298    172    42%
+src/bosquevivo/cli.py                              376    197    48%
 src/bosquevivo/core/__init__.py                      3      0   100%
-src/bosquevivo/core/config.py                       49      2    96%
+src/bosquevivo/core/config.py                       54      1    98%
 src/bosquevivo/core/errors.py                        8      0   100%
 src/bosquevivo/core/incidents.py                    52      0   100%
 src/bosquevivo/core/logging.py                       8      0   100%
 src/bosquevivo/core/privacy.py                       5      0   100%
 src/bosquevivo/db/__init__.py                        3      0   100%
 src/bosquevivo/db/base.py                            6      0   100%
-src/bosquevivo/db/models.py                        208      0   100%
-src/bosquevivo/db/session.py                        63     10    84%
+src/bosquevivo/db/models.py                        222      0   100%
+src/bosquevivo/db/session.py                        63      3    95%
 src/bosquevivo/demo.py                              42      0   100%
 src/bosquevivo/jobs/__init__.py                      3      0   100%
 src/bosquevivo/jobs/kinds.py                         3      0   100%
@@ -115,5 +116,6 @@ src/bosquevivo/satellite/providers/gee.py          161    111    31%
 src/bosquevivo/satellite/providers/hansen.py        99      1    99%
 src/bosquevivo/satellite/providers/opendata.py     116     20    83%
 src/bosquevivo/satellite/service.py                 82      0   100%
+src/bosquevivo/setup.py                             77      1    99%
 --------------------------------------------------------------------
-TOTAL                                             4783    594    88%
+TOTAL                                             5201    623    88%

@@ -17,7 +17,7 @@ Documentos que lo acompañan:
 
 | Documento | Contenido |
 |---|---|
-| [`casos-de-prueba.md`](casos-de-prueba.md) | Especificación de los 52 casos de prueba (CP-01 a CP-52) |
+| [`casos-de-prueba.md`](casos-de-prueba.md) | Especificación de los 58 casos de prueba (CP-01 a CP-58) |
 | [`informe-de-resultados.md`](informe-de-resultados.md) | Ejecución, métricas, mediciones de requisitos no funcionales y evaluación de los criterios de aceptación |
 | [`incidencias.md`](incidencias.md) | Registro de incidencias encontradas durante la ejecución |
 | [`evidencias/`](evidencias) | Salidas de las herramientas, reportes JUnit, cobertura, mediciones y capturas |
@@ -29,7 +29,7 @@ Documentos que lo acompañan:
 |---|---|---|---|
 | 20/10/2026 | 0.1 | Equipo Bosque Vivo | Primer plan (`docs/testing/plan-de-pruebas.md`): capas de prueba y matriz RF → pruebas, sin el formato IEEE 829 |
 | 03/11/2026 | 1.0 | Equipo Bosque Vivo | Plan completo según la plantilla IEEE 829, alineado con el ERS del 20/10/2026 (RF01–RF09 y requisitos no funcionales), casos de prueba, ejecución y resultados |
-|  |  |  |  |
+| 03/11/2026 | 1.1 | Equipo Bosque Vivo | Correo SMTP con verificación en dos pasos, avisos de seguridad e invitaciones; configuración automática; casos CP-53 a CP-58 |
 |  |  |  |  |
 
 ## 2. Información del Proyecto
@@ -66,7 +66,9 @@ El objeto de prueba es la versión de Bosque Vivo de la rama `main` del reposito
 | Índice de credibilidad | `audit/index.py`, `audit/confidence.py`, `audit/config.py` | RF05 | Escala 0–1 (y 0–100); categorías alta/media/baja e «Insuficiente»; confianza; reproducibilidad de los insumos |
 | Reportes | `backend/src/bosquevivo/reports`, `web/src/app/informe` | RF06 | Reporte HTML y PDF con polígono, serie NDVI, comparación, índice, fuentes y fecha; descarga desde el sitio |
 | Asistente conversacional | `backend/src/bosquevivo/assistant`, `api/routers/whatsapp.py`, `api/routers/community.py`, `web/src/app/asistente` | RF07, RF08 | Webhook firmado; consentimiento (Ley 1581); intenciones estado, alertas y ayuda; registro del polígono de interés; números autorizados; respuestas en español sencillo y de longitud acotada; chat en línea como canal alterno |
-| Cuentas y recuperación de contraseña | `backend/src/bosquevivo/accounts`, `api/routers/auth.py`, `web/src/app/acceso` | RF09 | Inicio de sesión; mensaje genérico; token de un solo uso con vencimiento; validación de la contraseña nueva; confirmación; bloqueo por intentos |
+| Cuentas y recuperación de contraseña | `backend/src/bosquevivo/accounts`, `api/routers/auth.py`, `web/src/app/acceso` | RF09 | Inicio de sesión; mensaje genérico; token de un solo uso con vencimiento; validación de la contraseña nueva; confirmación; bloqueo por intentos; invitaciones |
+| Correo SMTP y verificación en dos pasos | `accounts/mailer.py`, `accounts/templates.py`, `accounts/service.py` | RF09, 3.3.2 | Código de 6 dígitos por correo (intentos, vencimiento, reenvío); avisos de inicio de sesión, cambio de contraseña y bloqueo; detección del servidor SMTP, TLS, reintentos; buzón local sin SMTP |
+| Configuración automática | `bosquevivo/setup.py`, `scripts/dev.*`, `scripts/start.*` | 3.3.5, 3.3.6 | Generación de secretos y `.env`, base y datos de demostración, lista de claves externas pendientes, modo producción |
 | Agente de IA (ampliación) | `backend/src/bosquevivo/ai` | RA01–RA09 | Herramientas, validador de fidelidad, neutralidad, inyección de instrucciones, respaldo determinista (regresión con modelo guionizado) |
 | Incidentes y mediciones | `core/incidents.py`, `measure.py` | 3.3.1, 3.3.3, 3.3.5 | Registro de incidentes con origen externo/interno y duración; tiempos de respuesta y de cálculo; determinismo |
 | Sitio web | `web/` | 3.1.1 | Contrato de la API (zod), sesión firmada, componentes de dominio, compilación de producción |
@@ -94,7 +96,7 @@ Aspectos que se revisan en cada regresión: (1) toda la suite automática pasa (
 | Google Earth Engine real (`SATELLITE_PROVIDER=gee`) | Requiere una cuenta y un proyecto de Earth Engine del dueño; no está disponible en el entorno de pruebas | Los tiempos de cálculo con Earth Engine pueden superar los medidos con datos abiertos. Mitigación: el cálculo se probó con el proveedor de datos abiertos real (MODIS + Hansen) y la lógica de Earth Engine se aísla tras `SatelliteProvider`. Queda como CP-39 en ejecución complementaria |
 | Envío real por WhatsApp Cloud API | Requiere credenciales de Meta del dueño ([guía](../guias/whatsapp.md)) | Diferencias del formato real del webhook. Mitigación: el webhook se prueba con cargas reales de la documentación de Meta, firma HMAC y el mismo flujo por el chat en línea. Queda como CP-49 |
 | Respuestas de Gemini real y evaluación del agente | Requiere `GEMINI_API_KEY` ([guía](../guias/gemini.md)) | Calidad de las respuestas libres no medida. Mitigación: modelo guionizado, validador de fidelidad, respuesta de respaldo y las intenciones del ERS funcionan sin IA. Queda como CP-50 |
-| Envío SMTP real de correos | Requiere una cuenta de correo del dueño ([guía](../guias/correo.md)) | Bloqueo del proveedor de correo. Mitigación: el remitente SMTP se prueba con un servidor simulado y el flujo completo con el buzón local `.eml` |
+| Envío SMTP real de correos | Requiere una cuenta de correo del dueño ([guía](../guias/correo.md)) | Bloqueo del proveedor de correo. Mitigación: el remitente SMTP (TLS, autenticación, reintentos) se prueba con un servidor simulado y el flujo completo —invitación, 2FA, avisos y recuperación— con el buzón local `.eml` y `AUTH_TWO_FACTOR=on`. Se verifica en el piloto con `bosquevivo mail-test` (CP-57) |
 | Disponibilidad 95 % y ≤ 2 incidentes críticos al mes | Solo se puede medir durante el piloto, en el horario que se acuerde con el docente | Se entrega el script `scripts/disponibilidad.sh` y el comando `bosquevivo incidents`. Queda como CP-46 |
 | Comprensión con 5 personas no técnicas | Requiere usuarios reales | Mensajes poco claros. Mitigación: textos breves, revisados contra la lista de jerga. Queda como CP-29 |
 | RA03, RA06 y RA08 (modelo propio de visión, alertas en tiempo casi real, extracción de PDD) | Fuera del alcance de esta entrega (sección 2.6 del ERS) | Ninguno para el alcance comprometido |
@@ -129,7 +131,7 @@ Aspectos que se revisan en cada regresión: (1) toda la suite automática pasa (
 | Prioridad | Módulos | Motivo |
 |---|---|---|
 | 1 | RF05 índice, RF04 comparación, RF03 NDVI | Núcleo de la pregunta de investigación; un error invalida las conclusiones |
-| 2 | RF07, RF08 asistente; RF09 cuentas; seguridad y Ley 1581 | Datos personales y canal principal de la comunidad |
+| 2 | RF07, RF08 asistente; RF09 cuentas, verificación en dos pasos y avisos; seguridad y Ley 1581 | Datos personales y canal principal de la comunidad |
 | 3 | RF01 importación, RF02 series, RF06 reporte | Entrada y salida del flujo de auditoría |
 | 4 | Rendimiento, fiabilidad, portabilidad | Metas a validar durante el piloto |
 | 5 | Ampliación de IA (RA) | Pendiente de aprobación del docente |
@@ -151,16 +153,16 @@ Criterios para dar por completado el plan:
 
 Criterios del usuario para aceptar el aplicativo (ERS): el auditor puede consultar el índice, la serie y el reporte de un proyecto; la comunidad recibe respuestas cortas en español sencillo; los datos personales se tratan según la Ley 1581; y el resultado se presenta como análisis metodológico, sin atribuir fraude.
 
-Los casos que dependen de credenciales o usuarios externos (CP-29, CP-46, CP-49, CP-50) se registran como «Bloqueado» y no impiden cerrar el plan; se ejecutan en el piloto.
+Los casos o partes que dependen de credenciales o usuarios externos (CP-29, CP-46, CP-49, CP-50 y el envío SMTP real de CP-57) se registran como «Bloqueado» y no impiden cerrar el plan; se ejecutan en el piloto.
 
 ### 4.6 Entregables
 
-- Este plan de pruebas (Markdown y `.docx`).
+- Este plan de pruebas (Markdown, `.docx` y `.pdf`).
 - Especificación de casos de prueba (`casos-de-prueba.md`).
 - Informe de resultados con métricas y evaluación de criterios (`informe-de-resultados.md`).
 - Registro de incidencias (`incidencias.md`).
 - Evidencias: reportes JUnit (`backend-junit.xml`, `web-junit.xml`), salidas de `pytest` con cobertura, `vitest`, `ruff`, `pyright`, `eslint`, `next build`, mediciones de requisitos no funcionales (`rnf-fake.json`, `rnf-open.json`), resultado E2E (`e2e-resultados.json`, `e2e-salida.txt`) y capturas de pantalla.
-- Scripts reutilizables: `scripts/ejecutar-e2e.sh`, `scripts/e2e.cjs`, `scripts/disponibilidad.sh` y el comando `bosquevivo medir-rnf`.
+- Scripts reutilizables: `scripts/ejecutar-e2e.sh`, `scripts/e2e.cjs`, `scripts/disponibilidad.sh` y los comandos `bosquevivo medir-rnf`, `bosquevivo mail-test` y `bosquevivo setup`.
 
 ## 5. Recursos
 
@@ -222,7 +224,7 @@ Propuesta de reparto; el equipo puede ajustarla antes de firmar.
 
 | Integrante | Responsabilidades en las pruebas |
 |---|---|
-| Mateo Bermúdez Cuartas | Líder de pruebas: plan, integración continua, ejecución completa, RF09 (cuentas y contraseña), E2E, registro de incidencias y configuración del piloto (WhatsApp, Gemini, correo) |
+| Mateo Bermúdez Cuartas | Líder de pruebas: plan, integración continua, ejecución completa, RF09 (cuentas, contraseña, verificación en dos pasos y correo SMTP), E2E, registro de incidencias y configuración del piloto (WhatsApp, Gemini, correo) |
 | Emmanuel Arango Velásquez | Sitio web: pruebas de Vitest, revisión visual de pantallas, accesibilidad, chat en línea y descarga de reportes (RF06 en el sitio) |
 | Miguel Ángel Calle Parra | Datos geoespaciales: RF01 (importación), RF02 (series) y RF03 (NDVI); ejecución con Earth Engine real (CP-39) |
 | Miguel Ángel Agudelo Tamayo | Analítica: RF04 (comparación), RF05 (índice y casos golden), RF06 (reportes); determinismo (CP-44) |
@@ -287,5 +289,7 @@ Propuesta de reparto; el equipo puede ajustarla antes de firmar.
 | Índice de credibilidad | Correspondencia entre lo declarado y lo observado, en escala de 0 a 1 |
 | HMAC | Código de autenticación de mensajes con clave; se usa para no guardar el teléfono y para firmar el webhook y la sesión |
 | scrypt | Función de derivación de claves usada para guardar contraseñas |
-| Token de un solo uso | Enlace de recuperación que vence y no puede reutilizarse (RF09) |
+| Token de un solo uso | Enlace de recuperación o invitación que vence y no puede reutilizarse (RF09) |
+| Verificación en dos pasos (2FA) | Segundo factor: además de la contraseña se pide un código temporal enviado al correo |
+| SMTP | Protocolo de envío de correo; STARTTLS y SSL cifran la conexión |
 | JUnit XML | Formato estándar de reporte de resultados de pruebas |

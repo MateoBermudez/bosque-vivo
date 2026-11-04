@@ -14,18 +14,18 @@ Requisitos del ERS (IEEE 830, versión del 20/10/2026 en el Drive del proyecto) 
 | RF06 Reporte de auditoría | OE3 | `reports/*`, `web/src/app/informe` | `test_reports.py` | CP-19, CP-20 |
 | RF07 Consultas conversacionales | OE3 | `assistant/*`, `api/routers/whatsapp.py`, `api/routers/community.py` | `test_whatsapp_flow.py`, `test_whatsapp_support.py`, `test_whatsapp_intents.py`, `test_community_chat.py` | CP-21 a CP-26 |
 | RF08 Lenguaje sencillo | OE3 | `assistant/community.py`, `assistant/texts.py`, `ai/prompts`, `ai/guardrails` | `test_whatsapp_intents.py`, `test_guardrails.py`, `test_agent.py` | CP-27 a CP-29 |
-| RF09 Recuperación de contraseña | OE3 | `accounts/*`, `api/routers/auth.py`, `web/src/app/acceso/*` | `test_password_recovery.py`, `session.test.ts`, `access.test.ts`, `accounts.test.ts`, `throttle.test.ts` | CP-30 a CP-37 |
+| RF09 Recuperación de contraseña | OE3 | `accounts/*` (correo SMTP, verificación en dos pasos, avisos, invitaciones), `api/routers/auth.py`, `web/src/app/acceso/*` | `test_password_recovery.py`, `test_two_factor.py`, `session.test.ts`, `access.test.ts`, `accounts.test.ts`, `throttle.test.ts` | CP-30 a CP-37, CP-53 a CP-57 |
 
 ## Requisitos no funcionales del ERS
 
 | Requisito | Cómo se cumple | Verificación |
 |---|---|---|
 | 3.3.1 Rendimiento | `AgentRun.latency_ms`, `AuditRun.duration_seconds` | `scripts/medir_rnf.py` (CP-38, CP-39) |
-| 3.3.2 Seguridad | HMAC del teléfono, firma del webhook, scrypt, tokens SHA-256, secretos en `.env` | CP-40 a CP-43 |
+| 3.3.2 Seguridad | HMAC del teléfono, firma del webhook, scrypt, tokens SHA-256, verificación en dos pasos por correo, avisos de seguridad, secretos en `.env` generados por `bosquevivo setup` | CP-40 a CP-43, CP-53 a CP-55 |
 | 3.3.3 Fiabilidad | Registro de incidentes (`core/incidents.py`, `bosquevivo incidents`), cálculos deterministas | CP-44, CP-45 |
 | 3.3.4 Disponibilidad | Medición en el horario del piloto | CP-46 (pendiente del piloto) |
-| 3.3.5 Mantenibilidad | Parámetros en configuración, origen externo/interno en los registros | CP-47 |
-| 3.3.6 Portabilidad | Código abierto, ejecución local en Windows/Linux | CP-48 |
+| 3.3.5 Mantenibilidad | Parámetros en configuración, origen externo/interno en los registros, configuración automática | CP-47, CP-58 |
+| 3.3.6 Portabilidad | Código abierto, ejecución local en Windows/Linux (`scripts/dev`, `scripts/start`) | CP-48, CP-58 |
 
 ## Ampliación con IA (pendiente de aprobación del docente)
 

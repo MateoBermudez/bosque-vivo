@@ -1,6 +1,6 @@
 # Especificación de casos de prueba
 
-Acompaña al [plan de pruebas](plan-de-pruebas.md). Cada caso indica el requisito del ERS que verifica, la técnica, las precondiciones, los pasos, los datos, el resultado esperado, la prueba automática que lo ejecuta y el resultado de la ejecución del 03/11/2026.
+Acompaña al [plan de pruebas](plan-de-pruebas.md). Versión 1.1 (03/11/2026): se añaden CP-53 a CP-58 (correo SMTP, verificación en dos pasos y configuración automática). Cada caso indica el requisito del ERS que verifica, la técnica, las precondiciones, los pasos, los datos, el resultado esperado, la prueba automática que lo ejecuta y el resultado de la ejecución del 03/11/2026.
 
 Rutas de las pruebas: `backend/tests/...` (pytest), `web/src/...` (Vitest) y `docs/plan-de-pruebas/scripts/e2e.cjs` (Playwright, «E2E»).
 
@@ -26,7 +26,8 @@ Estados: **Aprobado**, **Fallido**, **Bloqueado** (depende de credenciales o usu
 | 3.3.5 Mantenibilidad | CP-47 | 1 | 0 |
 | 3.3.6 Portabilidad | CP-48 | 1 | 0 |
 | Interfaces externas y regresión | CP-49 a CP-52 | 2 | 2 |
-| **Total** | **52** | **48** | **4** |
+| Correo SMTP, 2FA y configuración | CP-53 a CP-58 | 5 | 1 |
+| **Total** | **58** | **53** | **5** |
 
 ## RF01 — Importar polígonos públicos
 
@@ -406,6 +407,55 @@ Estados: **Aprobado**, **Fallido**, **Bloqueado** (depende de credenciales o usu
 
 ### CP-52 Regresión del sitio y del panel
 
-- **Resultado esperado:** `eslint`, `tsc`, 93 pruebas de Vitest, `next build` y 5 pruebas del panel sin errores.
+- **Resultado esperado:** `eslint`, `tsc`, 94 pruebas de Vitest, `next build` y 5 pruebas del panel sin errores.
 - **Evidencia:** `evidencias/web-vitest.txt`, `web-junit.xml`, `web-lint.txt`, `web-build.txt`
 - **Resultado:** Aprobado.
+
+## Correo SMTP, verificación en dos pasos y configuración
+
+### CP-53 Verificación en dos pasos por correo
+
+- **Requisito:** RF09 y 3.3.2 (seguridad del panel web) · **Prioridad:** 2
+- **Precondiciones:** cuenta activa; SMTP configurado (o `AUTH_TWO_FACTOR=on`).
+- **Pasos:** iniciar sesión con correo y contraseña correctos; leer el correo; escribir el código.
+- **Resultado esperado:** tras la contraseña se pide un código de 6 dígitos enviado al correo (mostrado enmascarado, «au*****@elpoli.edu.co»); con el código correcto se entra. Una contraseña incorrecta no envía código. Con `AUTH_TWO_FACTOR=auto` se activa solo cuando hay SMTP.
+- **Automatización:** `integration/test_two_factor.py::test_login_sends_code_and_verifies`, `::test_wrong_password_does_not_send_code`, `::test_two_factor_can_be_disabled`, `::test_auto_two_factor_follows_smtp`, `::test_two_factor_endpoints`, `web/src/lib/api/accounts.test.ts`, E2E CP-53
+- **Resultado:** Aprobado.
+
+### CP-54 Código incorrecto, vencido, reutilizado y reenvío
+
+- **Prioridad:** 2 · **Técnica:** valores límite (5 intentos, 10 minutos, 3 envíos)
+- **Resultado esperado:** código incorrecto → «El código no es correcto.»; al quinto fallo, al vencer o al reutilizarse, la verificación se anula y hay que iniciar sesión de nuevo; «Reenviar código» envía uno nuevo e invalida el anterior, hasta 3 envíos.
+- **Automatización:** `integration/test_two_factor.py::test_wrong_code_counts_attempts_until_exhausted`, `::test_code_expires_and_is_single_use`, `::test_resend_replaces_code_with_limit`, E2E CP-54
+- **Resultado:** Aprobado.
+
+### CP-55 Avisos de seguridad por correo
+
+- **Prioridad:** 2
+- **Resultado esperado:** correo de nuevo inicio de sesión (fecha en hora de Colombia, navegador, sistema e IP), de contraseña cambiada y de cuenta bloqueada; todos con versión de texto y HTML. Una falla de envío de un aviso no impide la operación y queda como incidente externo.
+- **Automatización:** `integration/test_two_factor.py::test_lock_sends_security_email`, `::test_password_change_notifies`, `::test_message_has_text_and_html`, `integration/test_password_recovery.py::test_mail_failure_is_recorded_as_external_incident`, E2E CP-55
+- **Resultado:** Aprobado.
+
+### CP-56 Invitación de cuentas
+
+- **Prioridad:** 2
+- **Pasos:** `bosquevivo user-invite correo --name Nombre`; abrir el enlace del correo; elegir contraseña.
+- **Resultado esperado:** la cuenta se crea sin contraseña utilizable; el correo trae un enlace de un solo uso válido 72 horas; la página da la bienvenida y, al guardar, se puede iniciar sesión. No se envía el aviso de «contraseña cambió».
+- **Automatización:** `integration/test_two_factor.py::test_invitation_sets_first_password`, `::test_verify_reports_purpose`, E2E CP-56
+- **Resultado:** Aprobado (corrige INC-12).
+
+### CP-57 Configuración SMTP
+
+- **Prioridad:** 3
+- **Resultado esperado:** con solo `SMTP_USER` y `SMTP_PASSWORD` se detecta el servidor (Gmail, Google Workspace, Outlook, Yahoo); `MAIL_BACKEND=auto` usa SMTP si hay credenciales y el buzón local si no; STARTTLS en 587 y SSL en 465; un error transitorio se reintenta; un error de autenticación explica que se use una contraseña de aplicación; `bosquevivo mail-test` verifica la configuración.
+- **Automatización:** `integration/test_two_factor.py::test_smtp_presets_and_auto_backend`, `::test_smtp_retries_and_explains_auth_errors`, `integration/test_password_recovery.py::test_smtp_mailer_uses_tls_and_login`, `::test_build_mailer_validates_configuration`
+- **Resultado:** Aprobado. El envío por un servidor SMTP real se ejecuta en el piloto con `bosquevivo mail-test` (Bloqueado hasta tener las credenciales).
+
+### CP-58 Configuración automática
+
+- **Requisito:** 3.3.5 y 3.3.6 · **Prioridad:** 3
+- **Pasos:** en un clon nuevo, `scripts/dev.sh` (o `scripts\dev.ps1`).
+- **Resultado esperado:** `bosquevivo setup` crea `backend/.env` y `web/.env.local`, genera `ADMIN_TOKEN`, `PHONE_HMAC_KEY`, `WHATSAPP_VERIFY_TOKEN` y `SESSION_SECRET`, elige datos abiertos si no hay Earth Engine, crea la base con 3 proyectos de demostración, conserva comentarios y valores existentes al repetirse, y lista solo las claves externas que faltan.
+- **Automatización:** `integration/test_setup.py` (4 pruebas); prueba manual de `scripts/start.sh` en modo producción (API, sitio y chat en línea respondiendo).
+- **Resultado:** Aprobado.
+

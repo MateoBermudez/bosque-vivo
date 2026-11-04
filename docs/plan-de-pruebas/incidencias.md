@@ -1,6 +1,6 @@
 # Registro de incidencias
 
-Incidencias encontradas al contrastar el sistema con el ERS (20/10/2026) y al ejecutar el plan de pruebas el 03/11/2026. Severidad: crítica, alta, media, baja. Todas quedaron cerradas y verificadas con la suite completa.
+Incidencias encontradas al contrastar el sistema con el ERS (20/10/2026) y al ejecutar el plan de pruebas el 03/11/2026. Severidad: crítica, alta, media, baja. Todas quedaron cerradas y verificadas con la suite completa (14 incidencias).
 
 | ID | Caso | Requisito | Descripción | Severidad | Causa | Corrección | Estado |
 |---|---|---|---|---|---|---|---|
@@ -15,6 +15,9 @@ Incidencias encontradas al contrastar el sistema con el ERS (20/10/2026) y al ej
 | INC-09 | CP-09 | RF02 | Cuando no había escenas no quedaba registro de la incidencia | Media | Requisito no implementado | Registro de incidentes con origen y severidad (`core/incidents.py`) | Cerrada |
 | INC-10 | E2E | Entorno de pruebas | Entre corridas del E2E quedaba vivo el servidor hijo de `next start` y la siguiente corrida usaba el servidor viejo | Baja | `kill` del proceso `npx` no termina su grupo | El script usa `setsid`, termina el grupo de procesos y verifica que los puertos estén libres | Cerrada |
 | INC-11 | E2E | Entorno de pruebas | El script E2E contaba el texto de bienvenida del chat como una burbuja de respuesta | Baja | Selector demasiado amplio | Atributo `data-from` en cada burbuja | Cerrada |
+| INC-12 | CP-56 | RF09 | Al activar una cuenta invitada, el enlace no quedaba marcado como usado y podía reutilizarse | Alta | La lista de enlaces del usuario estaba en la caché de la sesión de SQLAlchemy y no incluía el recién creado | Los enlaces abiertos se consultan en la base y el enlace usado se marca de forma explícita | Cerrada |
+| INC-13 | CP-53 | RF09 | Con la verificación en dos pasos siempre activa, sin SMTP nadie podía iniciar sesión (el código quedaba en el buzón local) | Alta | El segundo factor no consideraba si el correo se puede entregar | `AUTH_TWO_FACTOR=auto`: se activa solo con SMTP; `on`/`off` lo fuerzan | Cerrada |
+| INC-14 | CP-56 | Entorno de pruebas | El E2E leía la bienvenida de la invitación antes de que la página terminara de cargar | Baja | Contenido transmitido con Suspense | Se espera el formulario antes de verificar | Cerrada |
 
 ## Observaciones que no son defectos
 
