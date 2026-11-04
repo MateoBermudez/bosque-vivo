@@ -1,3 +1,5 @@
+> Documento anterior. El plan vigente, según IEEE 829, está en [`docs/plan-de-pruebas`](../plan-de-pruebas/README.md).
+
 # Plan de pruebas (OE4)
 
 ## Ejecución
@@ -30,12 +32,12 @@ uv run bosquevivo eval   # evaluación del agente con Gemini real (requiere clav
 | RF06 Reporte | `integration/test_reports.py` |
 | RF07 Recibir consultas | `unit/test_whatsapp_support.py`, `integration/test_whatsapp_flow.py` (firma, idempotencia, cola) |
 | RF08 Lenguaje sencillo | `integration/test_whatsapp_flow.py::test_answer_after_consent_respects_length`, `integration/test_agent.py` (límite de 300 caracteres) |
-| RF09 Agente con herramientas | `integration/test_agent.py`, `integration/test_agent_tools.py` |
-| RF10 Análisis visual | `integration/test_agent_tools.py::test_images_tool_*` |
-| RF12 Fotos | `integration/test_agent_tools.py::test_user_photo_*`, `integration/test_whatsapp_flow.py::test_photo_requires_separate_consent` |
-| RF13 Voz | `integration/test_whatsapp_flow.py::test_audio_*` |
-| RF15 Base de conocimiento | `integration/test_knowledge.py` |
-| RF17 Chat del auditor | `integration/test_chat_api.py` |
+| RA01 Agente con herramientas | `integration/test_agent.py`, `integration/test_agent_tools.py` |
+| RA02 Análisis visual | `integration/test_agent_tools.py::test_images_tool_*` |
+| RA04 Fotos | `integration/test_agent_tools.py::test_user_photo_*`, `integration/test_whatsapp_flow.py::test_photo_requires_separate_consent` |
+| RA05 Voz | `integration/test_whatsapp_flow.py::test_audio_*` |
+| RA07 Base de conocimiento | `integration/test_knowledge.py` |
+| RA09 Chat del auditor | `integration/test_chat_api.py` |
 | RNF-IA1 Fidelidad numérica | `unit/test_guardrails.py`, `integration/test_agent.py::test_invented_number_*` |
 | RNF-IA2 Incertidumbre | `unit/test_index.py` (Insuficiente), `integration/test_agent.py::test_fallback_when_no_audit_*` |
 | RNF-IA3 Trazabilidad | `integration/test_agent.py::test_trace_is_persisted` |

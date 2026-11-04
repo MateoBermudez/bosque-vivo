@@ -54,15 +54,15 @@ Se agregan como revisión del ERS (control de cambios del OE1) **si el docente l
 
 | ID | Requisito | Nivel |
 |---|---|---|
-| **RF09** | Agente con razonamiento multi-paso y uso de herramientas sobre los datos del sistema | **Núcleo** |
-| **RF15** | Base de conocimiento consultable (metodología, glosario, normativa, FAQ) con citas | **Núcleo** |
-| **RF17** | Chat técnico del auditor en el panel (explicar el índice, comparar proyectos, pedir un reporte) | **Núcleo** |
-| **RF10** | Análisis visual de escenas antes/después, con evaluación de calidad (nubes, humo, brumas) | Alta |
-| **RF12** | Fotos y ubicación enviadas por el usuario, tratadas como evidencia no verificada | Media |
-| **RF13** | Notas de voz entendidas por el agente | Media |
-| **RF16** | Extracción asistida de declaraciones desde documentos de diseño (PDD), con revisión humana | Media |
-| **RF14** | Alertas tempranas opt-in (cambios con Sentinel-2 y focos de calor de NASA FIRMS) | Opcional |
-| **RF11** | Modelo propio de visión por computadora, entrenado y evaluado | Opcional / evolución futura |
+| **RA01** | Agente con razonamiento multi-paso y uso de herramientas sobre los datos del sistema | **Núcleo** |
+| **RA07** | Base de conocimiento consultable (metodología, glosario, normativa, FAQ) con citas | **Núcleo** |
+| **RA09** | Chat técnico del auditor en el panel (explicar el índice, comparar proyectos, pedir un reporte) | **Núcleo** |
+| **RA02** | Análisis visual de escenas antes/después, con evaluación de calidad (nubes, humo, brumas) | Alta |
+| **RA04** | Fotos y ubicación enviadas por el usuario, tratadas como evidencia no verificada | Media |
+| **RA05** | Notas de voz entendidas por el agente | Media |
+| **RA08** | Extracción asistida de declaraciones desde documentos de diseño (PDD), con revisión humana | Media |
+| **RA06** | Alertas tempranas opt-in (cambios con Sentinel-2 y focos de calor de NASA FIRMS) | Opcional |
+| **RA03** | Modelo propio de visión por computadora, entrenado y evaluado | Opcional / evolución futura |
 | **RNF-IA1** | **Fidelidad numérica:** 100 % de las cifras citadas coinciden con la evidencia; si no, respaldo | Núcleo |
 | **RNF-IA2** | **Incertidumbre explícita:** toda conclusión incluye confianza y limitaciones; "no hay datos suficientes" es respuesta válida | Núcleo |
 | **RNF-IA3** | **Trazabilidad:** cada respuesta guarda herramientas usadas, evidencias, modelo y versión de prompt | Núcleo |
@@ -147,9 +147,9 @@ El ERS pide que el 90 % de las consultas se respondan en menos de 10 s. Un anál
 **Regla:** Gemini **describe, compara y evalúa calidad**; **nunca cuantifica**. Las hectáreas y porcentajes salen del pipeline (NDVI, Hansen).
 
 1. **Generación de imágenes (P2):** `SatelliteProvider.get_thumbnail(geom, fecha, tipo)` con GEE. Color natural, falso color (vegetación) y NDVI; antes y después, con la misma escala y orientación.
-2. **Calidad de la escena (RF10):** Gemini devuelve JSON estructurado `{nubes: bajo|medio|alto, humo: si|no, sombras: si|no, utilizable: si|no, motivo}`. **Refuerza, no reemplaza**, la máscara de nubes (Cloud Score+ / SCL) y alimenta la confianza.
+2. **Calidad de la escena (RA02):** Gemini devuelve JSON estructurado `{nubes: bajo|medio|alto, humo: si|no, sombras: si|no, utilizable: si|no, motivo}`. **Refuerza, no reemplaza**, la máscara de nubes (Cloud Score+ / SCL) y alimenta la confianza.
 3. **Comparación antes/después:** Gemini describe diferencias visibles (claros, cambios de textura, quemas) y las **anota como interpretación**, citando las dos imágenes como evidencia.
-4. **Fotos del usuario (RF12):**
+4. **Fotos del usuario (RA04):**
    - El usuario manda foto y, opcionalmente, ubicación.
    - Gemini describe qué se ve y se cruza con la imagen satelital y el polígono.
    - **Es evidencia comunitaria no verificada** y la respuesta lo dice.
@@ -162,7 +162,7 @@ El ERS pide que el 90 % de las consultas se respondan en menos de 10 s. Un anál
 
 ## 6. Conocimiento y documentos
 
-### 6.1 Base de conocimiento (RF15)
+### 6.1 Base de conocimiento (RA07)
 
 - **Qué entra:** metodología del índice, glosario en lenguaje sencillo, preguntas frecuentes, normativa citada en el ERS (Leyes 1931/2018, 2169/2021, 1581/2012; Decreto 926/2017; Res. 1447/2018) y notas sobre Verra y Gold Standard.
 - **Cómo (de menos a más):**
@@ -170,7 +170,7 @@ El ERS pide que el 90 % de las consultas se respondan en menos de 10 s. Un anál
   2. **Si hace falta:** embeddings por la API de Gemini guardados en SQLite y similitud coseno con numpy.
 - **Regla:** las respuestas de conocimiento **siempre citan la fuente**.
 
-### 6.2 Extracción de declaraciones desde PDD (RF16, nivel medio)
+### 6.2 Extracción de declaraciones desde PDD (RA08, nivel medio)
 
 1. Descargar los PDD públicos de los proyectos de validación.
 2. Gemini lee el PDF y extrae, con salida estructurada: fecha de inicio de acreditación, línea base de deforestación, área, periodo de acreditación y metodología.
@@ -180,7 +180,7 @@ El ERS pide que el 90 % de las consultas se respondan en menos de 10 s. Un anál
 
 ---
 
-## 7. Voz (RF13, nivel medio)
+## 7. Voz (RA05, nivel medio)
 
 - Las notas de voz de WhatsApp (OGG/Opus) se envían a Gemini como entrada de audio, que las transcribe y las entiende en el mismo paso. No hace falta Whisper.
 - La respuesta es en texto. Audio sintético solo si sobra tiempo.
@@ -189,7 +189,7 @@ El ERS pide que el 90 % de las consultas se respondan en menos de 10 s. Un anál
 
 ---
 
-## 8. Alertas tempranas (RF14, opcional)
+## 8. Alertas tempranas (RA06, opcional)
 
 - Un job periódico (`APScheduler`) revisa escenas nuevas de Sentinel-2 sobre proyectos suscritos y consulta NASA FIRMS (API gratuita con clave).
 - Solo avisa si supera un umbral y el usuario aceptó las alertas (opt-in).
@@ -277,11 +277,11 @@ Equipo y cronograma completos en `PLAN_IMPLEMENTACION.md` (secciones 6 y 8). Lo 
 
 - **P4** es dueño del bucle, herramientas, prompts, validador y base de conocimiento. **P1** aporta el cliente Gemini (cuotas, caché, reintentos), el webhook y el consentimiento. **P2** entrega las miniaturas y las herramientas de datos con interfaces ya tipadas. **P3** entrega el índice, el conjunto de validación y la evaluación de la visión.
 - **Niveles de entrega:**
-  - **Núcleo:** RF09, RF15, RF17, RNF-IA1–4 y el pipeline RF01–RF08.
-  - **Alta:** RF10 (visión), RNF-IA5–6.
-  - **Media:** RF12, RF13, RF16 (elegir 1–2 según el tiempo).
-  - **Opcional:** RF14, RF11.
-- **Recorte si falta tiempo:** RF14 → RF11 → RF16 → RF13 → RF12 → RF10. **No se recorta** el agente con validador de fidelidad, la Ley 1581 ni la evaluación.
+  - **Núcleo:** RA01, RA07, RA09, RNF-IA1–4 y el pipeline RF01–RF08.
+  - **Alta:** RA02 (visión), RNF-IA5–6.
+  - **Media:** RA04, RA05, RA08 (elegir 1–2 según el tiempo).
+  - **Opcional:** RA06, RA03.
+- **Recorte si falta tiempo:** RA06 → RA03 → RA08 → RA05 → RA04 → RA02. **No se recorta** el agente con validador de fidelidad, la Ley 1581 ni la evaluación.
 
 ### 13.1 Semana 0 específica del agente
 
@@ -326,7 +326,7 @@ Equipo y cronograma completos en `PLAN_IMPLEMENTACION.md` (secciones 6 y 8). Lo 
 
 **Pendientes:**
 1. ¿Qué modelo de Gemini está disponible gratis en AI Studio y con qué límites? (Verificar el primer día.)
-2. ¿El docente aprueba ampliar el ERS con RF09–RF17 y las dos clases de consulta?
+2. ¿El docente aprueba ampliar el ERS con RA01–RA09 y las dos clases de consulta?
 3. ¿Se acepta procesar mensajes de voluntarios con un servicio externo (Gemini) con aviso y consentimiento?
 4. ¿Fecha real de entrega? Define cuántas funciones medias caben.
 5. ¿Hay 5 voluntarios para las pruebas de comprensión y el piloto?

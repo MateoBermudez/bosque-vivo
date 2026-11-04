@@ -41,7 +41,7 @@ Monorepo (monolito modular) en `main`, con CI en verde en GitHub Actions (jobs d
 | `panel/` | Streamlit | Reemplazado por `web/`; se conserva, se arranca con `STREAMLIT=1` |
 | `docs/` | Markdown | Planes, ADR, metodología, pruebas, privacidad, fuentes de datos |
 
-Requisitos implementados: RF01–RF10, RF12, RF13, RF15 y RF17 (ver matriz).
+Requisitos implementados: RF01–RF09 del ERS y RA01, RA02, RA04, RA05, RA07 y RA09 de la ampliación (ver matriz). La ampliación se numeraba RF09–RF17; se renombró RA01–RA09 porque el ERS vigente usa RF09 para la recuperación de contraseña.
 
 Datos reales: los 55 polígonos de Karnik et al. (2025) para Colombia ya están importados con `bosquevivo import`. El proveedor `open` (MODIS + Hansen) calcula el índice sin cuenta de Earth Engine; hay 33 proyectos de deforestación evitada/IFM calculados. `web/snapshot/` es una copia de solo lectura para publicar el sitio sin servidor.
 
@@ -71,18 +71,17 @@ Variables de entorno: ver `.env.example`. Las claves reales no están en git y l
 
 ## 6. Pendiente
 
-Por orden de valor para la entrega:
+Hecho en la sesión del 03/11/2026: RF09 del ERS (cuentas de auditor y recuperación de contraseña), brechas de RF01–RF08 (KML y modo estricto, umbral de nubes, NDVI fuera de rango, intenciones estado/alertas/ayuda, números autorizados, índice 0–1), registro de incidentes, chat en línea `/asistente`, renumeración de la ampliación (RA01–RA09) y plan de pruebas IEEE 829 en `docs/plan-de-pruebas`.
 
-1. **Evaluar el agente con Gemini real**: `cd backend && uv run bosquevivo eval`. Hoy solo se probó con un modelo guionizado.
-2. **Revisión del docente**: aprobar RF09–RF17 como ampliación del ERS y decidir entre índice v0 y v1. Hacer análisis de sensibilidad de los pesos.
-3. **Earth Engine real** (`SATELLITE_PROVIDER=gee`): medir tiempo por polígono y comparar con el proveedor `open`.
-4. **WhatsApp real**: configurar Cloud API, túnel (cloudflared/ngrok) y firma del webhook; probar consentimiento y borrado (Ley 1581).
-5. **Mediciones de requisitos no funcionales** en la instancia local.
-6. **Prueba de comprensión** con 5 personas no técnicas.
-7. **RF11** (modelo propio de visión), **RF14** (alertas tempranas), **RF16** (extracción de declaraciones desde PDD): no implementados.
-8. Decisión metodológica sobre proyectos de reforestación (ARR), que el índice actual no cubre.
-9. Documentación de pruebas: `docs/testing/plan-de-pruebas.md` no está redactado según IEEE 829. Si el docente lo exige, adaptarlo. El formato IEEE 830 (`Formato_ieee830.pdf`) no está en el repo; lo entrega el dueño.
-10. `web/`: completar `src/content/team.ts`, definir el canal de contacto humano del aviso de privacidad, imágenes antes/después reales y revisión visual con usuarios.
+Lo que queda depende del dueño o de personas externas:
+
+1. **Claves**: `GEMINI_API_KEY`/`GEMINI_MODEL` ([guía](guias/gemini.md)) y WhatsApp Cloud API ([guía](guias/whatsapp.md)). Luego ejecutar los casos marcados «Pendiente» del plan de pruebas (CP-26, CP-50).
+2. **Revisión del docente**: aprobar RA01–RA09 como ampliación del ERS y decidir entre índice v0 y v1.
+3. **Earth Engine real** (`SATELLITE_PROVIDER=gee`): medir tiempo por polígono (CP-39 con `gee`).
+4. **Piloto**: disponibilidad y fiabilidad en el horario acordado (CP-46) y prueba de comprensión con 5 personas no técnicas (CP-29).
+5. **RA03, RA06, RA08**: evolución prevista, fuera del alcance de esta entrega.
+6. Decisión metodológica sobre proyectos de reforestación (ARR).
+7. Firmas de la tabla de aprobaciones del plan de pruebas.
 
 ## 7. Trampas conocidas
 

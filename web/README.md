@@ -49,7 +49,7 @@ y levanta el backend (`cd backend && uv run uvicorn bosquevivo.api.app:app`). Co
 El chat y las trazas consumen la cuota de IA y las trazas muestran preguntas de usuarios, así que están protegidas:
 
 - Con la API en vivo (`BV_DATA_SOURCE=live`) se entra con **correo y contraseña** de una cuenta de auditor del backend. Basta definir `SESSION_SECRET` (`openssl rand -hex 32`). Las cuentas se crean con `uv run bosquevivo user-create correo@dominio --name "Nombre"`.
-- **Recuperación de contraseña (RF09):** `/acceso/recuperar` pide el correo y siempre responde con el mismo mensaje genérico; si la cuenta existe, el backend envía un enlace de un solo uso (`/acceso/restablecer?token=…`) que vence en `PASSWORD_RESET_TTL_MINUTES` (30 por defecto). En desarrollo el correo queda como `.eml` en `backend/data/outbox`; para envío real se usa SMTP (`MAIL_BACKEND=smtp`, por ejemplo Gmail con contraseña de aplicación, gratis).
+- **Recuperación de contraseña (RA01):** `/acceso/recuperar` pide el correo y siempre responde con el mismo mensaje genérico; si la cuenta existe, el backend envía un enlace de un solo uso (`/acceso/restablecer?token=…`) que vence en `PASSWORD_RESET_TTL_MINUTES` (30 por defecto). En desarrollo el correo queda como `.eml` en `backend/data/outbox`; para envío real se usa SMTP (`MAIL_BACKEND=smtp`, por ejemplo Gmail con contraseña de aplicación, gratis).
 - Sin API en vivo se usa un código compartido: `AUDITOR_ACCESS_CODE` + `SESSION_SECRET`.
 - Sin configurar, el área queda **abierta en desarrollo** y **bloqueada en producción**.
 
@@ -65,7 +65,7 @@ El chat y las trazas consumen la cuota de IA y las trazas muestran preguntas de 
 | `/privacidad` | Aviso de privacidad (Ley 1581) |
 | `/acerca` | Objetivos, alcance, referencias |
 | `/chat` · `/trazas` | Auditores: chat con el agente y trazas (requieren acceso) |
-| `/acceso` · `/acceso/recuperar` · `/acceso/restablecer` | Inicio de sesión, solicitud y restablecimiento de contraseña (RF09) |
+| `/acceso` · `/acceso/recuperar` · `/acceso/restablecer` | Inicio de sesión, solicitud y restablecimiento de contraseña (RA01) |
 | `/informe/[runId]` | Descarga del reporte (lo entrega el servidor de Next, no el backend) |
 
 ## Estructura

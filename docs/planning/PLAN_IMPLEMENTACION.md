@@ -28,7 +28,7 @@ Fuentes: ERS (resumen en láminas, estructura IEEE 830), documento de objetivos 
 - **Objetivos específicos:** OE1 documentar (ERS) · OE2 diseñar con herramientas de código abierto · OE3 desarrollar · OE4 validar con plan de pruebas.
 - **Plazo asumido:** ~8 semanas desde hoy. Falta confirmar la fecha real.
 
-> **Alcance frente al ERS.** El ERS deja fuera la detección temprana y no menciona análisis de imágenes con IA. El agente de IA amplía el ERS: hay que presentarlo al docente y, si lo aprueba, agregar los RF09–RF17 como revisión del ERS (control de cambios del OE1).
+> **Alcance frente al ERS.** El ERS deja fuera la detección temprana y no menciona análisis de imágenes con IA. El agente de IA amplía el ERS: hay que presentarlo al docente y, si lo aprueba, agregar los RA01–RA09 como revisión del ERS (control de cambios del OE1).
 
 ---
 
@@ -187,21 +187,21 @@ Es lo más delicado del proyecto y no depende de código.
 | **RF07** Recibir consultas | Webhook con firma validada, `200` inmediato, procesamiento en segundo plano | Idempotencia por `message_id`. Texto, ubicación, y fotos/audio según el nivel. |
 | **RF08** Lenguaje sencillo | Respuestas ≤ 300 caracteres en español colombiano cotidiano | El agente redacta; el validador comprueba las cifras. Probar con 5 personas no técnicas. |
 
-### 5.2 Ampliación con el agente de IA (RF09–RF17)
+### 5.2 Ampliación con el agente de IA (RA01–RA09)
 
 Detalle en `PLAN_AGENTE_IA.md`. Resumen y prioridad:
 
 | ID | Requisito | Nivel |
 |---|---|---|
-| RF09 | Agente con razonamiento multi-paso y herramientas | **Núcleo** |
-| RF15 | Base de conocimiento con citas (metodología, glosario, normativa) | **Núcleo** |
-| RF17 | Chat técnico del auditor en el panel | **Núcleo** |
-| RF10 | Análisis visual antes/después y calidad de imagen con Gemini | Alta |
-| RF12 | Fotos y ubicación del usuario como evidencia no verificada | Media |
-| RF13 | Voz: notas de audio entendidas por Gemini | Media |
-| RF16 | Extracción de declaraciones desde PDD con revisión humana | Media |
-| RF14 | Alertas tempranas opt-in (Sentinel-2 + NASA FIRMS) | Opcional |
-| RF11 | Modelo propio de visión (entrenado) | Opcional / evolución futura |
+| RA01 | Agente con razonamiento multi-paso y herramientas | **Núcleo** |
+| RA07 | Base de conocimiento con citas (metodología, glosario, normativa) | **Núcleo** |
+| RA09 | Chat técnico del auditor en el panel | **Núcleo** |
+| RA02 | Análisis visual antes/después y calidad de imagen con Gemini | Alta |
+| RA04 | Fotos y ubicación del usuario como evidencia no verificada | Media |
+| RA05 | Voz: notas de audio entendidas por Gemini | Media |
+| RA08 | Extracción de declaraciones desde PDD con revisión humana | Media |
+| RA06 | Alertas tempranas opt-in (Sentinel-2 + NASA FIRMS) | Opcional |
+| RA03 | Modelo propio de visión (entrenado) | Opcional / evolución futura |
 
 ---
 
@@ -256,13 +256,13 @@ Detalle en `PLAN_AGENTE_IA.md`. Resumen y prioridad:
 | **S0** (3 días) | Arranque | Entorno local listo (sección 10), repo, CI, cuentas (GEE, AI Studio, Meta, túnel), contratos congelados, propuesta de ampliación del ERS al docente, ADRs, índice v0 |
 | **S1–S2** | **Esqueleto andante** | Un proyecto de punta a punta: importar polígono → NDVI con GEE → SQLite → índice trivial → agente con 3–4 herramientas respondiendo por el chat del panel y por WhatsApp (túnel), con validador de fidelidad activo y ~20 preguntas de evaluación |
 | **S3–S4** | **Núcleo completo** | 10–20 proyectos, índice v1 con confianza, todas las herramientas de datos, base de conocimiento, consentimiento y borrado, evaluación v1 (30–40 casos) |
-| **S5–S6** | Visión y reportes | Miniaturas antes/después y calidad de imagen con Gemini (RF10), reportes, y 1–2 funciones medias (fotos, voz o PDD) |
+| **S5–S6** | Visión y reportes | Miniaturas antes/después y calidad de imagen con Gemini (RA02), reportes, y 1–2 funciones medias (fotos, voz o PDD) |
 | **S7** | **OE4** | Plan de pruebas, medición de NFR, evaluación de IA completa, piloto con ≤ 5 voluntarios |
 | **S8** | Cierre | Documento de arquitectura, resultados, demo final, margen |
 
 **Mapeo a objetivos:** OE1 ERS + revisión · OE2 diagramas y ADRs (S0–S2) · OE3 código · OE4 S7.
 
-**Orden de recorte si falta tiempo:** RF14 alertas → RF11 → RF16 → RF13 voz → RF12 fotos → RF10 visión. **No se recorta:** el esqueleto andante, el agente con validador de fidelidad, el índice con confianza, la Ley 1581 y las pruebas de OE4.
+**Orden de recorte si falta tiempo:** RA06 alertas → RA03 → RA08 → RA05 voz → RA04 fotos → RA02 visión. **No se recorta:** el esqueleto andante, el agente con validador de fidelidad, el índice con confianza, la Ley 1581 y las pruebas de OE4.
 
 ---
 
@@ -325,7 +325,7 @@ Detalle en `PLAN_AGENTE_IA.md`. Resumen y prioridad:
 
 **Pendientes:**
 1. ¿Cuál es la **fecha real de entrega**?
-2. ¿El docente aprueba ampliar el ERS con el agente de IA (RF09–RF17) y el **índice v0**?
+2. ¿El docente aprueba ampliar el ERS con el agente de IA (RA01–RA09) y el **índice v0**?
 3. ¿El ERS completo trae criterios de aceptación o más RF?
 4. ¿Hay 5 voluntarios (compañeros, familia o una comunidad) para el piloto y las pruebas de comprensión?
 5. ¿El docente acepta que los mensajes de los voluntarios se procesen con un servicio externo (Gemini) con aviso y consentimiento?

@@ -5,7 +5,9 @@ Politécnico Colombiano Jaime Isaza Cadavid · Segundo semestre de 2026
 
 Sistema de información que contrasta lo que declaran los proyectos de carbono forestal con lo que se observa desde el satélite, y lo explica en lenguaje sencillo mediante un **asistente con IA** por WhatsApp y un panel web para auditores.
 
-> **Estado:** núcleo implementado (RF01–RF10, RF12, RF13, RF15, RF17). Pendiente: mediciones de NFR, evaluación con Gemini real, validación con polígonos reales, RF11, RF14 y RF16.
+> **Estado:** ERS IEEE 830 completo (RF01–RF09) y ampliación de IA RA01, RA02, RA04, RA05, RA07 y RA09. Plan de pruebas IEEE 829 ejecutado en [`docs/plan-de-pruebas`](docs/plan-de-pruebas/README.md). Pendiente del dueño: claves de Gemini y WhatsApp, piloto con usuarios reales; RA03, RA06 y RA08 quedan como evolución.
+
+> **Numeración de requisitos.** RF01–RF09 son los del ERS (IEEE 830); RF09 es la recuperación de contraseña del panel web. La ampliación con IA, antes numerada RF09–RF17, pasa a **RA01–RA09** para no chocar con el ERS (RA01 = antes RF09 … RA09 = antes RF17).
 
 ## Decisiones del equipo (leer primero)
 
@@ -18,7 +20,7 @@ Sistema de información que contrasta lo que declaran los proyectos de carbono f
 | **Código abierto** | Todo el código propio es abierto. Gemini, Google Earth Engine y WhatsApp Cloud API son servicios gratuitos de terceros (el ERS contempla "servicios gratuitos de terceros"). |
 | **Base de datos** | SQLite + shapely (sin PostgreSQL/PostGIS). |
 | **Frontend** | Next.js en `web/` ([ADR 0013](docs/architecture/adr/0013-nextjs-para-el-frontend.md), propuesta). El panel Streamlit (`panel/`) queda en desuso hasta que se apruebe. |
-| **Alcance** | ERS (RF01–RF08) + agente de IA que razona, analiza imágenes y concluye con evidencia (RF09–RF17, pendiente de aprobación del docente). |
+| **Alcance** | ERS (RF01–RF09) + agente de IA que razona, analiza imágenes y concluye con evidencia (RA01–RA09, pendiente de aprobación del docente). |
 
 Los nombres de modelo y las cuotas de Gemini cambian: verificar en AI Studio y configurar `GEMINI_MODEL` en el `.env`.
 
@@ -32,8 +34,10 @@ Los nombres de modelo y las cuotas de Gemini cambian: verificar en AI Studio y c
 | [`docs/methodology/indice-v0.md`](docs/methodology/indice-v0.md) | Definición del índice, confianza y limitaciones |
 | [`docs/fuentes-de-datos/datos-abiertos.md`](docs/fuentes-de-datos/datos-abiertos.md) | Pérdida de bosque con datos abiertos de Hansen, sin Earth Engine |
 | [`docs/fuentes-de-datos/karnik.md`](docs/fuentes-de-datos/karnik.md) | Fuente de los polígonos (Karnik et al., 2025): licencia, reglas de importación, resultado para Colombia |
-| [`docs/testing`](docs/testing/plan-de-pruebas.md) | Plan de pruebas, matriz RF → pruebas y resultados |
+| [`docs/testing`](docs/testing/plan-de-pruebas.md) | Plan de pruebas anterior (reemplazado por `docs/plan-de-pruebas`) |
 | [`docs/privacy`](docs/privacy/aviso-de-privacidad.md) | Aviso de privacidad (Ley 1581) |
+| [`docs/plan-de-pruebas`](docs/plan-de-pruebas/README.md) | **Plan de pruebas IEEE 829**: plan, casos, ejecución, incidencias, evidencias y mediciones |
+| [`docs/guias`](docs/guias) | Guías para terminar la configuración: [WhatsApp](docs/guias/whatsapp.md), [Gemini](docs/guias/gemini.md), [correo](docs/guias/correo.md) |
 
 ## Ejecución local
 
@@ -52,7 +56,7 @@ cd .. && scripts/dev.sh              # en Windows: scripts\dev.ps1
 - Sitio: http://localhost:3000
 - Panel Streamlit (en desuso, opcional): `scripts\dev.ps1 -Streamlit` o `STREAMLIT=1 scripts/dev.sh` → http://127.0.0.1:8501
 
-Para probar sin credenciales, use `SATELLITE_PROVIDER=fake` y los datos de demostración. El chat y WhatsApp sí requieren `GEMINI_API_KEY` y `GEMINI_MODEL`. El chat y las trazas del sitio están protegidos con `AUDITOR_ACCESS_CODE` y `SESSION_SECRET` en `web/.env.local` (sin definirlos quedan abiertos en desarrollo). Más detalle en [`web/README.md`](web/README.md).
+Para probar sin credenciales, use `SATELLITE_PROVIDER=fake` y los datos de demostración. El asistente (WhatsApp y el chat en línea `/asistente`) responde ESTADO, ALERTAS, AYUDA y PROYECTO <número> sin IA; las preguntas libres, fotos y voz requieren `GEMINI_API_KEY` y `GEMINI_MODEL` ([guía](docs/guias/gemini.md)). El área de auditores usa cuentas con correo y contraseña (`uv run bosquevivo user-create correo@dominio`) y `SESSION_SECRET` en `web/.env.local`; la recuperación de contraseña (RF09) se describe en la [guía de correo](docs/guias/correo.md). Más detalle en [`web/README.md`](web/README.md).
 
 Importar los polígonos reales de Colombia (base de Karnik et al., ver [`docs/fuentes-de-datos/karnik.md`](docs/fuentes-de-datos/karnik.md)) y calcular una auditoría:
 

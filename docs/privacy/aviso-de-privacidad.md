@@ -19,7 +19,7 @@ Un asistente de inteligencia artificial. El procesamiento del texto, las imágen
 - Hablar con una persona del equipo cuando lo necesite, por el correo de contacto publicado en `/privacidad` (variable `PRIVACY_CONTACT_EMAIL` del sitio).
 
 ## Cuentas de auditor (sitio web)
-Para el área de auditores se guarda el correo, el nombre y la contraseña cifrada (scrypt con sal). Los enlaces para restablecer la contraseña (RF09) se guardan solo como huella SHA-256, vencen a los 30 minutos y sirven una sola vez. El mensaje de recuperación no revela si un correo está registrado.
+Para el área de auditores se guarda el correo, el nombre y la contraseña cifrada (scrypt con sal). Los enlaces para restablecer la contraseña (RA01) se guardan solo como huella SHA-256, vencen a los 30 minutos y sirven una sola vez. El mensaje de recuperación no revela si un correo está registrado.
 
 ## Retención
 Las consultas se conservan solo mientras el usuario no pida su borrado y por el tiempo del piloto.
