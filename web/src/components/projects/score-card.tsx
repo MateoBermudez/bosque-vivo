@@ -1,6 +1,6 @@
 import type { AuditResult } from "@/lib/api/schema";
 import { isPartialResult, normalizeConfidence, readComponents, readSensitivity, readSensor } from "@/lib/domain";
-import { formatNumber, formatPercent } from "@/lib/format";
+import { formatNumber, formatPercent, formatUnitIndex } from "@/lib/format";
 
 export function ScoreCard({ result }: { result: AuditResult }) {
   const components = readComponents(result);
@@ -20,6 +20,9 @@ export function ScoreCard({ result }: { result: AuditResult }) {
         </span>
         <span className="mb-3 text-forest-muted">/ 100</span>
       </div>
+      {result.score !== null && (
+        <p className="text-sm text-forest-muted">Escala de 0 a 1: {formatUnitIndex(result.score)}</p>
+      )}
       <div className="mt-1">
         <span className="rounded-full bg-forest-foreground px-3 py-1 text-xs font-bold text-forest">
           {result.category}

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { formatDateTime, formatLatency, formatPercent, formatPeriod } from "./format";
+import { formatDateTime, formatLatency, formatPercent, formatPeriod, formatUnitIndex } from "./format";
 
 describe("formatDateTime", () => {
   it("trata las fechas sin zona horaria como UTC (así las envía el backend)", () => {
@@ -28,5 +28,12 @@ describe("otros formatos", () => {
   it("formatea porcentajes y periodos", () => {
     expect(formatPercent(0.876)).toBe("88 %");
     expect(formatPeriod("2016-03-01")).toMatch(/mar.*2016/);
+  });
+});
+
+describe("índice en escala de 0 a 1", () => {
+  it("convierte el puntaje de 0 a 100", () => {
+    expect(formatUnitIndex(82)).toBe("0,82");
+    expect(formatUnitIndex(100)).toBe("1,00");
   });
 });
