@@ -5,21 +5,21 @@ from sqlalchemy.orm import Session
 
 from bosquevivo.assistant.messages import IncomingMessage
 from bosquevivo.assistant.runtime import build_assistant, build_llm_or_unavailable
-from bosquevivo.audit.config import config_for
-from bosquevivo.audit.index import IndexCalculator
-from bosquevivo.audit.service import AuditService, analysis_window_start
 from bosquevivo.core.config import get_settings
 from bosquevivo.db.models import Project
 from bosquevivo.jobs.kinds import CALCULATE_AUDIT, GENERATE_REPORT, WHATSAPP_MESSAGE
-from bosquevivo.reports.service import ReportService
 from bosquevivo.satellite.provider import SatelliteProvider
-from bosquevivo.satellite.service import SatelliteService
 
 __all__ = ["CALCULATE_AUDIT", "GENERATE_REPORT", "WHATSAPP_MESSAGE"]
 
 
 def make_calculate_audit(provider: SatelliteProvider):
     def handler(session: Session, payload: dict[str, Any]) -> dict[str, Any]:
+        from bosquevivo.audit.config import config_for
+        from bosquevivo.audit.index import IndexCalculator
+        from bosquevivo.audit.service import AuditService, analysis_window_start
+        from bosquevivo.satellite.service import SatelliteService
+
         project_id = int(payload["project_id"])
         settings = get_settings()
         satellite = SatelliteService(session, provider, settings.images_dir)
@@ -40,6 +40,8 @@ def make_calculate_audit(provider: SatelliteProvider):
 
 
 def generate_report(session: Session, payload: dict[str, Any]) -> dict[str, Any]:
+    from bosquevivo.reports.service import ReportService
+
     service = ReportService(session, get_settings().reports_dir)
     report = service.generate(int(payload["run_id"]), payload.get("format", "html"))
     return {"report_id": report.id, "path": report.path}

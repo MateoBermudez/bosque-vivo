@@ -1,4 +1,6 @@
+import base64
 import hashlib
+from datetime import date
 from pathlib import Path
 
 from jinja2 import Environment, FileSystemLoader, select_autoescape
@@ -9,10 +11,17 @@ from bosquevivo.audit.config import default_config
 from bosquevivo.audit.service import AuditService
 from bosquevivo.core.errors import NotFoundError
 from bosquevivo.db.models import AuditRun, Project, Report
-from bosquevivo.reports.charts import ndvi_chart_png, to_base64
 from bosquevivo.reports.pdf import build_pdf
 
 TEMPLATES = Path(__file__).parent / "templates"
+
+
+def _chart(points: list[tuple[date, float | None]], t0: date | None) -> bytes | None:
+    try:
+        from bosquevivo.reports.charts import ndvi_chart_png
+    except ModuleNotFoundError:
+        return None
+    return ndvi_chart_png(points, t0)
 
 
 class ReportService:
@@ -31,7 +40,7 @@ class ReportService:
         if project_row is None:
             raise NotFoundError(f"proyecto {run.project_id} no existe")
         inputs = AuditService(self.session).build_inputs(project_row)
-        chart = ndvi_chart_png([(p.period, p.ndvi_mean) for p in inputs.series], inputs.t0)
+        chart = _chart([(p.period, p.ndvi_mean) for p in inputs.series], inputs.t0)
         folder = self.reports_dir / str(project_row.id)
         folder.mkdir(parents=True, exist_ok=True)
         base = folder / f"run_{run.id}"
@@ -58,7 +67,7 @@ class ReportService:
                 sensitivity=sensitivity,
                 sensitivity_delta=default_config().sensitivity_delta,
                 sensor=run.result.components.get("_sensor", "n/d"),
-                chart=to_base64(chart),
+                chart=base64.b64encode(chart).decode() if chart else None,
                 comparison=compare_declared_observed(inputs),
             )
             content = html.encode("utf-8")

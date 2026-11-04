@@ -20,13 +20,7 @@ from bosquevivo.core.errors import ExternalServiceError, NotFoundError, Validati
 from bosquevivo.core.logging import configure_logging, get_logger
 from bosquevivo.db.session import get_engine, init_db, make_session_factory
 from bosquevivo.jobs import JobWorker
-from bosquevivo.jobs.kinds import CALCULATE_AUDIT, GENERATE_REPORT, WHATSAPP_MESSAGE
-from bosquevivo.jobs.tasks import (
-    generate_report,
-    make_calculate_audit,
-    make_whatsapp_message,
-)
-from bosquevivo.satellite.factory import build_provider
+from bosquevivo.jobs.dispatch import build_handlers, optional_provider
 
 log = get_logger(__name__)
 
@@ -35,15 +29,13 @@ log = get_logger(__name__)
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     settings = get_settings()
     init_db()
+    if settings.inline_jobs:
+        log.info("jobs_inline")
+        yield
+        return
     worker = JobWorker(make_session_factory(get_engine()))
-    worker.register(GENERATE_REPORT, generate_report)
-    provider = None
-    try:
-        provider = build_provider(settings)
-        worker.register(CALCULATE_AUDIT, make_calculate_audit(provider))
-    except Exception as exc:
-        log.warning("satellite_provider_unavailable", error=str(exc))
-    worker.register(WHATSAPP_MESSAGE, make_whatsapp_message(provider))
+    for kind, handler in build_handlers(optional_provider(settings)).items():
+        worker.register(kind, handler)
     worker.start()
     app.state.worker = worker
     try:

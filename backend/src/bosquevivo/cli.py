@@ -138,7 +138,7 @@ def _print_batch_item(index: int, total: int, item: BatchItem) -> None:
 
 def cmd_gemini_check(_: argparse.Namespace) -> int:
     """Verifica la clave de Gemini, lista los modelos disponibles y prueba el configurado."""
-    from google import genai  # noqa: PLC0415 - solo se importa si se usa este comando
+    from google import genai
 
     settings = get_settings()
     if not settings.gemini_api_key:
@@ -324,7 +324,7 @@ def _print_setup(report: SetupReport, values: dict[str, str], projects: int) -> 
 def cmd_setup(args: argparse.Namespace) -> int:
     root = Path(args.root).resolve() if args.root else repo_root()
     report = SetupReport()
-    backend_env = prepare_backend_env(root, report)
+    backend_env = prepare_backend_env(root, report, args.database_url)
     prepare_web_env(root, backend_env, args.api_port, report)
     os.chdir(root / "backend")
     get_settings.cache_clear()
@@ -447,6 +447,10 @@ def _add_account_commands(sub) -> None:
     setup.add_argument("--admin", help="correo de la primera cuenta de auditor (se invita)")
     setup.add_argument("--name", help="nombre de esa cuenta")
     setup.add_argument("--api-port", type=int, default=8000)
+    setup.add_argument(
+        "--database-url",
+        help="cadena de Supabase (Transaction pooler); la contraseña va en DATABASE_PASSWORD",
+    )
     setup.add_argument("--no-demo", action="store_true", help="no carga proyectos de demostración")
     setup.add_argument("--root", help="raíz del repositorio (por defecto se detecta)")
     setup.set_defaults(func=cmd_setup)

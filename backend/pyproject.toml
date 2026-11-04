@@ -6,31 +6,35 @@ requires-python = ">=3.12"
 license = { text = "MIT" }
 dependencies = [
     "fastapi>=0.115",
-    "uvicorn[standard]>=0.32",
+    "uvicorn>=0.32",
     "pydantic>=2.9",
     "pydantic-settings>=2.6",
     "sqlalchemy>=2.0",
+    "psycopg[binary]>=3.2",
     "shapely>=2.0",
     "pyproj>=3.7",
-    "geopandas>=1.0",
-    "pyogrio>=0.10",
     "numpy>=2.0",
-    "scipy>=1.14",
-    "pymannkendall>=1.4",
     "httpx>=0.27",
     "jinja2>=3.1",
     "fpdf2>=2.8",
-    "matplotlib>=3.9",
     "structlog>=24.4",
-    "apscheduler>=3.10",
     "rapidfuzz>=3.10",
     "google-genai>=1.0",
-    "earthengine-api>=1.0",
     "python-multipart>=0.0.12",
+]
+
+[project.optional-dependencies]
+procesamiento = [
+    "uvicorn[standard]>=0.32",
+    "geopandas>=1.0",
+    "pyogrio>=0.10",
+    "scipy>=1.14",
+    "pymannkendall>=1.4",
+    "matplotlib>=3.9",
+    "earthengine-api>=1.0",
     "rasterio>=1.5.2",
     "pystac-client>=0.9.1",
     "planetary-computer>=1.0.0",
-    "psycopg[binary]>=3.2",
 ]
 
 [project.scripts]
@@ -67,7 +71,7 @@ extend-immutable-calls = ["fastapi.Depends", "fastapi.Query", "fastapi.Header"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "B", "UP", "SIM", "C4", "PL", "RUF"]
-ignore = ["PLR2004", "PLR0913", "RUF012"]
+ignore = ["PLR2004", "PLR0913", "RUF012", "PLC0415"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

@@ -5,7 +5,7 @@ root="$(cd "$(dirname "$0")/.." && pwd)"
 api_port="${API_PORT:-8000}"
 web_port="${WEB_PORT:-3000}"
 
-(cd "$root/backend" && uv sync --quiet && uv run bosquevivo setup --api-port "$api_port")
+(cd "$root/backend" && uv sync --quiet --all-extras && uv run bosquevivo setup --api-port "$api_port")
 
 cd "$root/web"
 [ -d node_modules ] || npm ci

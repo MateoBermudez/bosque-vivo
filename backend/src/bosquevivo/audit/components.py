@@ -3,8 +3,6 @@ from datetime import date
 from typing import Any
 
 import numpy as np
-import pymannkendall as mk
-from scipy.stats import theilslopes
 
 from bosquevivo.audit.config import IndexConfig
 from bosquevivo.audit.inputs import AuditInputs, SeriesPoint
@@ -129,7 +127,11 @@ def trend(inputs: AuditInputs, config: IndexConfig) -> ComponentResult:
         )
     x = _years(post)
     y = np.array([_value(p) for p in post], dtype=float)
+    from scipy.stats import theilslopes
+
     slope = float(np.asarray(theilslopes(y, x)[0]))
+    import pymannkendall as mk
+
     test = mk.original_test(y, alpha=config.significance_level)
     if slope >= 0:
         score = 100.0

@@ -41,7 +41,7 @@ class SetupReport:
     notes: list[str] = field(default_factory=list)
 
 
-def prepare_backend_env(root: Path, report: SetupReport) -> Path:
+def prepare_backend_env(root: Path, report: SetupReport, database_url: str | None = None) -> Path:
     env_path = root / "backend" / ".env"
     if not env_path.exists():
         example = root / ".env.example"
@@ -58,6 +58,9 @@ def prepare_backend_env(root: Path, report: SetupReport) -> Path:
         report.notes.append(
             "SATELLITE_PROVIDER=open (datos abiertos MODIS + Hansen; con GEE_PROJECT use gee)"
         )
+    if database_url:
+        updates["DATABASE_URL"] = database_url
+        report.notes.append("DATABASE_URL actualizado (PostgreSQL)")
     if updates:
         write_env(env_path, updates)
     return env_path
@@ -116,8 +119,20 @@ REQUIREMENTS = (
 )
 
 
+DATABASE_REQUIREMENT = Requirement(
+    "Base PostgreSQL en Supabase (para Vercel; sin ella se usa SQLite local)",
+    ("DATABASE_URL", "DATABASE_PASSWORD"),
+    f"{GUIDES}/despliegue.md",
+)
+
+
 def missing_keys(values: dict[str, str]) -> list[tuple[Requirement, list[str]]]:
     result = []
+    url = values.get("DATABASE_URL", "")
+    if not url.startswith(("postgres://", "postgresql")):
+        result.append((DATABASE_REQUIREMENT, ["DATABASE_URL", "DATABASE_PASSWORD"]))
+    elif "[YOUR-PASSWORD]" in url and not values.get("DATABASE_PASSWORD"):
+        result.append((DATABASE_REQUIREMENT, ["DATABASE_PASSWORD"]))
     for requirement in REQUIREMENTS:
         missing = [key for key in requirement.keys if not values.get(key)]
         if missing:

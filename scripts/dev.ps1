@@ -11,7 +11,7 @@ $root = Split-Path -Parent $PSScriptRoot
 
 Push-Location "$root\backend"
 try {
-    uv sync --quiet
+    uv sync --quiet --all-extras
     uv run bosquevivo setup --api-port $ApiPort
     if ($LASTEXITCODE -ne 0) { throw "bosquevivo setup falló" }
 } finally { Pop-Location }

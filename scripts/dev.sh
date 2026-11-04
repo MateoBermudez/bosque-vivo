@@ -6,7 +6,7 @@ api_port="${API_PORT:-8000}"
 web_port="${WEB_PORT:-3000}"
 panel_port="${PANEL_PORT:-8501}"
 
-(cd "$root/backend" && uv sync --quiet && uv run bosquevivo setup --api-port "$api_port")
+(cd "$root/backend" && uv sync --quiet --all-extras && uv run bosquevivo setup --api-port "$api_port")
 
 if [ ! -d "$root/web/node_modules" ]; then
     echo "Instalando dependencias de web (npm ci)..."

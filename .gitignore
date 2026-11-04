@@ -35,3 +35,5 @@ Formato_ieee830.pdf
 
 *.log
 .earthengine/
+
+.vercel/

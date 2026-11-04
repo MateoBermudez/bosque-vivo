@@ -80,3 +80,15 @@ def test_setup_command_end_to_end(tmp_path, capsys, monkeypatch, fresh_caches):
     assert "acceso/restablecer?token=" in output
     assert "GEMINI_API_KEY" in output
     assert (root / "backend" / "data" / "bosquevivo.db").exists()
+
+
+def test_database_requirement_and_url_option(tmp_path):
+    assert any("PostgreSQL" in r.feature for r, _ in missing_keys({}))
+    url = "postgresql://postgres.ref:[YOUR-PASSWORD]@aws-0-x.pooler.supabase.com:6543/postgres"
+    pending = missing_keys({"DATABASE_URL": url})
+    assert [keys for r, keys in pending if "PostgreSQL" in r.feature] == [["DATABASE_PASSWORD"]]
+    complete = missing_keys({"DATABASE_URL": url, "DATABASE_PASSWORD": "x"})
+    assert not any("PostgreSQL" in r.feature for r, _ in complete)
+    root = make_root(tmp_path)
+    backend = prepare_backend_env(root, SetupReport(), url)
+    assert read_env(backend)["DATABASE_URL"] == url
