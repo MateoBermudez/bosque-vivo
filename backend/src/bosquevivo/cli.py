@@ -12,7 +12,7 @@ from bosquevivo.ai.agent import Agent, default_registry
 from bosquevivo.ai.eval import EvalRunner, load_cases
 from bosquevivo.assistant.runtime import build_llm, build_llm_or_unavailable
 from bosquevivo.core.config import get_settings
-from bosquevivo.core.errors import ValidationFailedError
+from bosquevivo.core.errors import ExternalServiceError, ValidationFailedError
 from bosquevivo.core.incidents import duration_minutes, is_critical, list_incidents, summarize
 from bosquevivo.core.logging import configure_logging
 from bosquevivo.db.session import get_session, init_db
@@ -276,6 +276,33 @@ def cmd_user_create(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_user_invite(args: argparse.Namespace) -> int:
+    init_db()
+    try:
+        with get_session() as session:
+            user = _accounts(session).invite_user(args.email, args.name or "")
+            print(f"invitación enviada a {user.email}: debe elegir su contraseña con el enlace")
+    except (ValidationFailedError, ExternalServiceError) as exc:
+        print(f"No se envió la invitación: {exc}")
+        return 1
+    return 0
+
+
+def cmd_mail_test(args: argparse.Namespace) -> int:
+    init_db()
+    settings = get_settings()
+    mailer = build_mailer(settings)
+    try:
+        with get_session() as session:
+            AccountService(session, mailer, settings).send_test(args.email)
+    except ExternalServiceError as exc:
+        print(f"El correo NO funciona: {exc}")
+        return 1
+    where = "data/outbox (MAIL_BACKEND sin SMTP)" if mailer.name == "outbox" else "SMTP"
+    print(f"Correo de prueba enviado a {args.email} por {where}")
+    return 0
+
+
 def cmd_user_list(_: argparse.Namespace) -> int:
     init_db()
     with get_session() as session:
@@ -328,6 +355,15 @@ def _add_account_commands(sub) -> None:
     user_create.add_argument("email")
     user_create.add_argument("--name")
     user_create.set_defaults(func=cmd_user_create)
+    user_invite = sub.add_parser(
+        "user-invite", help="Crea una cuenta y envía por correo el enlace para elegir contraseña"
+    )
+    user_invite.add_argument("email")
+    user_invite.add_argument("--name")
+    user_invite.set_defaults(func=cmd_user_invite)
+    mail_test = sub.add_parser("mail-test", help="Envía un correo de prueba con la configuración")
+    mail_test.add_argument("email")
+    mail_test.set_defaults(func=cmd_mail_test)
     sub.add_parser("user-list", help="Lista las cuentas de auditor").set_defaults(
         func=cmd_user_list
     )

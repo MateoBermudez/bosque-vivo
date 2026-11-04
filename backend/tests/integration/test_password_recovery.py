@@ -202,7 +202,7 @@ def test_auth_endpoints_require_admin_token(api):
 
 def test_login_endpoint(api):
     ok = api.post("/api/v1/auth/login", headers=ADMIN, json={"email": EMAIL, "password": PASSWORD})
-    assert ok.status_code == 200 and ok.json() == {"email": EMAIL, "name": "Auditora"}
+    assert ok.status_code == 200 and ok.json()["status"] == "codigo"
     bad = api.post("/api/v1/auth/login", headers=ADMIN, json={"email": EMAIL, "password": "x"})
     assert bad.status_code == 401
 

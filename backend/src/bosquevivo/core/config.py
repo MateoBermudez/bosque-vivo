@@ -30,13 +30,18 @@ class Settings(BaseSettings):
     cloud_max_percent: float = Field(default=20.0, ge=0.0, le=100.0)
     web_base_url: str = "http://localhost:3000"
     password_reset_ttl_minutes: int = Field(default=30, ge=5, le=1440)
-    mail_backend: str = "outbox"
-    mail_from: str = "Bosque Vivo <no-responder@bosquevivo.local>"
+    mail_backend: str = "auto"
+    mail_from: str = ""
     smtp_host: str = ""
     smtp_port: int = 587
     smtp_user: str = ""
     smtp_password: str = ""
     smtp_starttls: bool = True
+    smtp_ssl: bool = False
+    auth_two_factor: bool = True
+    auth_code_ttl_minutes: int = Field(default=10, ge=2, le=60)
+    auth_login_alerts: bool = True
+    invitation_ttl_hours: int = Field(default=72, ge=1, le=720)
 
     @property
     def images_dir(self) -> Path:

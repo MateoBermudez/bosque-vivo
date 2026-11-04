@@ -8,7 +8,7 @@ import { auditorLoginMethod } from "@/lib/auth/access";
 import { ResetForm } from "./reset-form";
 
 export const metadata: Metadata = {
-  title: "Restablecer contraseña",
+  title: "Elegir contraseña",
   robots: { index: false },
   referrer: "no-referrer",
 };
@@ -17,7 +17,7 @@ export default function ResetPage({ searchParams }: PageProps<"/acceso/restablec
   return (
     <div className="mx-auto max-w-md px-5 py-16">
       <p className="eyebrow">Área de auditores</p>
-      <h1 className="mt-2 text-3xl font-extrabold">Restablecer contraseña</h1>
+      <h1 className="mt-2 text-3xl font-extrabold">Elegir contraseña</h1>
       <Suspense>
         <ResetContent searchParams={searchParams} />
       </Suspense>
@@ -54,5 +54,14 @@ async function ResetContent({ searchParams }: Pick<PageProps<"/acceso/restablece
   if (status.status !== "valido") {
     return <Problem message={status.detail ?? "El enlace no es válido. Solicita uno nuevo."} />;
   }
-  return <ResetForm token={token} />;
+  return (
+    <>
+      <p className="mt-3 text-muted-foreground">
+        {status.purpose === "invitacion"
+          ? "Bienvenido al área de auditores. Elige la contraseña de tu cuenta para activarla."
+          : "Elige una contraseña nueva para tu cuenta de auditor."}
+      </p>
+      <ResetForm token={token} />
+    </>
+  );
 }

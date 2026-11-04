@@ -52,6 +52,7 @@ def _default_factory() -> sessionmaker[Session]:
 
 ADDED_COLUMNS: dict[str, dict[str, str]] = {
     "wa_user": {"project_id": "INTEGER REFERENCES project(id) ON DELETE SET NULL"},
+    "password_reset_token": {"purpose": "VARCHAR(20) NOT NULL DEFAULT 'reset'"},
 }
 
 

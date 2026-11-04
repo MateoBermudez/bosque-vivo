@@ -146,25 +146,71 @@ export const liveApi: BosqueVivoApi = {
   },
 };
 
-const authUserSchema = z.object({ email: z.string(), name: z.string() });
+const loginSchema = z.object({
+  status: z.enum(["ok", "codigo"]),
+  email: z.string().nullish(),
+  name: z.string().nullish(),
+  challenge: z.string().nullish(),
+  destination: z.string().nullish(),
+});
 const messageSchema = z.object({ detail: z.string() });
 const tokenStatusSchema = z.object({
   status: z.enum(["valido", "invalido", "expirado", "usado"]),
   detail: z.string().nullable(),
+  purpose: z.enum(["reset", "invitacion"]).default("reset"),
 });
 
-export type AuthUser = z.infer<typeof authUserSchema>;
+export interface AuthUser {
+  email: string;
+  name: string;
+}
 export type ResetTokenStatus = z.infer<typeof tokenStatusSchema>;
+export type LoginResult =
+  | { status: "ok"; user: AuthUser }
+  | { status: "codigo"; challenge: string; destination: string };
 
 const AUTH_PREFIX = `${API_PREFIX}/auth`;
 
+function toLoginResult(payload: z.infer<typeof loginSchema>): LoginResult {
+  if (payload.status === "codigo" && payload.challenge) {
+    return { status: "codigo", challenge: payload.challenge, destination: payload.destination ?? "tu correo" };
+  }
+  if (payload.status === "ok" && payload.email) {
+    return { status: "ok", user: { email: payload.email, name: payload.name ?? payload.email } };
+  }
+  throw new BackendError("La respuesta del servidor no tiene el formato esperado.", null);
+}
+
 export const accountsApi = {
-  login: (email: string, password: string): Promise<AuthUser> =>
-    requireJson(`${AUTH_PREFIX}/login`, authUserSchema, {
-      admin: true,
-      method: "POST",
-      body: { email, password },
-    }),
+  login: async (email: string, password: string, client = ""): Promise<LoginResult> =>
+    toLoginResult(
+      await requireJson(`${AUTH_PREFIX}/login`, loginSchema, {
+        admin: true,
+        method: "POST",
+        body: { email, password, client },
+      }),
+    ),
+  verifyCode: async (challenge: string, code: string): Promise<AuthUser> => {
+    const result = toLoginResult(
+      await requireJson(`${AUTH_PREFIX}/login/verify`, loginSchema, {
+        admin: true,
+        method: "POST",
+        body: { challenge, code },
+      }),
+    );
+    if (result.status !== "ok") throw new BackendError("No se pudo verificar el código.", null);
+    return result.user;
+  },
+  resendCode: async (challenge: string): Promise<string> => {
+    const result = toLoginResult(
+      await requireJson(`${AUTH_PREFIX}/login/resend`, loginSchema, {
+        admin: true,
+        method: "POST",
+        body: { challenge },
+      }),
+    );
+    return result.status === "codigo" ? result.destination : "tu correo";
+  },
   requestReset: async (email: string): Promise<string> =>
     (
       await requireJson(`${AUTH_PREFIX}/password-reset`, messageSchema, {

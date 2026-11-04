@@ -9,7 +9,10 @@ from bosquevivo.accounts.mailer import (
 from bosquevivo.accounts.service import (
     GENERIC_RESET_MESSAGE,
     AccountService,
+    ChallengeError,
+    ChallengeStatus,
     LoginOutcome,
+    LoginStep,
     ResetError,
     TokenStatus,
 )
@@ -17,7 +20,10 @@ from bosquevivo.accounts.service import (
 __all__ = [
     "GENERIC_RESET_MESSAGE",
     "AccountService",
+    "ChallengeError",
+    "ChallengeStatus",
     "LoginOutcome",
+    "LoginStep",
     "Mailer",
     "MemoryMailer",
     "OutboxMailer",

@@ -22,12 +22,34 @@ afterEach(() => {
 
 describe("cuentas de auditor (RF09)", () => {
   it("inicia sesión con el token de administración del servidor", async () => {
-    fetchMock.mockResolvedValue(json({ email: "a@b.co", name: "Ana" }));
-    expect(await accountsApi.login("a@b.co", "BosqueVivo2026")).toEqual({ email: "a@b.co", name: "Ana" });
+    fetchMock.mockResolvedValue(json({ status: "ok", email: "a@b.co", name: "Ana" }));
+    expect(await accountsApi.login("a@b.co", "BosqueVivo2026", "Chrome")).toEqual({
+      status: "ok",
+      user: { email: "a@b.co", name: "Ana" },
+    });
     const [url, init] = fetchMock.mock.calls[0]!;
     expect(String(url)).toBe("http://backend.test/api/v1/auth/login");
     expect((init!.headers as Record<string, string>)["X-Admin-Token"]).toBe("token-secreto");
-    expect(JSON.parse(String(init!.body))).toEqual({ email: "a@b.co", password: "BosqueVivo2026" });
+    expect(JSON.parse(String(init!.body))).toEqual({ email: "a@b.co", password: "BosqueVivo2026", client: "Chrome" });
+  });
+
+  it("pide el código de verificación y lo confirma (2FA)", async () => {
+    fetchMock
+      .mockResolvedValueOnce(json({ status: "codigo", challenge: "reto", destination: "a***@b.co" }))
+      .mockResolvedValueOnce(json({ status: "codigo", challenge: "reto", destination: "a***@b.co" }))
+      .mockResolvedValueOnce(json({ status: "ok", email: "a@b.co", name: "Ana" }));
+    expect(await accountsApi.login("a@b.co", "BosqueVivo2026")).toEqual({
+      status: "codigo",
+      challenge: "reto",
+      destination: "a***@b.co",
+    });
+    expect(await accountsApi.resendCode("reto")).toBe("a***@b.co");
+    expect(await accountsApi.verifyCode("reto", "123456")).toEqual({ email: "a@b.co", name: "Ana" });
+    expect(fetchMock.mock.calls.map(([url]) => String(url))).toEqual([
+      "http://backend.test/api/v1/auth/login",
+      "http://backend.test/api/v1/auth/login/resend",
+      "http://backend.test/api/v1/auth/login/verify",
+    ]);
   });
 
   it("propaga el mensaje y el estado de credenciales inválidas", async () => {
@@ -40,10 +62,10 @@ describe("cuentas de auditor (RF09)", () => {
   it("solicita, verifica y confirma el restablecimiento", async () => {
     fetchMock
       .mockResolvedValueOnce(json({ detail: "Si la dirección está registrada…" }, 202))
-      .mockResolvedValueOnce(json({ status: "valido", detail: null }))
+      .mockResolvedValueOnce(json({ status: "valido", detail: null, purpose: "invitacion" }))
       .mockResolvedValueOnce(json({ detail: "Tu contraseña se actualizó." }));
     expect(await accountsApi.requestReset("a@b.co")).toContain("Si la dirección");
-    expect((await accountsApi.verifyReset("tok")).status).toBe("valido");
+    expect(await accountsApi.verifyReset("tok")).toEqual({ status: "valido", detail: null, purpose: "invitacion" });
     expect(await accountsApi.confirmReset("tok", "NuevaClave2026")).toContain("actualizó");
     expect(fetchMock.mock.calls.map(([url]) => String(url))).toEqual([
       "http://backend.test/api/v1/auth/password-reset",

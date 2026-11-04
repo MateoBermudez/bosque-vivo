@@ -1,3 +1,5 @@
+import hmac
+import secrets
 from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import datetime, timedelta
@@ -6,6 +8,7 @@ from enum import StrEnum
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from bosquevivo.accounts import templates
 from bosquevivo.accounts.mailer import Mailer, OutgoingEmail
 from bosquevivo.accounts.passwords import (
     DUMMY_HASH,
@@ -22,13 +25,18 @@ from bosquevivo.core.errors import ExternalServiceError, ValidationFailedError
 from bosquevivo.core.incidents import as_aware, record_incident
 from bosquevivo.core.logging import get_logger
 from bosquevivo.db.base import utcnow
-from bosquevivo.db.models import AuditorUser, PasswordResetToken
+from bosquevivo.db.models import AuditorUser, LoginChallenge, PasswordResetToken
 
 log = get_logger(__name__)
 
 MAX_FAILED_LOGINS = 5
 LOCK_MINUTES = 10
 MAX_RESETS_PER_HOUR = 3
+MAX_CODE_ATTEMPTS = 5
+MAX_CODE_SENDS = 3
+PURPOSE_RESET = "reset"
+PURPOSE_INVITATION = "invitacion"
+UNUSABLE_PREFIX = "!"
 
 GENERIC_RESET_MESSAGE = (
     "Si la dirección está registrada, recibirás un correo con las instrucciones para "
@@ -56,10 +64,52 @@ class ResetError(ValidationFailedError):
         self.status = status
 
 
+class ChallengeStatus(StrEnum):
+    VALID = "valido"
+    INVALID = "invalido"
+    EXPIRED = "vencido"
+    EXHAUSTED = "agotado"
+
+
+CHALLENGE_MESSAGES = {
+    ChallengeStatus.INVALID: "La verificación no es válida. Inicia sesión de nuevo.",
+    ChallengeStatus.EXPIRED: "El código venció. Inicia sesión de nuevo para recibir otro.",
+    ChallengeStatus.EXHAUSTED: "Demasiados intentos con el código. Inicia sesión de nuevo.",
+}
+
+
+class ChallengeError(ValidationFailedError):
+    def __init__(self, status: ChallengeStatus) -> None:
+        super().__init__(CHALLENGE_MESSAGES[status])
+        self.status = status
+
+
 @dataclass(frozen=True)
 class LoginOutcome:
     user: AuditorUser | None
     locked: bool = False
+
+
+@dataclass(frozen=True)
+class LoginStep:
+    user: AuditorUser | None = None
+    locked: bool = False
+    challenge: str | None = None
+    destination: str | None = None
+
+    @property
+    def needs_code(self) -> bool:
+        return self.challenge is not None
+
+
+def mask_email(email: str) -> str:
+    local, _, domain = email.partition("@")
+    visible = local[:2] if len(local) > 3 else local[:1]
+    return f"{visible}{'*' * max(3, len(local) - len(visible))}@{domain}"
+
+
+def new_code() -> str:
+    return f"{secrets.randbelow(1_000_000):06d}"
 
 
 class AccountService:
@@ -80,22 +130,32 @@ class AccountService:
             select(AuditorUser).where(AuditorUser.email == normalize_email(email))
         ).first()
 
-    def create_user(self, email: str, name: str, password: str) -> AuditorUser:
+    def _new_user(self, email: str, name: str, password_hash: str) -> AuditorUser:
         address = normalize_email(email)
         if not is_valid_email(address):
             raise ValidationFailedError("el correo no es válido")
         if self.find(address):
             raise ValidationFailedError("ya existe un usuario con ese correo")
-        self._check_password(password, address)
         user = AuditorUser(
             email=address,
             name=name.strip() or address,
-            password_hash=hash_password(password),
+            password_hash=password_hash,
             password_changed_at=self.clock(),
         )
         self.session.add(user)
         self.session.flush()
         log.info("auditor_created", user_id=user.id)
+        return user
+
+    def create_user(self, email: str, name: str, password: str) -> AuditorUser:
+        self._check_password(password, normalize_email(email))
+        return self._new_user(email, name, hash_password(password))
+
+    def invite_user(self, email: str, name: str) -> AuditorUser:
+        user = self._new_user(email, name, UNUSABLE_PREFIX + new_token())
+        hours = self.settings.invitation_ttl_hours
+        raw = self._issue_token(user, PURPOSE_INVITATION, timedelta(hours=hours))
+        self._send(templates.invitation_email(user.email, user.name, self._link(raw), hours))
         return user
 
     def set_active(self, email: str, active: bool) -> AuditorUser:
@@ -123,6 +183,7 @@ class AccountService:
                 user.locked_until = now + timedelta(minutes=LOCK_MINUTES)
                 user.failed_logins = 0
                 log.warning("auditor_locked", user_id=user.id)
+                self._notify(templates.account_locked_email(user.email, user.name, LOCK_MINUTES))
             self.session.flush()
             return LoginOutcome(None)
         user.failed_logins = 0
@@ -130,54 +191,154 @@ class AccountService:
         self.session.flush()
         return LoginOutcome(user)
 
+    def start_login(self, email: str, password: str, client: str = "") -> LoginStep:
+        outcome = self.authenticate(email, password)
+        if outcome.user is None:
+            return LoginStep(locked=outcome.locked)
+        user = outcome.user
+        if not self.settings.auth_two_factor:
+            self.complete_login(user, client)
+            return LoginStep(user=user)
+        raw = new_token()
+        code = new_code()
+        challenge = LoginChallenge(
+            user_id=user.id,
+            token_hash=token_digest(raw),
+            code_hash=token_digest(f"{raw}:{code}"),
+            client=client[:200],
+            expires_at=self.clock() + timedelta(minutes=self.settings.auth_code_ttl_minutes),
+            created_at=self.clock(),
+        )
+        self.session.add(challenge)
+        self.session.flush()
+        self._send(
+            templates.login_code_email(
+                user.email, user.name, code, self.settings.auth_code_ttl_minutes
+            )
+        )
+        return LoginStep(challenge=raw, destination=mask_email(user.email))
+
+    def _challenge(self, raw: str) -> LoginChallenge:
+        challenge = (
+            self.session.scalars(
+                select(LoginChallenge).where(LoginChallenge.token_hash == token_digest(raw))
+            ).first()
+            if raw and len(raw) <= 200
+            else None
+        )
+        if challenge is None or challenge.used_at is not None or not challenge.user.active:
+            raise ChallengeError(ChallengeStatus.INVALID)
+        if as_aware(challenge.expires_at) <= self.clock():
+            raise ChallengeError(ChallengeStatus.EXPIRED)
+        if challenge.attempts >= MAX_CODE_ATTEMPTS:
+            raise ChallengeError(ChallengeStatus.EXHAUSTED)
+        return challenge
+
+    def verify_login(self, raw: str, code: str) -> AuditorUser | None:
+        challenge = self._challenge(raw)
+        expected = token_digest(f"{raw}:{code.strip()}")
+        if not hmac.compare_digest(expected, challenge.code_hash):
+            challenge.attempts += 1
+            self.session.flush()
+            if challenge.attempts >= MAX_CODE_ATTEMPTS:
+                raise ChallengeError(ChallengeStatus.EXHAUSTED)
+            return None
+        challenge.used_at = self.clock()
+        self.session.flush()
+        self.complete_login(challenge.user, challenge.client)
+        return challenge.user
+
+    def resend_code(self, raw: str) -> str:
+        challenge = self._challenge(raw)
+        if challenge.sends >= MAX_CODE_SENDS:
+            raise ChallengeError(ChallengeStatus.EXHAUSTED)
+        code = new_code()
+        challenge.code_hash = token_digest(f"{raw}:{code}")
+        challenge.sends += 1
+        challenge.attempts = 0
+        challenge.expires_at = self.clock() + timedelta(minutes=self.settings.auth_code_ttl_minutes)
+        self.session.flush()
+        user = challenge.user
+        self._send(
+            templates.login_code_email(
+                user.email, user.name, code, self.settings.auth_code_ttl_minutes
+            )
+        )
+        return mask_email(user.email)
+
+    def complete_login(self, user: AuditorUser, client: str = "") -> None:
+        log.info("auditor_signed_in", user_id=user.id)
+        if self.settings.auth_login_alerts:
+            self._notify(
+                templates.new_login_email(
+                    user.email, user.name, self.clock(), client or "no informado"
+                )
+            )
+
     def request_reset(self, email: str) -> str:
         user = self.find(email)
         if user is None or not user.active:
             log.info("password_reset_requested", known=False)
             return GENERIC_RESET_MESSAGE
         now = self.clock()
+        since = now - timedelta(hours=1)
         recent = [
             token
-            for token in user.reset_tokens
-            if as_aware(token.created_at) > now - timedelta(hours=1)
+            for token in self.session.scalars(
+                select(PasswordResetToken).where(PasswordResetToken.user_id == user.id)
+            ).all()
+            if as_aware(token.created_at) > since
         ]
         if len(recent) >= MAX_RESETS_PER_HOUR:
             log.warning("password_reset_throttled", user_id=user.id)
             return GENERIC_RESET_MESSAGE
-        for token in user.reset_tokens:
-            if token.used_at is None:
-                token.used_at = now
-        raw = new_token()
         minutes = self.settings.password_reset_ttl_minutes
+        raw = self._issue_token(user, PURPOSE_RESET, timedelta(minutes=minutes))
+        self._notify(templates.reset_email(user.email, user.name, self._link(raw), minutes))
+        log.info("password_reset_requested", known=True, user_id=user.id)
+        return GENERIC_RESET_MESSAGE
+
+    def _open_tokens(self, user: AuditorUser) -> list[PasswordResetToken]:
+        return list(
+            self.session.scalars(
+                select(PasswordResetToken).where(
+                    PasswordResetToken.user_id == user.id, PasswordResetToken.used_at.is_(None)
+                )
+            ).all()
+        )
+
+    def _issue_token(self, user: AuditorUser, purpose: str, ttl: timedelta) -> str:
+        now = self.clock()
+        for token in self._open_tokens(user):
+            token.used_at = now
+        raw = new_token()
         self.session.add(
             PasswordResetToken(
                 user_id=user.id,
                 token_hash=token_digest(raw),
-                expires_at=now + timedelta(minutes=minutes),
+                purpose=purpose,
+                expires_at=now + ttl,
                 created_at=now,
             )
         )
         self.session.flush()
+        return raw
+
+    def _link(self, raw: str) -> str:
+        return f"{self.settings.web_base_url.rstrip('/')}/acceso/restablecer?token={raw}"
+
+    def _send(self, message: OutgoingEmail) -> None:
         try:
-            self.mailer.send(self._reset_email(user, raw, minutes))
+            self.mailer.send(message)
         except ExternalServiceError as exc:
             record_incident(self.session, "correo", exc)
-        log.info("password_reset_requested", known=True, user_id=user.id)
-        return GENERIC_RESET_MESSAGE
+            raise
 
-    def _reset_email(self, user: AuditorUser, raw: str, minutes: int) -> OutgoingEmail:
-        link = f"{self.settings.web_base_url.rstrip('/')}/acceso/restablecer?token={raw}"
-        body = (
-            f"Hola, {user.name}.\n\n"
-            "Recibimos una solicitud para restablecer la contraseña de tu cuenta de auditor en "
-            "Bosque Vivo.\n\n"
-            f"Abre este enlace para elegir una nueva contraseña:\n{link}\n\n"
-            f"El enlace vence en {minutes} minutos y solo se puede usar una vez.\n\n"
-            "Si no hiciste esta solicitud, ignora este correo: tu contraseña no cambiará.\n"
-        )
-        return OutgoingEmail(
-            to=user.email, subject="Bosque Vivo: restablecer tu contraseña", body=body
-        )
+    def _notify(self, message: OutgoingEmail) -> None:
+        try:
+            self._send(message)
+        except ExternalServiceError:
+            log.warning("mail_not_sent", subject=message.subject)
 
     def _token(self, raw: str) -> PasswordResetToken | None:
         if not raw or len(raw) > 200:
@@ -185,6 +346,10 @@ class AccountService:
         return self.session.scalars(
             select(PasswordResetToken).where(PasswordResetToken.token_hash == token_digest(raw))
         ).first()
+
+    def token_purpose(self, raw: str) -> str:
+        token = self._token(raw)
+        return token.purpose if token else PURPOSE_RESET
 
     def token_status(self, raw: str) -> TokenStatus:
         token = self._token(raw)
@@ -209,12 +374,17 @@ class AccountService:
         user.password_changed_at = now
         user.failed_logins = 0
         user.locked_until = None
-        for item in user.reset_tokens:
-            if item.used_at is None:
-                item.used_at = now
+        token.used_at = now
+        for item in self._open_tokens(user):
+            item.used_at = now
         self.session.flush()
-        log.info("password_reset_completed", user_id=user.id)
+        log.info("password_reset_completed", user_id=user.id, purpose=token.purpose)
+        if token.purpose == PURPOSE_RESET:
+            self._notify(templates.password_changed_email(user.email, user.name, now))
         return user
+
+    def send_test(self, to: str) -> None:
+        self._send(templates.test_email(normalize_email(to)))
 
     def _check_password(self, password: str, email: str) -> None:
         problems = password_problems(password, email)
