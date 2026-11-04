@@ -6,7 +6,7 @@ from fastapi import Depends, Header, HTTPException
 from sqlalchemy.orm import Session
 
 from bosquevivo.ai.llm import LLMProvider
-from bosquevivo.assistant.runtime import build_llm
+from bosquevivo.assistant.runtime import build_llm, build_llm_or_unavailable
 from bosquevivo.core.config import Settings, get_settings
 from bosquevivo.db.session import get_session
 from bosquevivo.satellite.factory import build_provider
@@ -30,6 +30,11 @@ def require_admin(
 @lru_cache
 def get_llm() -> LLMProvider:
     return build_llm(get_settings())
+
+
+@lru_cache
+def get_assistant_llm() -> LLMProvider:
+    return build_llm_or_unavailable(get_settings())
 
 
 @lru_cache

@@ -132,3 +132,11 @@ def test_upgrade_adds_missing_column(tmp_path):
     columns = {c["name"] for c in inspect(engine).get_columns("wa_user")}
     assert "project_id" in columns
     assert upgrade_schema(engine) == []
+
+
+def test_alerts_without_loss_records(db, seeded):
+    db.query(ForestLoss).filter(ForestLoss.project_id == seeded.id).delete()
+    db.query(ForestBaselineRecord).filter(ForestBaselineRecord.project_id == seeded.id).delete()
+    db.add(ForestBaselineRecord(project_id=seeded.id, tree_cover_ha=500.0, source="t"))
+    db.flush()
+    assert "no se detectó pérdida" in alerts_message(db, seeded)

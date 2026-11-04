@@ -1,5 +1,5 @@
 from bosquevivo.ai.llm.errors import LLMBlockedError, QuotaExceededError
-from bosquevivo.ai.llm.fake import ScriptedLLM
+from bosquevivo.ai.llm.fake import ScriptedLLM, UnavailableLLM
 from bosquevivo.ai.llm.gemini import GeminiProvider
 from bosquevivo.ai.llm.provider import LLMProvider
 from bosquevivo.ai.llm.types import (
@@ -23,4 +23,5 @@ __all__ = [
     "ToolCall",
     "ToolResult",
     "ToolSpec",
+    "UnavailableLLM",
 ]

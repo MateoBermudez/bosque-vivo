@@ -188,3 +188,17 @@ export const accountsApi = {
       })
     ).detail,
 };
+
+const communitySchema = z.object({ replies: z.array(z.string()) });
+
+export const communityApi = {
+  send: async (sessionRef: string, message: string): Promise<string[]> =>
+    (
+      await requireJson(`${API_PREFIX}/community/messages`, communitySchema, {
+        admin: true,
+        method: "POST",
+        body: { session_ref: sessionRef, message },
+        timeoutMs: 90_000,
+      })
+    ).replies,
+};

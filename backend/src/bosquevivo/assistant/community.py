@@ -94,8 +94,10 @@ def project_alerts(session: Session, project: Project) -> list[tuple[int, float,
 def alerts_message(session: Session, project: Project) -> str:
     name = _short(project.name)
     losses = _losses(session, project.id)
-    if not losses or _baseline(session, project.id) is None:
+    if _baseline(session, project.id) is None:
         return f"Todavía no tenemos datos de pérdida de bosque para {name}."
+    if not losses:
+        return f"Sin alertas para {name}: no se detectó pérdida de bosque en su área."
     alerts = project_alerts(session, project)
     last = max(losses)
     if not alerts:
