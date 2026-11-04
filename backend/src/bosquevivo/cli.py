@@ -1,5 +1,6 @@
 import argparse
 import getpass
+import json
 import os
 import sys
 import time
@@ -9,13 +10,20 @@ from pathlib import Path
 from bosquevivo.accounts import AccountService, build_mailer
 from bosquevivo.ai.agent import Agent, default_registry
 from bosquevivo.ai.eval import EvalRunner, load_cases
-from bosquevivo.assistant.runtime import build_llm
+from bosquevivo.assistant.runtime import build_llm, build_llm_or_unavailable
 from bosquevivo.core.config import get_settings
 from bosquevivo.core.errors import ValidationFailedError
 from bosquevivo.core.incidents import duration_minutes, is_critical, list_incidents, summarize
 from bosquevivo.core.logging import configure_logging
 from bosquevivo.db.session import get_session, init_db
 from bosquevivo.demo import seed_demo
+from bosquevivo.measure import (
+    Report,
+    check_determinism,
+    measure_audits,
+    measure_chat,
+    project_ids,
+)
 from bosquevivo.pipeline import (
     BatchItem,
     audit_project,
@@ -335,6 +343,36 @@ def _add_account_commands(sub) -> None:
     incidents = sub.add_parser("incidents", help="Muestra los incidentes registrados")
     incidents.add_argument("--days", type=int, default=30)
     incidents.set_defaults(func=cmd_incidents)
+    measure = sub.add_parser("medir-rnf", help="Mide los requisitos no funcionales (3.3.1, 3.3.3)")
+    measure.add_argument("--rounds", type=int, default=50)
+    measure.add_argument("--projects", type=int, default=3)
+    measure.add_argument("--index-version")
+    measure.add_argument("--output", default="data/medicion/rnf.json")
+    measure.set_defaults(func=cmd_measure)
+
+
+def cmd_measure(args: argparse.Namespace) -> int:
+    init_db()
+    settings = get_settings()
+    version = args.index_version or settings.index_version
+    llm = build_llm_or_unavailable(settings)
+    provider = build_provider(settings)
+    with get_session() as session:
+        ids = project_ids(session, args.projects)
+        report = Report(llm_model=llm.model, satellite_provider=provider.name)
+        report.chat = measure_chat(session, settings, llm, ids[0] if ids else None, args.rounds)
+        if ids:
+            report.audit, report.audit_by_project = measure_audits(
+                session, provider, settings.images_dir, ids, version
+            )
+            report.deterministic, report.determinism_detail = check_determinism(
+                session, ids, version
+            )
+    output = Path(args.output)
+    output.parent.mkdir(parents=True, exist_ok=True)
+    output.write_text(json.dumps(report.to_dict(), indent=2, ensure_ascii=False), encoding="utf-8")
+    print(json.dumps(report.to_dict(), indent=2, ensure_ascii=False))
+    return 0
 
 
 def build_parser() -> argparse.ArgumentParser:

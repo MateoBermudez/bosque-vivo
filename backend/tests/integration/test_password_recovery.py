@@ -9,7 +9,9 @@ from bosquevivo.accounts import (
     MemoryMailer,
     OutboxMailer,
     OutgoingEmail,
+    SmtpMailer,
     TokenStatus,
+    build_mailer,
 )
 from bosquevivo.accounts.passwords import hash_password, password_problems, verify_password
 from bosquevivo.api.routers.auth import get_mailer
@@ -233,3 +235,53 @@ def test_reset_endpoints_full_flow(api, mailer):
         json={"token": token, "password": "OtraClave2026"},
     )
     assert reused.status_code == 410 and "ya se usó" in reused.json()["detail"]
+
+
+class FakeSmtp:
+    instances: list["FakeSmtp"] = []
+    fail = False
+
+    def __init__(self, host, port, timeout):
+        self.host, self.port = host, port
+        self.calls: list[str] = []
+        FakeSmtp.instances.append(self)
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *args):
+        return False
+
+    def starttls(self, context):
+        self.calls.append("starttls")
+
+    def login(self, user, password):
+        self.calls.append(f"login:{user}")
+
+    def send_message(self, message):
+        if FakeSmtp.fail:
+            raise OSError("conexión rechazada")
+        self.calls.append(f"send:{message['To']}")
+
+
+def test_smtp_mailer_uses_tls_and_login(monkeypatch):
+    monkeypatch.setattr("bosquevivo.accounts.mailer.smtplib.SMTP", FakeSmtp)
+    settings = Settings(
+        mail_backend="smtp", smtp_host="smtp.test", smtp_user="bv@test.co", smtp_password="x"
+    )
+    mailer = build_mailer(settings)
+    assert isinstance(mailer, SmtpMailer)
+    mailer.send(OutgoingEmail("a@b.co", "Asunto", "Cuerpo"))
+    assert FakeSmtp.instances[-1].calls == ["starttls", "login:bv@test.co", "send:a@b.co"]
+    FakeSmtp.fail = True
+    with pytest.raises(ExternalServiceError):
+        mailer.send(OutgoingEmail("a@b.co", "Asunto", "Cuerpo"))
+    FakeSmtp.fail = False
+
+
+def test_build_mailer_validates_configuration(tmp_path):
+    assert isinstance(build_mailer(Settings(data_dir=tmp_path)), OutboxMailer)
+    with pytest.raises(ValidationFailedError):
+        build_mailer(Settings(mail_backend="smtp", smtp_host=""))
+    with pytest.raises(ValidationFailedError):
+        build_mailer(Settings(mail_backend="paloma"))
