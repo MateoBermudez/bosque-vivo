@@ -4,7 +4,7 @@ from typing import Any
 from sqlalchemy.orm import Session
 
 from bosquevivo.assistant.messages import IncomingMessage
-from bosquevivo.assistant.runtime import build_assistant, build_llm
+from bosquevivo.assistant.runtime import build_assistant, build_llm_or_unavailable
 from bosquevivo.audit.config import config_for
 from bosquevivo.audit.index import IndexCalculator
 from bosquevivo.audit.service import AuditService, analysis_window_start
@@ -48,7 +48,7 @@ def generate_report(session: Session, payload: dict[str, Any]) -> dict[str, Any]
 def make_whatsapp_message(provider: SatelliteProvider | None):
     def handler(session: Session, payload: dict[str, Any]) -> dict[str, Any]:
         settings = get_settings()
-        llm = build_llm(settings)
+        llm = build_llm_or_unavailable(settings)
         assistant = build_assistant(session, settings, llm, satellite_provider=provider)
         assistant.handle(IncomingMessage(**payload))
         return {"message_id": payload["message_id"]}

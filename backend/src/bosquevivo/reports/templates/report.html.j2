@@ -22,6 +22,7 @@ code { background: #eef3ef; padding: 0 .25rem; }
 
 <h2>Resultado</h2>
 <p class="score">{{ "%.0f"|format(result.score) if result.score is not none else "—" }}<small> / 100</small></p>
+{% if result.score is not none %}<p class="meta">Índice en escala de 0 a 1 (ERS RF05): <strong>{{ "%.2f"|format(result.score / 100) }}</strong></p>{% endif %}
 <p>Correspondencia observada: <strong>{{ result.category }}</strong> · Confianza: <strong>{{ result.confidence_label }}</strong> ({{ "%.2f"|format(result.confidence) }})</p>
 <p class="note">{{ result.narrative }}</p>
 

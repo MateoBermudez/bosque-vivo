@@ -21,10 +21,14 @@ def import_projects(body: ImportRequest, session: Session = Depends(db_session))
         source_version=body.source_version,
         country=body.country,
         limit=body.limit,
+        strict=body.strict,
     )
     return ImportOut(
         created=summary.created,
         updated=summary.updated,
         repaired=summary.repaired,
         skipped=summary.skipped,
+        rejected=summary.rejected,
+        created_ids=summary.created_ids,
+        errors=summary.errors,
     )

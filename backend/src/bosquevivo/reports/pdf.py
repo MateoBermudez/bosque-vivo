@@ -38,6 +38,9 @@ def build_pdf(
     pdf.set_font(FONT, "B", 28)
     score = "-" if result.score is None else f"{result.score:.0f}"
     pdf.cell(0, 14, f"{score} / 100", new_x="LMARGIN", new_y="NEXT")
+    if result.score is not None:
+        pdf.set_font(FONT, "", 10)
+        pdf.cell(0, 6, f"Escala de 0 a 1: {result.score / 100:.2f}", new_x="LMARGIN", new_y="NEXT")
     pdf.set_font(FONT, "", 11)
     pdf.multi_cell(
         0,

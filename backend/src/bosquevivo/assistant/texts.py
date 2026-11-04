@@ -20,3 +20,21 @@ DELETED = "Listo. Borré sus datos, consultas y permisos. Si me escribe de nuevo
 UNSUPPORTED = "Por ahora solo entiendo texto, ubicación, fotos y notas de voz."
 FAILURE = "Tuve un problema para responder. Intente de nuevo en unos minutos."
 AUDIO_UNCLEAR = "No pude entender el audio. ¿Puede escribirme su pregunta?"
+HELP = (
+    "Puede escribirme: ESTADO (cómo está su bosque), ALERTAS (cambios recientes), "
+    "PROYECTO y el número (para elegir su proyecto) o enviar su ubicación. También puede "
+    "preguntar con sus palabras. BORRAR MIS DATOS elimina todo."
+)
+NEED_PROJECT = (
+    "Primero dígame cuál es su proyecto: escriba PROYECTO y el número (por ejemplo PROYECTO 7) "
+    "o envíe su ubicación desde WhatsApp."
+)
+PROJECT_NOT_FOUND = "No encontré ese número de proyecto. Revise el número o envíe su ubicación."
+NOT_AUTHORIZED = (
+    "Este número no está habilitado para el piloto de Bosque Vivo. Si cree que es un error, "
+    "comuníquese con el equipo del proyecto."
+)
+
+
+def project_registered(name: str) -> str:
+    return f"Listo, quedó registrado el proyecto {name}. Escriba ESTADO o ALERTAS cuando quiera."

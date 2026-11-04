@@ -2,6 +2,7 @@ from collections.abc import Callable
 from typing import Any
 
 from bosquevivo.ai.llm.types import LLMResponse, Message, ToolSpec
+from bosquevivo.core.errors import ExternalServiceError
 
 Script = list[LLMResponse] | Callable[[str, list[Message], list[ToolSpec] | None], LLMResponse]
 
@@ -31,3 +32,19 @@ class ScriptedLLM:
         response = self.script[self._cursor]
         self._cursor += 1
         return response
+
+
+class UnavailableLLM:
+    def __init__(self, reason: str, model: str = "sin-configurar") -> None:
+        self.model = model
+        self.reason = reason
+
+    def generate(
+        self,
+        system: str,
+        messages: list[Message],
+        tools: list[ToolSpec] | None = None,
+        json_schema: dict[str, Any] | None = None,
+        light: bool = False,
+    ) -> LLMResponse:
+        raise ExternalServiceError(self.reason)

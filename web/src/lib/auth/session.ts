@@ -1,11 +1,15 @@
-// Sesión del área de auditores: una cookie firmada con HMAC-SHA256 y fecha de vencimiento.
-// Usa solo Web Crypto para poder ejecutarse tanto en `proxy.ts` como en rutas y acciones.
-
 export const SESSION_COOKIE = "bv_auditor";
 export const SESSION_TTL_SECONDS = 8 * 60 * 60;
 
 const encoder = new TextEncoder();
-const VERSION = "v1";
+const decoder = new TextDecoder();
+const VERSION = "v2";
+const MAX_SUBJECT_BYTES = 254;
+
+export interface AuditorSession {
+  subject: string;
+  expires: number;
+}
 
 async function hmacKey(secret: string): Promise<CryptoKey> {
   return crypto.subtle.importKey("raw", encoder.encode(secret), { name: "HMAC", hash: "SHA-256" }, false, [
@@ -14,8 +18,9 @@ async function hmacKey(secret: string): Promise<CryptoKey> {
   ]);
 }
 
-function toHex(buffer: ArrayBuffer): string {
-  return [...new Uint8Array(buffer)].map((byte) => byte.toString(16).padStart(2, "0")).join("");
+function toHex(buffer: ArrayBuffer | Uint8Array): string {
+  const bytes = buffer instanceof Uint8Array ? buffer : new Uint8Array(buffer);
+  return [...bytes].map((byte) => byte.toString(16).padStart(2, "0")).join("");
 }
 
 function fromHex(hex: string): Uint8Array<ArrayBuffer> | null {
@@ -27,26 +32,39 @@ function fromHex(hex: string): Uint8Array<ArrayBuffer> | null {
 
 export async function createSessionToken(
   secret: string,
+  subject: string = "auditor",
   now: number = Date.now(),
   ttlSeconds: number = SESSION_TTL_SECONDS,
 ): Promise<string> {
+  const encodedSubject = encoder.encode(subject.slice(0, MAX_SUBJECT_BYTES));
   const expires = Math.floor(now / 1000) + ttlSeconds;
-  const payload = `${VERSION}.${expires}`;
+  const payload = `${VERSION}.${expires}.${toHex(encodedSubject)}`;
   const signature = await crypto.subtle.sign("HMAC", await hmacKey(secret), encoder.encode(payload));
   return `${payload}.${toHex(signature)}`;
 }
 
-export async function verifySessionToken(
+export async function readSessionToken(
   token: string,
   secret: string,
   now: number = Date.now(),
-): Promise<boolean> {
+): Promise<AuditorSession | null> {
   const parts = token.split(".");
-  if (parts.length !== 3 || parts[0] !== VERSION) return false;
+  if (parts.length !== 4 || parts[0] !== VERSION) return null;
   const expires = Number(parts[1]);
-  if (!Number.isInteger(expires) || expires * 1000 < now) return false;
-  const signature = fromHex(parts[2] ?? "");
-  if (!signature) return false;
-  // `verify` compara en tiempo constante.
-  return crypto.subtle.verify("HMAC", await hmacKey(secret), signature, encoder.encode(`${VERSION}.${expires}`));
+  if (!Number.isInteger(expires) || expires * 1000 < now) return null;
+  const subjectBytes = fromHex(parts[2] ?? "");
+  const signature = fromHex(parts[3] ?? "");
+  if (!subjectBytes || !signature) return null;
+  const valid = await crypto.subtle.verify(
+    "HMAC",
+    await hmacKey(secret),
+    signature,
+    encoder.encode(`${VERSION}.${expires}.${parts[2]}`),
+  );
+  if (!valid) return null;
+  return { subject: decoder.decode(subjectBytes), expires };
+}
+
+export async function verifySessionToken(token: string, secret: string, now: number = Date.now()): Promise<boolean> {
+  return (await readSessionToken(token, secret, now)) !== null;
 }

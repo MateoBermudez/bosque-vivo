@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 
 import { PageHeader } from "@/components/common/page-header";
 
+const CONTACT = process.env.PRIVACY_CONTACT_EMAIL ?? "";
+
 export const metadata: Metadata = {
   title: "Aviso de privacidad",
   description:
@@ -51,8 +53,27 @@ const SECTIONS: { id: string; title: string; body: React.ReactNode }[] = [
           Revocar tu autorización y pedir la supresión escribiendo <strong>BORRAR MIS DATOS</strong>: se eliminan tu
           registro, tus permisos y tus consultas.
         </li>
-        <li>Hablar con una persona del equipo cuando lo necesites.</li>
+        <li>
+          Hablar con una persona del equipo cuando lo necesites
+          {CONTACT ? (
+            <>
+              {" "}
+              escribiendo a <a href={`mailto:${CONTACT}`}>{CONTACT}</a>
+            </>
+          ) : null}
+          .
+        </li>
       </ul>
+    ),
+  },
+  {
+    id: "auditores",
+    title: "Cuentas de auditor",
+    body: (
+      <p>
+        Para el área de auditores se guarda el correo, el nombre y la contraseña cifrada (scrypt con sal). Los enlaces
+        para restablecer la contraseña se guardan solo como huella SHA-256, vencen y sirven una sola vez.
+      </p>
     ),
   },
   {

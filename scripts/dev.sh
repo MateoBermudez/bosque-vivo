@@ -6,22 +6,7 @@ api_port="${API_PORT:-8000}"
 web_port="${WEB_PORT:-3000}"
 panel_port="${PANEL_PORT:-8501}"
 
-if [ ! -f "$root/backend/.env" ]; then
-    cp "$root/.env.example" "$root/backend/.env"
-    echo "Se creó backend/.env. Complete las claves y vuelva a ejecutar."
-    exit 1
-fi
-
-# El sitio (web/) se conecta a la API con el mismo ADMIN_TOKEN del backend.
-if [ ! -f "$root/web/.env.local" ]; then
-    admin_token="$(grep -E '^[[:space:]]*ADMIN_TOKEN[[:space:]]*=' "$root/backend/.env" | head -1 | cut -d= -f2- | tr -d '[:space:]' || true)"
-    {
-        echo "BV_DATA_SOURCE=live"
-        echo "BACKEND_URL=http://127.0.0.1:$api_port"
-        echo "ADMIN_TOKEN=$admin_token"
-    } > "$root/web/.env.local"
-    echo "Se creó web/.env.local (modo live). Defina AUDITOR_ACCESS_CODE y SESSION_SECRET para proteger el área de auditores."
-fi
+(cd "$root/backend" && uv sync --quiet && uv run bosquevivo setup --api-port "$api_port")
 
 if [ ! -d "$root/web/node_modules" ]; then
     echo "Instalando dependencias de web (npm ci)..."

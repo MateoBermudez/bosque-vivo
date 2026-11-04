@@ -26,6 +26,22 @@ class Settings(BaseSettings):
     admin_token: str = ""
     agent_max_steps: int = 5
     agent_daily_limit_per_user: int = 30
+    whatsapp_allowed_phones: str = ""
+    cloud_max_percent: float = Field(default=20.0, ge=0.0, le=100.0)
+    web_base_url: str = "http://localhost:3000"
+    password_reset_ttl_minutes: int = Field(default=30, ge=5, le=1440)
+    mail_backend: str = "auto"
+    mail_from: str = ""
+    smtp_host: str = ""
+    smtp_port: int = 587
+    smtp_user: str = ""
+    smtp_password: str = ""
+    smtp_starttls: bool = True
+    smtp_ssl: bool = False
+    auth_two_factor: str = "auto"
+    auth_code_ttl_minutes: int = Field(default=10, ge=2, le=60)
+    auth_login_alerts: bool = True
+    invitation_ttl_hours: int = Field(default=72, ge=1, le=720)
 
     @property
     def images_dir(self) -> Path:
@@ -34,6 +50,10 @@ class Settings(BaseSettings):
     @property
     def reports_dir(self) -> Path:
         return self.data_dir / "reports"
+
+    @property
+    def outbox_dir(self) -> Path:
+        return self.data_dir / "outbox"
 
     @property
     def cache_dir(self) -> Path:

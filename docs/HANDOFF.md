@@ -36,12 +36,12 @@ Monorepo (monolito modular) en `main`, con CI en verde en GitHub Actions (jobs d
 
 | Parte | Tecnología | Estado |
 |---|---|---|
-| `backend/` | Python 3.12, uv, FastAPI, SQLAlchemy 2 + SQLite, shapely, agente propio con Gemini | Núcleo completo y probado con proveedores simulados |
+| `backend/` | Python 3.12, uv, FastAPI, SQLAlchemy 2 + SQLite, shapely, agente propio con Gemini | ERS completo (RF01–RF09), 317 pruebas, cobertura 88 % |
 | `web/` | Next.js 16, Tailwind v4, MapLibre, zod | Frontend principal (ADR 0013). Modo `mock` o `live` |
 | `panel/` | Streamlit | Reemplazado por `web/`; se conserva, se arranca con `STREAMLIT=1` |
 | `docs/` | Markdown | Planes, ADR, metodología, pruebas, privacidad, fuentes de datos |
 
-Requisitos implementados: RF01–RF10, RF12, RF13, RF15 y RF17 (ver matriz).
+Requisitos implementados: RF01–RF09 del ERS y RA01, RA02, RA04, RA05, RA07 y RA09 de la ampliación (ver matriz). La ampliación se numeraba RF09–RF17; se renombró RA01–RA09 porque el ERS vigente usa RF09 para la recuperación de contraseña.
 
 Datos reales: los 55 polígonos de Karnik et al. (2025) para Colombia ya están importados con `bosquevivo import`. El proveedor `open` (MODIS + Hansen) calcula el índice sin cuenta de Earth Engine; hay 33 proyectos de deforestación evitada/IFM calculados. `web/snapshot/` es una copia de solo lectura para publicar el sitio sin servidor.
 
@@ -71,18 +71,15 @@ Variables de entorno: ver `.env.example`. Las claves reales no están en git y l
 
 ## 6. Pendiente
 
-Por orden de valor para la entrega:
+Hecho el 03/11/2026: RF09 del ERS (cuentas de auditor, recuperación de contraseña, invitaciones), correo SMTP con verificación en dos pasos y avisos de seguridad, brechas de RF01–RF08, registro de incidentes, chat en línea `/asistente`, configuración automática (`bosquevivo setup`, `scripts/dev`, `scripts/start`), renumeración de la ampliación (RA01–RA09) y plan de pruebas IEEE 829 en `docs/plan-de-pruebas` (Word y PDF).
 
-1. **Evaluar el agente con Gemini real**: `cd backend && uv run bosquevivo eval`. Hoy solo se probó con un modelo guionizado.
-2. **Revisión del docente**: aprobar RF09–RF17 como ampliación del ERS y decidir entre índice v0 y v1. Hacer análisis de sensibilidad de los pesos.
-3. **Earth Engine real** (`SATELLITE_PROVIDER=gee`): medir tiempo por polígono y comparar con el proveedor `open`.
-4. **WhatsApp real**: configurar Cloud API, túnel (cloudflared/ngrok) y firma del webhook; probar consentimiento y borrado (Ley 1581).
-5. **Mediciones de requisitos no funcionales** en la instancia local.
-6. **Prueba de comprensión** con 5 personas no técnicas.
-7. **RF11** (modelo propio de visión), **RF14** (alertas tempranas), **RF16** (extracción de declaraciones desde PDD): no implementados.
-8. Decisión metodológica sobre proyectos de reforestación (ARR), que el índice actual no cubre.
-9. Documentación de pruebas: `docs/testing/plan-de-pruebas.md` no está redactado según IEEE 829. Si el docente lo exige, adaptarlo. El formato IEEE 830 (`Formato_ieee830.pdf`) no está en el repo; lo entrega el dueño.
-10. `web/`: completar `src/content/team.ts`, definir el canal de contacto humano del aviso de privacidad, imágenes antes/después reales y revisión visual con usuarios.
+`bosquevivo setup` genera todos los secretos y la configuración local. Solo faltan credenciales de servicios externos:
+
+1. **Claves en `backend/.env`**: `GEMINI_API_KEY`/`GEMINI_MODEL` ([guía](guias/gemini.md)), WhatsApp Cloud API ([guía](guias/whatsapp.md)) y `SMTP_USER`/`SMTP_PASSWORD` ([guía](guias/correo.md)). Luego ejecutar los casos bloqueados del plan de pruebas (CP-49 WhatsApp, CP-50 Gemini, CP-57 SMTP real con `bosquevivo mail-test`).
+2. **Despliegue del piloto**: no hay servidor público; se publica desde un computador del equipo con `scripts/start` y túnel ([guía](guias/despliegue.md)).
+3. **Revisión del docente**: aprobar RA01–RA09 como ampliación del ERS, decidir entre índice v0 y v1 y firmar el plan de pruebas.
+4. **Piloto**: disponibilidad (CP-46) y comprensión con 5 personas no técnicas (CP-29). Opcional: Earth Engine real (CP-39 con `gee`).
+5. **RA03, RA06, RA08**: evolución prevista, fuera del alcance de esta entrega. Decisión metodológica sobre ARR.
 
 ## 7. Trampas conocidas
 

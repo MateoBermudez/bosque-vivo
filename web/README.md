@@ -48,8 +48,11 @@ y levanta el backend (`cd backend && uv run uvicorn bosquevivo.api.app:app`). Co
 
 El chat y las trazas consumen la cuota de IA y las trazas muestran preguntas de usuarios, así que están protegidas:
 
-- Define `AUDITOR_ACCESS_CODE` y `SESSION_SECRET` (`openssl rand -hex 32`). Se inicia sesión en `/acceso`.
-- Sin definirlas, el área queda **abierta en desarrollo** y **bloqueada en producción**.
+- Con la API en vivo (`BV_DATA_SOURCE=live`) se entra con **correo y contraseña** de una cuenta de auditor del backend; `bosquevivo setup` genera `SESSION_SECRET`. Las cuentas se crean con `uv run bosquevivo user-invite correo@dominio --name "Nombre"` (la persona elige su contraseña desde el correo).
+- **Verificación en dos pasos:** con SMTP configurado, después de la contraseña se pide un código de 6 dígitos enviado por correo (reenviable, vence a los 10 minutos). Cada inicio de sesión genera un aviso por correo. Ver [`docs/guias/correo.md`](../docs/guias/correo.md).
+- **Recuperación de contraseña (RA01):** `/acceso/recuperar` pide el correo y siempre responde con el mismo mensaje genérico; si la cuenta existe, el backend envía un enlace de un solo uso (`/acceso/restablecer?token=…`) que vence en `PASSWORD_RESET_TTL_MINUTES` (30 por defecto). En desarrollo el correo queda como `.eml` en `backend/data/outbox`; para envío real se usa SMTP (`MAIL_BACKEND=smtp`, por ejemplo Gmail con contraseña de aplicación, gratis).
+- Sin API en vivo se usa un código compartido: `AUDITOR_ACCESS_CODE` + `SESSION_SECRET`.
+- Sin configurar, el área queda **abierta en desarrollo** y **bloqueada en producción**.
 
 ## Rutas
 
@@ -63,6 +66,7 @@ El chat y las trazas consumen la cuota de IA y las trazas muestran preguntas de 
 | `/privacidad` | Aviso de privacidad (Ley 1581) |
 | `/acerca` | Objetivos, alcance, referencias |
 | `/chat` · `/trazas` | Auditores: chat con el agente y trazas (requieren acceso) |
+| `/acceso` · `/acceso/recuperar` · `/acceso/restablecer` | Inicio de sesión, solicitud y restablecimiento de contraseña (RA01) |
 | `/informe/[runId]` | Descarga del reporte (lo entrega el servidor de Next, no el backend) |
 
 ## Estructura

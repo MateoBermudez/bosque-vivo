@@ -1,16 +1,32 @@
 import argparse
+import getpass
+import json
+import os
 import sys
 import time
 from datetime import date
 from pathlib import Path
 
+from sqlalchemy import func, select
+
+from bosquevivo.accounts import AccountService, build_mailer
 from bosquevivo.ai.agent import Agent, default_registry
 from bosquevivo.ai.eval import EvalRunner, load_cases
-from bosquevivo.assistant.runtime import build_llm
+from bosquevivo.assistant.runtime import build_llm, build_llm_or_unavailable
 from bosquevivo.core.config import get_settings
+from bosquevivo.core.errors import ExternalServiceError, ValidationFailedError
+from bosquevivo.core.incidents import duration_minutes, is_critical, list_incidents, summarize
 from bosquevivo.core.logging import configure_logging
+from bosquevivo.db.models import Project
 from bosquevivo.db.session import get_session, init_db
 from bosquevivo.demo import seed_demo
+from bosquevivo.measure import (
+    Report,
+    check_determinism,
+    measure_audits,
+    measure_chat,
+    project_ids,
+)
 from bosquevivo.pipeline import (
     BatchItem,
     audit_project,
@@ -22,6 +38,14 @@ from bosquevivo.pipeline import (
 from bosquevivo.registry.importer import import_file
 from bosquevivo.registry.karnik import import_karnik
 from bosquevivo.satellite.factory import build_provider
+from bosquevivo.setup import (
+    SetupReport,
+    missing_keys,
+    prepare_backend_env,
+    prepare_web_env,
+    read_env,
+    repo_root,
+)
 
 
 def cmd_init_db(_: argparse.Namespace) -> int:
@@ -48,12 +72,18 @@ def cmd_import(args: argparse.Namespace) -> int:
             source_version=args.version,
             country=args.country,
             limit=args.limit,
+            strict=not args.lenient,
         )
         print(
             f"creados={summary.created} actualizados={summary.updated} "
-            f"reparados={summary.repaired} omitidos={summary.skipped}"
+            f"reparados={summary.repaired} omitidos={summary.skipped} "
+            f"rechazados={summary.rejected}"
         )
-    return 0
+        for project_id in summary.created_ids:
+            print(f"  importado con id interno {project_id}")
+        for error in summary.errors:
+            print(f"  {error}")
+    return 1 if summary.rejected and not summary.total else 0
 
 
 def cmd_import_karnik(args: argparse.Namespace) -> int:
@@ -229,6 +259,220 @@ def cmd_eval(args: argparse.Namespace) -> int:
     return 0
 
 
+def _read_password() -> str:
+    from_env = os.environ.get("BOSQUEVIVO_PASSWORD")
+    if from_env:
+        return from_env
+    first = getpass.getpass("Contraseña: ")
+    if first != getpass.getpass("Repite la contraseña: "):
+        raise ValidationFailedError("las contraseñas no coinciden")
+    return first
+
+
+def _accounts(session) -> AccountService:
+    settings = get_settings()
+    return AccountService(session, build_mailer(settings), settings)
+
+
+def cmd_user_create(args: argparse.Namespace) -> int:
+    init_db()
+    try:
+        password = _read_password()
+        with get_session() as session:
+            user = _accounts(session).create_user(args.email, args.name or "", password)
+            print(f"usuario creado: {user.email} (id {user.id})")
+    except ValidationFailedError as exc:
+        print(f"No se creó el usuario: {exc}")
+        return 1
+    return 0
+
+
+def cmd_user_invite(args: argparse.Namespace) -> int:
+    init_db()
+    try:
+        with get_session() as session:
+            user, link = _accounts(session).invite_user(args.email, args.name or "")
+            print(f"invitación creada para {user.email}")
+            if build_mailer(get_settings()).name == "outbox":
+                print(f"sin SMTP configurado, el correo quedó en data/outbox. Enlace: {link}")
+    except (ValidationFailedError, ExternalServiceError) as exc:
+        print(f"No se envió la invitación: {exc}")
+        return 1
+    return 0
+
+
+def _print_setup(report: SetupReport, values: dict[str, str], projects: int) -> None:
+    for item in report.created:
+        print(f"creado: {item}")
+    for key in report.generated:
+        print(f"generado: {key}")
+    for note in report.notes:
+        print(f"nota: {note}")
+    print(f"proyectos en la base: {projects}")
+    pending = missing_keys(values)
+    if not pending:
+        print("Todo configurado.")
+        return
+    print("Para activar estas funciones complete backend/.env:")
+    for requirement, keys in pending:
+        label = "opcional" if requirement.optional else "falta"
+        print(f"  [{label}] {requirement.feature}: {', '.join(keys)} ({requirement.guide})")
+
+
+def cmd_setup(args: argparse.Namespace) -> int:
+    root = Path(args.root).resolve() if args.root else repo_root()
+    report = SetupReport()
+    backend_env = prepare_backend_env(root, report)
+    prepare_web_env(root, backend_env, args.api_port, report)
+    os.chdir(root / "backend")
+    get_settings.cache_clear()
+    init_db()
+    settings = get_settings()
+    with get_session() as session:
+        projects = session.scalar(select(func.count(Project.id))) or 0
+        if projects == 0 and not args.no_demo:
+            projects = len(seed_demo(session, settings.images_dir))
+            report.notes.append("se cargaron 3 proyectos de demostración (bosquevivo seed-demo)")
+        accounts = AccountService(session, build_mailer(settings), settings)
+        if args.admin and not accounts.find(args.admin):
+            _, link = accounts.invite_user(args.admin, args.name or "")
+            report.notes.append(f"cuenta de auditor {args.admin}: elija la contraseña en {link}")
+    _print_setup(report, read_env(backend_env), projects)
+    return 0
+
+
+def cmd_mail_test(args: argparse.Namespace) -> int:
+    init_db()
+    settings = get_settings()
+    mailer = build_mailer(settings)
+    try:
+        with get_session() as session:
+            AccountService(session, mailer, settings).send_test(args.email)
+    except ExternalServiceError as exc:
+        print(f"El correo NO funciona: {exc}")
+        return 1
+    where = "data/outbox (MAIL_BACKEND sin SMTP)" if mailer.name == "outbox" else "SMTP"
+    print(f"Correo de prueba enviado a {args.email} por {where}")
+    return 0
+
+
+def cmd_user_list(_: argparse.Namespace) -> int:
+    init_db()
+    with get_session() as session:
+        users = _accounts(session).list_users()
+        for user in users:
+            state = "activo" if user.active else "inactivo"
+            print(f"{user.id}\t{user.email}\t{user.name}\t{state}")
+        print(f"{len(users)} usuarios")
+    return 0
+
+
+def cmd_user_state(args: argparse.Namespace) -> int:
+    init_db()
+    try:
+        with get_session() as session:
+            user = _accounts(session).set_active(args.email, args.command == "user-enable")
+            print(f"{user.email}: {'activo' if user.active else 'inactivo'}")
+    except ValidationFailedError as exc:
+        print(str(exc))
+        return 1
+    return 0
+
+
+def cmd_user_reset(args: argparse.Namespace) -> int:
+    init_db()
+    with get_session() as session:
+        print(_accounts(session).request_reset(args.email))
+    return 0
+
+
+def cmd_incidents(args: argparse.Namespace) -> int:
+    init_db()
+    with get_session() as session:
+        incidents = list_incidents(session, days=args.days)
+        for item in incidents:
+            minutes = duration_minutes(item)
+            span = "abierto" if minutes is None else f"{minutes} min"
+            flag = " CRITICO" if is_critical(item) else ""
+            print(
+                f"{item.started_at:%Y-%m-%d %H:%M} [{item.origin}] {item.component} "
+                f"({span}){flag}: {item.cause[:120]}"
+            )
+        totals = summarize(incidents)
+        print(" ".join(f"{key}={value}" for key, value in totals.items()))
+    return 0
+
+
+def _add_account_commands(sub) -> None:
+    user_create = sub.add_parser("user-create", help="Crea una cuenta de auditor del sitio web")
+    user_create.add_argument("email")
+    user_create.add_argument("--name")
+    user_create.set_defaults(func=cmd_user_create)
+    user_invite = sub.add_parser(
+        "user-invite", help="Crea una cuenta y envía por correo el enlace para elegir contraseña"
+    )
+    user_invite.add_argument("email")
+    user_invite.add_argument("--name")
+    user_invite.set_defaults(func=cmd_user_invite)
+    setup = sub.add_parser(
+        "setup", help="Crea los .env con secretos generados, la base y los datos de demostración"
+    )
+    setup.add_argument("--admin", help="correo de la primera cuenta de auditor (se invita)")
+    setup.add_argument("--name", help="nombre de esa cuenta")
+    setup.add_argument("--api-port", type=int, default=8000)
+    setup.add_argument("--no-demo", action="store_true", help="no carga proyectos de demostración")
+    setup.add_argument("--root", help="raíz del repositorio (por defecto se detecta)")
+    setup.set_defaults(func=cmd_setup)
+    mail_test = sub.add_parser("mail-test", help="Envía un correo de prueba con la configuración")
+    mail_test.add_argument("email")
+    mail_test.set_defaults(func=cmd_mail_test)
+    sub.add_parser("user-list", help="Lista las cuentas de auditor").set_defaults(
+        func=cmd_user_list
+    )
+    for name in ("user-enable", "user-disable"):
+        toggle = sub.add_parser(name, help="Activa o desactiva una cuenta de auditor")
+        toggle.add_argument("email")
+        toggle.set_defaults(func=cmd_user_state)
+    user_reset = sub.add_parser(
+        "user-reset", help="Envía el correo de restablecimiento de contraseña"
+    )
+    user_reset.add_argument("email")
+    user_reset.set_defaults(func=cmd_user_reset)
+    incidents = sub.add_parser("incidents", help="Muestra los incidentes registrados")
+    incidents.add_argument("--days", type=int, default=30)
+    incidents.set_defaults(func=cmd_incidents)
+    measure = sub.add_parser("medir-rnf", help="Mide los requisitos no funcionales (3.3.1, 3.3.3)")
+    measure.add_argument("--rounds", type=int, default=50)
+    measure.add_argument("--projects", type=int, default=3)
+    measure.add_argument("--index-version")
+    measure.add_argument("--output", default="data/medicion/rnf.json")
+    measure.set_defaults(func=cmd_measure)
+
+
+def cmd_measure(args: argparse.Namespace) -> int:
+    init_db()
+    settings = get_settings()
+    version = args.index_version or settings.index_version
+    llm = build_llm_or_unavailable(settings)
+    provider = build_provider(settings)
+    with get_session() as session:
+        ids = project_ids(session, args.projects)
+        report = Report(llm_model=llm.model, satellite_provider=provider.name)
+        report.chat = measure_chat(session, settings, llm, ids[0] if ids else None, args.rounds)
+        if ids:
+            report.audit, report.audit_by_project = measure_audits(
+                session, provider, settings.images_dir, ids, version
+            )
+            report.deterministic, report.determinism_detail = check_determinism(
+                session, ids, version
+            )
+    output = Path(args.output)
+    output.parent.mkdir(parents=True, exist_ok=True)
+    output.write_text(json.dumps(report.to_dict(), indent=2, ensure_ascii=False), encoding="utf-8")
+    print(json.dumps(report.to_dict(), indent=2, ensure_ascii=False))
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="bosquevivo")
     sub = parser.add_subparsers(dest="command", required=True)
@@ -240,6 +484,11 @@ def build_parser() -> argparse.ArgumentParser:
     imp.add_argument("--version")
     imp.add_argument("--country")
     imp.add_argument("--limit", type=int)
+    imp.add_argument(
+        "--lenient",
+        action="store_true",
+        help="actualiza proyectos existentes y repara geometrías en vez de rechazarlos",
+    )
     imp.set_defaults(func=cmd_import)
     karnik = sub.add_parser("import-karnik", help="Importa la base de Karnik et al. (2025)")
     karnik.add_argument("path", help="GeoPackage continental, p. ej. south_america.gpkg")
@@ -280,6 +529,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     audit.add_argument("--index-version", help="v0 o v1; por defecto INDEX_VERSION (v1)")
     audit.set_defaults(func=cmd_audit)
+    _add_account_commands(sub)
     evaluate = sub.add_parser("eval")
     evaluate.add_argument("--output", default="data/eval/report.json")
     evaluate.set_defaults(func=cmd_eval)

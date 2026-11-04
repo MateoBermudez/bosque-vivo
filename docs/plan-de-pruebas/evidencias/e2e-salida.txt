@@ -1,0 +1,30 @@
+OK    CP-56 la invitación llega con un enlace para activar la cuenta
+OK    CP-56 la página de la invitación da la bienvenida
+OK    CP-56 la cuenta queda activa con la contraseña elegida
+OK    CP-30 el área de auditores redirige a /acceso
+OK    CP-31 credenciales inválidas muestran error
+OK    CP-32 mismo mensaje genérico para correo registrado y no registrado -> Si la dirección está registrada, recibirás un correo con las instrucciones para restablecer tu contraseña.
+OK    CP-33 el correo contiene un enlace de restablecimiento
+OK    CP-34 un token inválido se rechaza
+OK    CP-35 contraseñas distintas se rechazan
+OK    CP-35 contraseña débil se rechaza
+OK    CP-36 la contraseña se actualiza
+OK    CP-34 el enlace ya usado se rechaza
+OK    CP-53 después de la contraseña se pide el código enviado por correo
+OK    CP-53 el correo contiene un código de 6 dígitos
+OK    CP-54 un código incorrecto se rechaza
+OK    CP-54 se puede reenviar el código
+OK    CP-37 con la contraseña nueva y el código se entra al área de auditores -> http://localhost:3100/trazas
+OK    CP-37 la sesión muestra el correo del auditor
+OK    CP-55 llega el aviso de nuevo inicio de sesión
+OK    CP-55 llega el aviso de cambio de contraseña
+OK    CP-55 los correos tienen versión HTML
+OK    CP-21 primer contacto: saludo y aviso de privacidad
+OK    CP-22 sin autorización no responde consultas
+OK    CP-23 AYUDA lista las consultas disponibles
+OK    CP-24 PROYECTO <n> registra el polígono de interés
+OK    CP-27 ESTADO responde en lenguaje sencillo con el % conservado -> En Reserva El Roble se conserva el 100 % del bosque que había desde 2018. En general, lo que se ve desde el satélite coincide bien con lo que el proyecto declara. Escriba ALERTAS para ver cambios recientes.
+OK    CP-28 sin términos técnicos ni acusaciones
+OK    CP-25 ALERTAS responde para el proyecto
+OK    CP-26 consulta no reconocida orienta con la ayuda
+OK    CP-42 BORRAR MIS DATOS elimina la conversación

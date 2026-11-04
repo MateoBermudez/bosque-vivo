@@ -4,7 +4,9 @@ from typing import Any
 
 from sqlalchemy.orm import Session, sessionmaker
 
+from bosquevivo.core.incidents import classify, record_incident
 from bosquevivo.core.logging import get_logger
+from bosquevivo.db.base import utcnow
 from bosquevivo.jobs.queue import JobQueue
 
 log = get_logger(__name__)
@@ -40,9 +42,16 @@ class JobWorker:
                 queue.complete(job, result)
             except Exception as exc:
                 session.rollback()
-                log.error("job_failed", kind=job.kind, job_id=job.id, error=str(exc))
+                log.error(
+                    "job_failed",
+                    kind=job.kind,
+                    job_id=job.id,
+                    error=str(exc),
+                    origin=classify(exc),
+                )
                 job = queue.get(job.id) or job
                 queue.fail(job, str(exc))
+                record_incident(session, f"tarea:{job.kind}", exc, ended_at=utcnow())
             session.commit()
             return True
 

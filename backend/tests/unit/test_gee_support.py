@@ -1,9 +1,12 @@
 from datetime import date
 
 import pytest
+from pydantic import ValidationError
 
+from bosquevivo.core.config import Settings
+from bosquevivo.core.errors import ExternalServiceError
 from bosquevivo.satellite.models import Sensor
-from bosquevivo.satellite.providers.gee import month_starts, point_from_properties
+from bosquevivo.satellite.providers.gee import GeeProvider, month_starts, point_from_properties
 
 
 def test_month_starts_cubre_cada_mes_hasta_antes_del_final():
@@ -71,3 +74,21 @@ def test_acepta_fechas_con_hora():
     point = point_from_properties({"period": "2019-03-01T00:00:00", "count": 1}, Sensor.LANDSAT)
 
     assert point is not None and point.period == date(2019, 3, 1)
+
+
+def test_umbral_de_nubes_por_defecto_es_20_y_se_valida():
+    assert Settings().cloud_max_percent == 20.0
+    assert Settings(cloud_max_percent=35).cloud_max_percent == 35.0
+    with pytest.raises(ValidationError):
+        Settings(cloud_max_percent=150)
+
+
+def test_el_umbral_de_nubes_queda_en_la_trazabilidad():
+    provider = GeeProvider.__new__(GeeProvider)
+    provider.cloud_max_percent = 35.0
+    assert provider.dataset_versions()["cloud_max_percent"] == "35"
+
+
+def test_sin_proyecto_de_earth_engine_falla_con_mensaje_claro():
+    with pytest.raises(ExternalServiceError, match="GEE_PROJECT"):
+        GeeProvider("", cloud_max_percent=20)

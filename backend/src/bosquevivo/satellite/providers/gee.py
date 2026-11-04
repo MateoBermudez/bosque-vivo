@@ -77,7 +77,8 @@ def _info(value) -> dict:
 class GeeProvider:
     name = "gee"
 
-    def __init__(self, project: str) -> None:
+    def __init__(self, project: str, cloud_max_percent: float = 20.0) -> None:
+        self.cloud_max_percent = cloud_max_percent
         if not project:
             raise ExternalServiceError("GEE_PROJECT no está configurado")
         self._ee = ee
@@ -99,6 +100,7 @@ class GeeProvider:
             ee.ImageCollection(SENTINEL2_COLLECTION)
             .filterBounds(region)
             .filterDate(start.isoformat(), end.isoformat())
+            .filter(ee.Filter.lte("CLOUDY_PIXEL_PERCENTAGE", self.cloud_max_percent))
             .linkCollection(scores, ["cs_cdf"])
         )
 
@@ -130,6 +132,7 @@ class GeeProvider:
                 ee.ImageCollection(name)
                 .filterBounds(region)
                 .filterDate(start.isoformat(), end.isoformat())
+                .filter(ee.Filter.lte("CLOUD_COVER", self.cloud_max_percent))
                 .map(lambda img, b=bands: prepare(img, b[0], b[1]))
             )
             merged = merged.merge(part)
@@ -313,6 +316,7 @@ class GeeProvider:
             ee.ImageCollection(SENTINEL2_COLLECTION)
             .filterBounds(region)
             .filterDate(start.isoformat(), end.isoformat())
+            .filter(ee.Filter.lte("CLOUDY_PIXEL_PERCENTAGE", self.cloud_max_percent))
             .linkCollection(ee.ImageCollection(CLOUD_SCORE_COLLECTION), ["cs_cdf"])
             .map(lambda img: img.updateMask(img.select("cs_cdf").gte(CLOUD_SCORE_THRESHOLD)))
             .median()
@@ -337,4 +341,5 @@ class GeeProvider:
             "cloud_score": CLOUD_SCORE_COLLECTION,
             "landsat": ",".join(LANDSAT_COLLECTIONS),
             "hansen": HANSEN_DATASET,
+            "cloud_max_percent": f"{self.cloud_max_percent:g}",
         }

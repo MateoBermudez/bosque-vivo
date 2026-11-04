@@ -9,6 +9,12 @@ export function formatNumber(value: number | null | undefined): string {
   return value == null ? "—" : decimals.format(value);
 }
 
+const unitIndex = new Intl.NumberFormat("es-CO", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+export function formatUnitIndex(score: number): string {
+  return unitIndex.format(score / 100);
+}
+
 export function formatPercent(fraction: number): string {
   return `${Math.round(fraction * 100)} %`;
 }

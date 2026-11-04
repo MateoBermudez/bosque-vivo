@@ -1,0 +1,182 @@
+[
+  {
+    "id": "CP-56",
+    "description": "la invitación llega con un enlace para activar la cuenta",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "id": "CP-56",
+    "description": "la página de la invitación da la bienvenida",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "id": "CP-56",
+    "description": "la cuenta queda activa con la contraseña elegida",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "id": "CP-30",
+    "description": "el área de auditores redirige a /acceso",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "id": "CP-31",
+    "description": "credenciales inválidas muestran error",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "id": "CP-32",
+    "description": "mismo mensaje genérico para correo registrado y no registrado",
+    "ok": true,
+    "detail": "Si la dirección está registrada, recibirás un correo con las instrucciones para restablecer tu contraseña."
+  },
+  {
+    "id": "CP-33",
+    "description": "el correo contiene un enlace de restablecimiento",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "id": "CP-34",
+    "description": "un token inválido se rechaza",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "id": "CP-35",
+    "description": "contraseñas distintas se rechazan",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "id": "CP-35",
+    "description": "contraseña débil se rechaza",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "id": "CP-36",
+    "description": "la contraseña se actualiza",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "id": "CP-34",
+    "description": "el enlace ya usado se rechaza",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "id": "CP-53",
+    "description": "después de la contraseña se pide el código enviado por correo",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "id": "CP-53",
+    "description": "el correo contiene un código de 6 dígitos",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "id": "CP-54",
+    "description": "un código incorrecto se rechaza",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "id": "CP-54",
+    "description": "se puede reenviar el código",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "id": "CP-37",
+    "description": "con la contraseña nueva y el código se entra al área de auditores",
+    "ok": true,
+    "detail": "http://localhost:3100/trazas"
+  },
+  {
+    "id": "CP-37",
+    "description": "la sesión muestra el correo del auditor",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "id": "CP-55",
+    "description": "llega el aviso de nuevo inicio de sesión",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "id": "CP-55",
+    "description": "llega el aviso de cambio de contraseña",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "id": "CP-55",
+    "description": "los correos tienen versión HTML",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "id": "CP-21",
+    "description": "primer contacto: saludo y aviso de privacidad",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "id": "CP-22",
+    "description": "sin autorización no responde consultas",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "id": "CP-23",
+    "description": "AYUDA lista las consultas disponibles",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "id": "CP-24",
+    "description": "PROYECTO <n> registra el polígono de interés",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "id": "CP-27",
+    "description": "ESTADO responde en lenguaje sencillo con el % conservado",
+    "ok": true,
+    "detail": "En Reserva El Roble se conserva el 100 % del bosque que había desde 2018. En general, lo que se ve desde el satélite coincide bien con lo que el proyecto declara. Escriba ALERTAS para ver cambios recientes."
+  },
+  {
+    "id": "CP-28",
+    "description": "sin términos técnicos ni acusaciones",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "id": "CP-25",
+    "description": "ALERTAS responde para el proyecto",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "id": "CP-26",
+    "description": "consulta no reconocida orienta con la ayuda",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "id": "CP-42",
+    "description": "BORRAR MIS DATOS elimina la conversación",
+    "ok": true,
+    "detail": ""
+  }
+]

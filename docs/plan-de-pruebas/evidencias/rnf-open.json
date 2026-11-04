@@ -1,0 +1,42 @@
+{
+  "llm_model": "sin-configurar",
+  "satellite_provider": "open",
+  "chat": {
+    "samples": 20,
+    "p50": 0.002,
+    "p90": 0.005,
+    "maximum": 0.009,
+    "share_within_limit": 1.0,
+    "limit_seconds": 10.0,
+    "meets_target": true
+  },
+  "audit": {
+    "samples": 3,
+    "p50": 44.665,
+    "p90": 62.886,
+    "maximum": 62.886,
+    "share_within_limit": 1.0,
+    "limit_seconds": 300.0,
+    "meets_target": true
+  },
+  "audit_by_project": {
+    "1": 62.886,
+    "2": 44.665,
+    "3": 43.739
+  },
+  "deterministic": true,
+  "determinism_detail": {
+    "1": [
+      97.2,
+      97.2
+    ],
+    "2": [
+      96.0,
+      96.0
+    ],
+    "3": [
+      56.1,
+      56.1
+    ]
+  }
+}

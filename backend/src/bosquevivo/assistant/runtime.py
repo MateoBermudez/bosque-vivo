@@ -1,12 +1,13 @@
 from sqlalchemy.orm import Session
 
 from bosquevivo.ai.agent import Agent, default_registry
-from bosquevivo.ai.llm import GeminiProvider, LLMProvider
+from bosquevivo.ai.llm import GeminiProvider, LLMProvider, UnavailableLLM
 from bosquevivo.ai.llm.cache import ResponseCache
 from bosquevivo.ai.llm.limits import RateLimiter
 from bosquevivo.assistant.client import CloudApiClient, WhatsAppClient
 from bosquevivo.assistant.service import AssistantService
 from bosquevivo.core.config import Settings
+from bosquevivo.core.errors import ExternalServiceError
 from bosquevivo.satellite.provider import SatelliteProvider
 from bosquevivo.satellite.service import SatelliteService
 
@@ -22,6 +23,13 @@ def build_llm(settings: Settings) -> LLMProvider:
         limiter=RateLimiter(REQUESTS_PER_MINUTE, REQUESTS_PER_DAY),
         cache=ResponseCache(settings.cache_dir / "llm"),
     )
+
+
+def build_llm_or_unavailable(settings: Settings) -> LLMProvider:
+    try:
+        return build_llm(settings)
+    except ExternalServiceError as exc:
+        return UnavailableLLM(str(exc))
 
 
 def build_assistant(

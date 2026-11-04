@@ -29,8 +29,8 @@ flowchart LR
 | `satellite` | Series, NDVI, pérdida forestal, miniaturas | RF02, RF03 |
 | `audit` | Comparación, índice, confianza, narrativa | RF04, RF05 |
 | `reports` | Reportes HTML y PDF | RF06 |
-| `assistant` | WhatsApp, consentimiento, voz | RF07, RF08, RF12, RF13 |
-| `ai` | Agente, herramientas, guardas, conocimiento, visión, evaluación | RF09, RF10, RF15, RF17 |
+| `assistant` | WhatsApp, consentimiento, voz | RF07, RF08, RA04, RA05 |
+| `ai` | Agente, herramientas, guardas, conocimiento, visión, evaluación | RA01, RA02, RA07, RA09 |
 | `jobs` | Cola y trabajador en segundo plano | |
 | `api` | Routers REST y webhook | |
 

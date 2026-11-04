@@ -6,6 +6,9 @@ import numpy as np
 
 from bosquevivo.satellite.models import Sensor, TimeSeriesPoint
 
+NDVI_MIN = -1.0
+NDVI_MAX = 1.0
+
 
 def ndvi(nir: np.ndarray, red: np.ndarray) -> np.ndarray:
     nir = nir.astype(np.float64)
@@ -13,7 +16,15 @@ def ndvi(nir: np.ndarray, red: np.ndarray) -> np.ndarray:
     denominator = nir + red
     with np.errstate(divide="ignore", invalid="ignore"):
         result = np.where(denominator == 0, np.nan, (nir - red) / denominator)
-    return np.clip(result, -1.0, 1.0)
+    return np.where((result < NDVI_MIN) | (result > NDVI_MAX), np.nan, result)
+
+
+def in_range(value: float | None) -> bool:
+    return value is None or NDVI_MIN <= value <= NDVI_MAX
+
+
+def is_valid_point(point: TimeSeriesPoint) -> bool:
+    return all(in_range(v) for v in (point.ndvi_mean, point.ndvi_p10, point.ndvi_p90))
 
 
 def scene_stats(values: np.ndarray, valid_mask: np.ndarray) -> dict[str, float | None]:

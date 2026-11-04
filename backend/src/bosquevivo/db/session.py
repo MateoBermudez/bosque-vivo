@@ -3,7 +3,7 @@ from contextlib import contextmanager
 from functools import lru_cache
 from pathlib import Path
 
-from sqlalchemy import Engine, create_engine, event
+from sqlalchemy import Engine, create_engine, event, inspect, text
 from sqlalchemy.engine import make_url
 from sqlalchemy.orm import Session, sessionmaker
 
@@ -50,9 +50,33 @@ def _default_factory() -> sessionmaker[Session]:
     return make_session_factory(get_engine())
 
 
+ADDED_COLUMNS: dict[str, dict[str, str]] = {
+    "wa_user": {"project_id": "INTEGER REFERENCES project(id) ON DELETE SET NULL"},
+    "password_reset_token": {"purpose": "VARCHAR(20) NOT NULL DEFAULT 'reset'"},
+}
+
+
+def upgrade_schema(engine: Engine) -> list[str]:
+    inspector = inspect(engine)
+    tables = set(inspector.get_table_names())
+    applied: list[str] = []
+    with engine.begin() as connection:
+        for table, columns in ADDED_COLUMNS.items():
+            if table not in tables:
+                continue
+            present = {column["name"] for column in inspector.get_columns(table)}
+            for name, ddl in columns.items():
+                if name not in present:
+                    connection.execute(text(f"ALTER TABLE {table} ADD COLUMN {name} {ddl}"))
+                    applied.append(f"{table}.{name}")
+    return applied
+
+
 def init_db(engine: Engine | None = None) -> None:
     assert models.Project
-    Base.metadata.create_all(engine or get_engine())
+    target = engine or get_engine()
+    Base.metadata.create_all(target)
+    upgrade_schema(target)
 
 
 @contextmanager

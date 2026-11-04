@@ -1,3 +1,7 @@
-// Completa esta lista para que aparezca la sección «Equipo» en /acerca.
-// Ejemplo: { name: "Nombre Apellido", role: "Plataforma e integración" }
-export const TEAM: { name: string; role: string }[] = [];
+export const TEAM: { name: string; role: string }[] = [
+  { name: "Mateo Bermúdez Cuartas", role: "Desarrollador" },
+  { name: "Emmanuel Arango Velásquez", role: "Desarrollador" },
+  { name: "Miguel Ángel Calle Parra", role: "Desarrollador" },
+  { name: "Miguel Ángel Agudelo Tamayo", role: "Desarrollador" },
+  { name: "Juan David Andrade Vanegas", role: "Desarrollador" },
+];
