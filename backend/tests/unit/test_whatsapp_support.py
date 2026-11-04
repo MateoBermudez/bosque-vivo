@@ -1,4 +1,8 @@
+import httpx
+import pytest
+
 from bosquevivo.assistant import parse_webhook, verify_signature
+from bosquevivo.assistant.client import CloudApiClient
 from bosquevivo.assistant.dialogue import (
     split_message,
     wants_consent,
@@ -6,6 +10,7 @@ from bosquevivo.assistant.dialogue import (
     wants_media_consent,
 )
 from bosquevivo.assistant.signature import compute_signature
+from bosquevivo.core.errors import ExternalServiceError
 
 SECRET = "app-secret"
 
@@ -71,3 +76,20 @@ def test_split_message_respects_limit_and_keeps_content():
     assert all(len(c) <= 100 for c in chunks)
     assert len(chunks) > 1
     assert split_message("corto") == ["corto"]
+
+
+def test_cloud_api_uses_configured_version_and_reports_errors():
+    seen = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        seen.append(str(request.url))
+        if request.url.path.endswith("/messages") and b"573000000000" in request.content:
+            return httpx.Response(400, json={"error": {"message": "recipient not allowed"}})
+        return httpx.Response(200, json={"messages": [{"id": "wamid.1"}]})
+
+    client = CloudApiClient("token", "123", base_url="https://graph.test/", version="v25.0")
+    client.http = httpx.Client(transport=httpx.MockTransport(handler))
+    client.send_text("573001112233", "hola")
+    assert seen == ["https://graph.test/v25.0/123/messages"]
+    with pytest.raises(ExternalServiceError, match="recipient not allowed"):
+        client.send_text("573000000000", "hola")

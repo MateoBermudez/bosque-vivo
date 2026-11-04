@@ -4,7 +4,8 @@ import httpx
 
 from bosquevivo.core.errors import ExternalServiceError
 
-GRAPH_URL = "https://graph.facebook.com/v21.0"
+GRAPH_URL = "https://graph.facebook.com"
+GRAPH_VERSION = "v25.0"
 
 
 class WhatsAppClient(Protocol):
@@ -14,17 +15,25 @@ class WhatsAppClient(Protocol):
 
 
 class CloudApiClient:
-    def __init__(self, token: str, phone_number_id: str, timeout: float = 30.0) -> None:
+    def __init__(
+        self,
+        token: str,
+        phone_number_id: str,
+        timeout: float = 30.0,
+        base_url: str = GRAPH_URL,
+        version: str = GRAPH_VERSION,
+    ) -> None:
         if not token or not phone_number_id:
             raise ExternalServiceError("WHATSAPP_TOKEN y WHATSAPP_PHONE_NUMBER_ID son obligatorios")
         self.phone_number_id = phone_number_id
+        self.api = f"{base_url.rstrip('/')}/{version.strip('/')}"
         self.http = httpx.Client(
             headers={"Authorization": f"Bearer {token}"}, timeout=timeout, follow_redirects=True
         )
 
     def send_text(self, to: str, body: str) -> None:
         response = self.http.post(
-            f"{GRAPH_URL}/{self.phone_number_id}/messages",
+            f"{self.api}/{self.phone_number_id}/messages",
             json={
                 "messaging_product": "whatsapp",
                 "to": to,
@@ -33,10 +42,12 @@ class CloudApiClient:
             },
         )
         if response.status_code >= 400:
-            raise ExternalServiceError(f"error al enviar mensaje: {response.status_code}")
+            raise ExternalServiceError(
+                f"WhatsApp rechazó el envío ({response.status_code}): {response.text[:300]}"
+            )
 
     def download_media(self, media_id: str) -> tuple[bytes, str]:
-        meta = self.http.get(f"{GRAPH_URL}/{media_id}")
+        meta = self.http.get(f"{self.api}/{media_id}")
         if meta.status_code >= 400:
             raise ExternalServiceError(f"no se pudo obtener el archivo: {meta.status_code}")
         info = meta.json()
