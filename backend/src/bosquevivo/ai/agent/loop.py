@@ -12,6 +12,7 @@ from bosquevivo.ai.agent.tools import Role, ToolContext, ToolError, ToolRegistry
 from bosquevivo.ai.agent.validation import validate_answer
 from bosquevivo.ai.guardrails import scan_for_injection, wrap_untrusted
 from bosquevivo.ai.llm import LLMProvider, MediaPart, Message, ToolCall, ToolResult
+from bosquevivo.ai.llm.budget import time_budget
 from bosquevivo.ai.llm.errors import QuotaExceededError
 from bosquevivo.ai.prompts import PROMPT_VERSION, system_prompt
 from bosquevivo.core.config import Settings
@@ -123,7 +124,8 @@ class Agent:
             media_consent=request.media_consent,
         )
         try:
-            text, tools_called, passed = self._loop(run, request, ctx)
+            with time_budget(self.settings.agent_time_budget_seconds):
+                text, tools_called, passed = self._loop(run, request, ctx)
         except (QuotaExceededError, ExternalServiceError) as exc:
             log.warning("agent_degraded", error=str(exc), origin="externo")
             record_incident(

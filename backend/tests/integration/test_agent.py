@@ -5,6 +5,7 @@ import pytest
 
 from bosquevivo.ai.agent import Agent, AgentRequest, default_registry
 from bosquevivo.ai.llm import LLMResponse, ScriptedLLM, ToolCall
+from bosquevivo.ai.llm.budget import TimeBudgetExceededError, remaining_seconds
 from bosquevivo.ai.llm.errors import QuotaExceededError
 from bosquevivo.audit import AuditService
 from bosquevivo.core.config import Settings
@@ -129,6 +130,28 @@ def test_quota_error_degrades_to_fallback(db, seeded):
 
     agent, _ = make_agent(db, raise_quota)
     answer = agent.answer(AgentRequest(text="¿Cómo está?"))
+    assert answer.used_fallback and answer.text
+
+
+def test_agent_calls_the_model_within_the_time_budget(db, seeded):
+    seen = []
+
+    def answer(system, messages, tools):
+        seen.append(remaining_seconds())
+        return LLMResponse(text="Hola, puedo ayudarte con el estado de los proyectos.")
+
+    agent, _ = make_agent(db, answer, agent_time_budget_seconds=5)
+    assert not agent.answer(AgentRequest(text="hola")).used_fallback
+    assert seen[0] is not None and 4 < seen[0] <= 5
+    assert remaining_seconds() is None
+
+
+def test_exhausted_time_budget_degrades_to_fallback(db, seeded):
+    def too_late(system, messages, tools):
+        raise TimeBudgetExceededError("se agotó el tiempo disponible para responder")
+
+    agent, _ = make_agent(db, too_late)
+    answer = agent.answer(AgentRequest(text="¿Cómo está?", role="comunidad"))
     assert answer.used_fallback and answer.text
 
 

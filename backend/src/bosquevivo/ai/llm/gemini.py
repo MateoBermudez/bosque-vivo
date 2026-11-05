@@ -1,9 +1,11 @@
 import time
 from typing import Any
 
+import httpx
 from google import genai
 from google.genai import errors, types
 
+from bosquevivo.ai.llm.budget import TimeBudgetExceededError, remaining_seconds
 from bosquevivo.ai.llm.cache import ResponseCache, request_key
 from bosquevivo.ai.llm.errors import QuotaExceededError
 from bosquevivo.ai.llm.limits import RateLimiter
@@ -17,6 +19,7 @@ RETRYABLE = {429, 500, 502, 503, 504}
 SWITCHABLE = RETRYABLE | {404}
 FREE_FALLBACKS = ("gemini-flash-latest", "gemini-flash-lite-latest")
 REQUEST_TIMEOUT_MS = 20_000
+MIN_CALL_SECONDS = 1.5
 COOLDOWN_SECONDS = 180.0
 _COOLING: dict[str, float] = {}
 
@@ -161,15 +164,27 @@ class GeminiProvider:
         retries: int,
     ):
         for attempt in range(retries + 1):
+            left = remaining_seconds()
+            if left is not None and left < MIN_CALL_SECONDS:
+                raise TimeBudgetExceededError("se agotó el tiempo disponible para responder")
+            timeout_ms = (
+                REQUEST_TIMEOUT_MS if left is None else min(REQUEST_TIMEOUT_MS, left * 1000)
+            )
+            config.http_options = types.HttpOptions(timeout=int(timeout_ms))
             if self.limiter:
                 self.limiter.acquire()
             try:
                 return self.client.models.generate_content(
                     model=model, contents=contents, config=config
                 )
+            except httpx.TimeoutException as exc:
+                error = ExternalServiceError(f"el modelo {model} no respondió a tiempo")
+                error.code = 504
+                raise error from exc
             except errors.APIError as exc:
                 code = getattr(exc, "code", 0)
-                if code in RETRYABLE and attempt < retries:
+                left = remaining_seconds()
+                if code in RETRYABLE and attempt < retries and (left is None or left > 2**attempt):
                     delay = 2**attempt
                     log.warning("gemini_retry", code=code, attempt=attempt, delay=delay)
                     self.sleep(delay)

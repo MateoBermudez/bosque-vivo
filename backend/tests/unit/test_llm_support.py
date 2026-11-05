@@ -1,9 +1,11 @@
 from types import SimpleNamespace
 
+import httpx
 import pytest
 from google.genai import errors as genai_errors
 
 from bosquevivo.ai.llm import LLMResponse, Message, QuotaExceededError, ScriptedLLM, ToolCall
+from bosquevivo.ai.llm.budget import TimeBudgetExceededError, remaining_seconds, time_budget
 from bosquevivo.ai.llm.cache import ResponseCache, request_key
 from bosquevivo.ai.llm.gemini import _COOLING, GeminiProvider
 from bosquevivo.ai.llm.limits import RateLimiter
@@ -109,4 +111,71 @@ def test_overloaded_model_switches_to_another_free_model(monkeypatch):
     now[0] += 200
     provider.generate("sistema", [Message(role="user", text="tercera")])
     assert calls[-2:] == ["gemini-flash-latest", "gemini-flash-lite-latest"]
+    _COOLING.clear()
+
+
+def _ok_response():
+    part = SimpleNamespace(text="hola", function_call=None, thought=None)
+    candidate = SimpleNamespace(content=SimpleNamespace(parts=[part]), finish_reason=None)
+    return SimpleNamespace(candidates=[candidate], prompt_feedback=None, usage_metadata=None)
+
+
+def _provider(models):
+    return GeminiProvider(
+        "clave",
+        "gemini-flash-latest",
+        light_model="gemini-flash-lite-latest",
+        sleep=lambda _: None,
+        client=SimpleNamespace(models=models),
+    )
+
+
+def test_call_timeout_never_exceeds_the_time_budget():
+    timeouts = []
+
+    class Models:
+        def generate_content(self, model, contents, config):
+            timeouts.append(config.http_options.timeout)
+            return _ok_response()
+
+    _COOLING.clear()
+    provider = _provider(Models())
+    provider.generate("s", [Message(role="user", text="sin presupuesto")])
+    with time_budget(5):
+        provider.generate("s", [Message(role="user", text="con presupuesto")])
+    assert timeouts[0] == 20_000
+    assert 4_000 < timeouts[1] <= 5_000
+
+
+def test_exhausted_budget_fails_fast_without_cooling_models():
+    calls = []
+
+    class Models:
+        def generate_content(self, model, contents, config):
+            calls.append(model)
+            return _ok_response()
+
+    _COOLING.clear()
+    provider = _provider(Models())
+    with time_budget(0.5), pytest.raises(TimeBudgetExceededError):
+        provider.generate("s", [Message(role="user", text="tarde")])
+    assert calls == [] and _COOLING == {}
+    assert remaining_seconds() is None
+
+
+def test_slow_model_switches_to_the_other_free_model():
+    calls = []
+
+    class Models:
+        def generate_content(self, model, contents, config):
+            calls.append(model)
+            if model == "gemini-flash-latest":
+                raise httpx.ReadTimeout("lento")
+            return _ok_response()
+
+    _COOLING.clear()
+    response = _provider(Models()).generate("s", [Message(role="user", text="hola")])
+    assert response.text == "hola"
+    assert calls == ["gemini-flash-latest", "gemini-flash-lite-latest"]
+    assert "gemini-flash-latest" in _COOLING
     _COOLING.clear()
