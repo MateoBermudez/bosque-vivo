@@ -1,97 +1,265 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 
-import { PageHeader } from "@/components/common/page-header";
-
-const CONTACT = process.env.PRIVACY_CONTACT_EMAIL ?? "";
+import { ContactLine, LegalDocument, type LegalSection } from "@/components/legal/legal-document";
 
 export const metadata: Metadata = {
-  title: "Aviso de privacidad",
+  title: "Política de privacidad",
   description:
-    "Qué datos trata Bosque Vivo, para qué, quién los procesa y cómo ejercer tus derechos según la Ley 1581 de 2012.",
+    "Política de tratamiento de datos personales de Bosque Vivo: qué datos se tratan, para qué, con quién se comparten y cómo ejercer tus derechos según la Ley 1581 de 2012.",
 };
 
-const SECTIONS: { id: string; title: string; body: React.ReactNode }[] = [
+const SECTIONS: LegalSection[] = [
+  {
+    id: "responsable",
+    title: "Responsable del tratamiento",
+    body: (
+      <>
+        <p>
+          Bosque Vivo es un proyecto integrador académico de estudiantes de Ingeniería Informática del Politécnico
+          Colombiano Jaime Isaza Cadavid (Medellín, Colombia). El equipo del proyecto es el responsable del tratamiento
+          de los datos que se recogen en este sitio, en el chat en línea y en el asistente de WhatsApp.
+        </p>
+        <p>
+          Contacto para temas de privacidad: <ContactLine />.
+        </p>
+        <p>
+          Esta política aplica la Ley 1581 de 2012 y el Decreto 1377 de 2013 (compilado en el Decreto Único 1074 de
+          2015).
+        </p>
+      </>
+    ),
+  },
   {
     id: "datos",
     title: "Qué datos tratamos",
     body: (
-      <ul className="list-disc space-y-2 pl-5">
+      <>
+        <p>
+          <strong>Visitantes del sitio.</strong> Consultar proyectos, mapas, metodología e informes no exige registrarse
+          ni entregar datos personales. Los servidores de alojamiento registran de forma técnica la dirección IP y el
+          navegador de cada solicitud para operar y proteger el servicio.
+        </p>
+        <p>
+          <strong>Asistente de WhatsApp y chat en línea.</strong>
+        </p>
+        <ul>
+          <li>
+            El número de teléfono se guarda solo como una huella cifrada (HMAC-SHA256); el número no se almacena. En el
+            chat en línea se usa un identificador aleatorio guardado en tu navegador en lugar del teléfono.
+          </li>
+          <li>Tus preguntas, las respuestas y el proyecto que elijas, para atenderte y revisar la calidad.</li>
+          <li>La fecha y la versión del aviso con que diste tu autorización.</li>
+          <li>
+            Fotos, notas de voz y ubicación solo si las envías; las fotos y audios requieren una autorización aparte (
+            <strong>ACEPTO FOTOS</strong>). Los archivos se procesan y se descartan: no se guardan.
+          </li>
+        </ul>
+        <p>
+          <strong>Cuentas de auditor.</strong> Correo, nombre, contraseña cifrada (scrypt con sal), intentos fallidos y
+          bloqueos, y el navegador y la IP aproximada de cada inicio de sesión para enviarte avisos de seguridad. Los
+          enlaces de invitación y restablecimiento y los códigos de verificación se guardan solo como huellas SHA-256,
+          vencen y sirven una sola vez.
+        </p>
+        <p>
+          <strong>Datos de los proyectos.</strong> Los polígonos y atributos de los proyectos de carbono provienen de
+          registros públicos y no son datos personales. Ver{" "}
+          <Link href="/uso-de-datos" className="underline underline-offset-4">
+            uso de datos y fuentes
+          </Link>
+          .
+        </p>
+        <p>
+          No pedimos ni necesitamos datos sensibles (salud, origen étnico, creencias, biometría) ni datos de niñas,
+          niños o adolescentes. No los envíes.
+        </p>
+      </>
+    ),
+  },
+  {
+    id: "finalidades",
+    title: "Para qué los usamos",
+    body: (
+      <ul>
+        <li>Responder consultas sobre el estado del bosque de proyectos de carbono con información satelital.</li>
         <li>
-          Tu número de teléfono: se guarda únicamente como una huella cifrada (HMAC); no se almacena el número.
+          Dar acceso al área de auditores, verificar la identidad en dos pasos y avisar de actividad en la cuenta.
         </li>
-        <li>Tus mensajes y las respuestas, para poder atenderte y revisar la calidad del servicio.</li>
         <li>
-          Fotos y notas de voz, solo si lo autorizas de forma expresa con <strong>ACEPTO FOTOS</strong>. No se
-          guardan los archivos: se procesan y se descartan.
+          Mantener la trazabilidad de las respuestas del agente (herramientas usadas y evidencias) y medir su calidad.
         </li>
+        <li>Proteger el servicio frente a abusos, errores e incidentes de seguridad.</li>
+        <li>Producir resultados agregados y anónimos para el informe académico del proyecto.</li>
       </ul>
     ),
   },
   {
-    id: "finalidad",
-    title: "Para qué",
-    body: <p>Responder consultas sobre el estado de bosques de proyectos de carbono con información satelital.</p>,
+    id: "autorizacion",
+    title: "Autorización",
+    body: (
+      <>
+        <p>
+          Antes de procesar cualquier pregunta, el asistente muestra un aviso y solo continúa si escribes{" "}
+          <strong>ACEPTO</strong>. El uso de fotos y audios requiere además <strong>ACEPTO FOTOS</strong>. Cada
+          autorización queda registrada con su fecha y la versión del aviso.
+        </p>
+        <p>
+          Las cuentas de auditor las crea el equipo por invitación; al activar la cuenta y elegir la contraseña la
+          persona acepta estos términos y esta política.
+        </p>
+      </>
+    ),
   },
   {
-    id: "quien",
-    title: "Quién procesa",
+    id: "encargados",
+    title: "Con quién se comparten (encargados y transferencias)",
     body: (
-      <p>
-        Un asistente de inteligencia artificial. El procesamiento del texto, las imágenes y el audio lo realiza un
-        tercero (Google Gemini) en sus servidores, posiblemente fuera de Colombia. No envíes cédula, dirección ni
-        datos privados. En la capa gratuita de ese servicio el contenido puede usarse para mejorar sus productos.
-      </p>
+      <>
+        <p>No vendemos ni cedemos datos personales. Para funcionar, el servicio usa estos proveedores:</p>
+        <ul>
+          <li>
+            <strong>Google (Gemini)</strong>: procesa el texto, las imágenes y los audios de las consultas. En la capa
+            gratuita, Google puede usar el contenido para mejorar sus productos; por eso pedimos no enviar cédula,
+            dirección ni datos privados.
+          </li>
+          <li>
+            <strong>Supabase</strong>: aloja la base de datos (PostgreSQL) en servidores de Amazon Web Services en
+            Estados Unidos.
+          </li>
+          <li>
+            <strong>Vercel</strong>: aloja el sitio web y la API.
+          </li>
+          <li>
+            <strong>Google (Gmail)</strong>: envía los correos de invitación, verificación y seguridad.
+          </li>
+          <li>
+            <strong>Meta (WhatsApp Business)</strong>: transporta los mensajes del asistente de WhatsApp, según sus
+            propias condiciones.
+          </li>
+        </ul>
+        <p>
+          Estos proveedores pueden tratar los datos fuera de Colombia, en países como Estados Unidos. Al dar tu
+          autorización aceptas esa transferencia, que se limita a lo necesario para prestar el servicio.
+        </p>
+      </>
     ),
   },
   {
     id: "derechos",
     title: "Tus derechos",
     body: (
-      <ul className="list-disc space-y-2 pl-5">
-        <li>Conocer, actualizar y rectificar tus datos.</li>
+      <>
+        <p>Como titular de los datos puedes:</p>
+        <ul>
+          <li>Conocer, actualizar y rectificar tus datos.</li>
+          <li>Pedir prueba de la autorización que diste.</li>
+          <li>Saber qué uso se ha dado a tus datos.</li>
+          <li>Revocar la autorización y pedir la supresión de tus datos.</li>
+          <li>Acceder gratis a tus datos.</li>
+          <li>
+            Presentar quejas ante la Superintendencia de Industria y Comercio (SIC) después de haber agotado el trámite
+            de consulta o reclamo con nosotros.
+          </li>
+        </ul>
+      </>
+    ),
+  },
+  {
+    id: "procedimiento",
+    title: "Cómo ejercerlos",
+    body: (
+      <>
+        <ul>
+          <li>
+            <strong>Borrado inmediato:</strong> escribe <strong>BORRAR MIS DATOS</strong> en WhatsApp o en el chat en
+            línea. Se eliminan tu registro, tus permisos y tus consultas.
+          </li>
+          <li>
+            <strong>Consultas y reclamos:</strong> escribe a <ContactLine /> indicando tu solicitud y cómo identificarte
+            (por ejemplo, el correo de tu cuenta o el número desde el que escribiste).
+          </li>
+        </ul>
+        <p>
+          Respondemos las consultas en un máximo de 10 días hábiles (prorrogables 5 días hábiles más, avisándote) y los
+          reclamos en un máximo de 15 días hábiles (prorrogables 8 días hábiles más), como establece la Ley 1581 de
+          2012.
+        </p>
+        <p>En cualquier momento puedes hablar con una persona del equipo por el mismo canal.</p>
+      </>
+    ),
+  },
+  {
+    id: "seguridad",
+    title: "Seguridad",
+    body: (
+      <ul>
+        <li>Conexiones cifradas (HTTPS/TLS) entre tu navegador, la API y la base de datos.</li>
+        <li>Teléfonos guardados como huella HMAC; contraseñas con scrypt; enlaces y códigos como huellas SHA-256.</li>
         <li>
-          Revocar tu autorización y pedir la supresión escribiendo <strong>BORRAR MIS DATOS</strong>: se eliminan tu
-          registro, tus permisos y tus consultas.
+          Verificación en dos pasos por correo, bloqueo temporal tras 5 intentos fallidos y avisos de inicio de sesión.
         </li>
-        <li>
-          Hablar con una persona del equipo cuando lo necesites
-          {CONTACT ? (
-            <>
-              {" "}
-              escribiendo a <a href={`mailto:${CONTACT}`}>{CONTACT}</a>
-            </>
-          ) : null}
-          .
-        </li>
+        <li>Acceso al área de auditores y a las trazas solo con sesión iniciada.</li>
+        <li>Registro de incidentes para revisar fallas de los servicios externos.</li>
       </ul>
     ),
   },
   {
-    id: "auditores",
-    title: "Cuentas de auditor",
-    body: (
-      <p>
-        Para el área de auditores se guarda el correo, el nombre y la contraseña cifrada (scrypt con sal). Los enlaces
-        para restablecer la contraseña se guardan solo como huella SHA-256, vencen y sirven una sola vez.
-      </p>
-    ),
-  },
-  {
     id: "retencion",
-    title: "Retención",
+    title: "Cuánto tiempo los conservamos",
+    body: (
+      <ul>
+        <li>
+          Consultas del asistente: hasta que pidas su borrado o, como máximo, hasta que termine el piloto académico.
+        </li>
+        <li>Códigos de verificación: 10 minutos. Enlaces de restablecimiento: 30 minutos. Invitaciones: 72 horas.</li>
+        <li>Sesión de auditor: 8 horas.</li>
+        <li>Cuentas de auditor: mientras la persona participe en el proyecto; se desactivan o eliminan a solicitud.</li>
+        <li>Al cerrar el proyecto los datos personales se eliminan y solo se conservan cifras agregadas y anónimas.</li>
+      </ul>
+    ),
+  },
+  {
+    id: "cookies",
+    title: "Cookies y almacenamiento local",
+    body: (
+      <>
+        <p>El sitio no usa cookies publicitarias ni de seguimiento, ni herramientas de analítica de terceros.</p>
+        <ul>
+          <li>
+            <strong>Cookie de sesión del auditor</strong> (técnica, <span className="font-mono">httpOnly</span>):
+            mantiene la sesión iniciada durante 8 horas. Solo existe si inicias sesión.
+          </li>
+          <li>
+            <strong>Identificador del chat en línea</strong> (almacenamiento local del navegador): un valor aleatorio
+            para continuar tu conversación. Puedes borrarlo desde la configuración del navegador.
+          </li>
+        </ul>
+      </>
+    ),
+  },
+  {
+    id: "ia",
+    title: "Inteligencia artificial",
     body: (
       <p>
-        Las consultas se conservan solo mientras el usuario no pida su borrado y por el tiempo del piloto.
+        Las respuestas las genera un asistente de inteligencia artificial a partir de datos satelitales y de la base de
+        conocimiento del proyecto. Pueden contener errores y no constituyen una decisión sobre ninguna persona:
+        describen lo que se observa desde el satélite y no atribuyen intenciones a nadie.
       </p>
     ),
   },
   {
-    id: "limitaciones",
-    title: "Limitaciones",
+    id: "vigencia",
+    title: "Cambios y vigencia",
     body: (
       <p>
-        Las respuestas pueden contener errores. Describen lo que se observa desde el satélite y no atribuyen
-        intenciones a nadie.
+        Esta política rige desde su publicación y mientras dure el proyecto. Si cambia de forma importante,
+        actualizaremos la versión y la fecha de esta página y, para el asistente, pediremos de nuevo la autorización.
+        Ver también los{" "}
+        <Link href="/terminos" className="underline underline-offset-4">
+          términos y condiciones
+        </Link>
+        .
       </p>
     ),
   },
@@ -99,22 +267,18 @@ const SECTIONS: { id: string; title: string; body: React.ReactNode }[] = [
 
 export default function PrivacyPage() {
   return (
-    <>
-      <PageHeader eyebrow="Ley 1581 de 2012" title="Aviso de privacidad">
-        Versión del aviso: <span className="font-mono">v1</span>. Aplica al asistente de WhatsApp. Este sitio web
-        no pide datos personales ni usa cookies de seguimiento; solo usa una cookie técnica de sesión en el área
-        de auditores.
-      </PageHeader>
-      <div className="mx-auto max-w-3xl space-y-4 px-5">
-        {SECTIONS.map((section) => (
-          <section key={section.id} aria-labelledby={`titulo-${section.id}`} className="card-soft p-6">
-            <h2 id={`titulo-${section.id}`} className="text-xl font-bold">
-              {section.title}
-            </h2>
-            <div className="mt-3 text-muted-foreground">{section.body}</div>
-          </section>
-        ))}
-      </div>
-    </>
+    <LegalDocument
+      eyebrow="Ley 1581 de 2012"
+      title="Política de privacidad y tratamiento de datos"
+      version="v2"
+      current="/privacidad"
+      intro={
+        <p>
+          Qué datos personales trata Bosque Vivo, para qué, con quién se comparten y cómo ejercer tus derechos de habeas
+          data.
+        </p>
+      }
+      sections={SECTIONS}
+    />
   );
 }

@@ -155,7 +155,9 @@ class AccountService:
         user = self._new_user(email, name, UNUSABLE_PREFIX + new_token())
         hours = self.settings.invitation_ttl_hours
         link = self._link(self._issue_token(user, PURPOSE_INVITATION, timedelta(hours=hours)))
-        self._notify(templates.invitation_email(user.email, user.name, link, hours))
+        self._notify(
+            templates.invitation_email(user.email, user.name, link, hours, site=self._site)
+        )
         return user, link
 
     def set_active(self, email: str, active: bool) -> AuditorUser:
@@ -183,7 +185,11 @@ class AccountService:
                 user.locked_until = now + timedelta(minutes=LOCK_MINUTES)
                 user.failed_logins = 0
                 log.warning("auditor_locked", user_id=user.id)
-                self._notify(templates.account_locked_email(user.email, user.name, LOCK_MINUTES))
+                self._notify(
+                    templates.account_locked_email(
+                        user.email, user.name, LOCK_MINUTES, site=self._site
+                    )
+                )
             self.session.flush()
             return LoginOutcome(None)
         user.failed_logins = 0
@@ -221,7 +227,7 @@ class AccountService:
         self.session.flush()
         self._send(
             templates.login_code_email(
-                user.email, user.name, code, self.settings.auth_code_ttl_minutes
+                user.email, user.name, code, self.settings.auth_code_ttl_minutes, site=self._site
             )
         )
         return LoginStep(challenge=raw, destination=mask_email(user.email))
@@ -269,7 +275,7 @@ class AccountService:
         user = challenge.user
         self._send(
             templates.login_code_email(
-                user.email, user.name, code, self.settings.auth_code_ttl_minutes
+                user.email, user.name, code, self.settings.auth_code_ttl_minutes, site=self._site
             )
         )
         return mask_email(user.email)
@@ -279,7 +285,11 @@ class AccountService:
         if self.settings.auth_login_alerts:
             self._notify(
                 templates.new_login_email(
-                    user.email, user.name, self.clock(), client or "no informado"
+                    user.email,
+                    user.name,
+                    self.clock(),
+                    client or "no informado",
+                    site=self._site,
                 )
             )
 
@@ -302,7 +312,9 @@ class AccountService:
             return GENERIC_RESET_MESSAGE
         minutes = self.settings.password_reset_ttl_minutes
         raw = self._issue_token(user, PURPOSE_RESET, timedelta(minutes=minutes))
-        self._notify(templates.reset_email(user.email, user.name, self._link(raw), minutes))
+        self._notify(
+            templates.reset_email(user.email, user.name, self._link(raw), minutes, site=self._site)
+        )
         log.info("password_reset_requested", known=True, user_id=user.id)
         return GENERIC_RESET_MESSAGE
 
@@ -331,6 +343,10 @@ class AccountService:
         )
         self.session.flush()
         return raw
+
+    @property
+    def _site(self) -> str:
+        return self.settings.web_base_url
 
     def _link(self, raw: str) -> str:
         return f"{self.settings.web_base_url.rstrip('/')}/acceso/restablecer?token={raw}"
@@ -388,11 +404,13 @@ class AccountService:
         self.session.flush()
         log.info("password_reset_completed", user_id=user.id, purpose=token.purpose)
         if token.purpose == PURPOSE_RESET:
-            self._notify(templates.password_changed_email(user.email, user.name, now))
+            self._notify(
+                templates.password_changed_email(user.email, user.name, now, site=self._site)
+            )
         return user
 
     def send_test(self, to: str) -> None:
-        self._send(templates.test_email(normalize_email(to)))
+        self._send(templates.test_email(normalize_email(to), site=self._site))
 
     def _check_password(self, password: str, email: str) -> None:
         problems = password_problems(password, email)

@@ -1,6 +1,6 @@
 # Aviso de privacidad (Ley 1581 de 2012)
 
-Versión del aviso: `v1`.
+Versión del aviso: `v1`. Es el aviso corto del asistente; la política completa está en `/privacidad` del sitio (ver [`README.md`](README.md)).
 
 ## Qué datos tratamos
 - Su número de teléfono: se guarda únicamente como una huella cifrada (HMAC); no se almacena el número.

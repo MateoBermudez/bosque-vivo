@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { cookies } from "next/headers";
 import { connection } from "next/server";
 import { Suspense } from "react";
@@ -32,6 +33,17 @@ export default function AccessPage({ searchParams }: PageProps<"/acceso">) {
       <Suspense>
         <AccessContent searchParams={searchParams} />
       </Suspense>
+      <p className="mt-6 text-xs text-muted-foreground">
+        El uso del área de auditores se rige por los{" "}
+        <Link href="/terminos" className="underline underline-offset-4">
+          términos y condiciones
+        </Link>{" "}
+        y la{" "}
+        <Link href="/privacidad" className="underline underline-offset-4">
+          política de privacidad
+        </Link>
+        .
+      </p>
     </div>
   );
 }

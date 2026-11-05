@@ -17,7 +17,11 @@ export default function CommunityChatPage() {
         La misma conversación del asistente de WhatsApp, desde el navegador. Sirve cuando WhatsApp no está disponible.
         Antes de responder te pedirá autorización según el{" "}
         <Link href="/privacidad" className="underline underline-offset-4">
-          aviso de privacidad
+          política de privacidad
+        </Link>{" "}
+        y aplican los{" "}
+        <Link href="/terminos" className="underline underline-offset-4">
+          términos y condiciones
         </Link>
         .
       </PageHeader>

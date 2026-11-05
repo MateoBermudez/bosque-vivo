@@ -90,7 +90,7 @@ export default function WhatsAppPage() {
               <li>Puedes pedir que se borren tus datos cuando quieras.</li>
             </ul>
             <Link href="/privacidad" className="btn-lime mt-6">
-              Leer el aviso de privacidad
+              Leer la política de privacidad
             </Link>
           </section>
         </div>

@@ -18,7 +18,13 @@ export function SiteFooter() {
             Metodología
           </Link>
           <Link href="/privacidad" className="hover:underline">
-            Privacidad
+            Política de privacidad
+          </Link>
+          <Link href="/terminos" className="hover:underline">
+            Términos y condiciones
+          </Link>
+          <Link href="/uso-de-datos" className="hover:underline">
+            Uso de datos y fuentes
           </Link>
           <Link href="/acerca" className="hover:underline">
             Acerca del proyecto

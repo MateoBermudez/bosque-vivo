@@ -62,6 +62,19 @@ async function ResetContent({ searchParams }: Pick<PageProps<"/acceso/restablece
           : "Elige una contraseña nueva para tu cuenta de auditor."}
       </p>
       <ResetForm token={token} />
+      {status.purpose === "invitacion" && (
+        <p className="mt-4 text-xs text-muted-foreground">
+          Al activar tu cuenta aceptas los{" "}
+          <Link href="/terminos" className="underline underline-offset-4">
+            términos y condiciones
+          </Link>{" "}
+          y la{" "}
+          <Link href="/privacidad" className="underline underline-offset-4">
+            política de privacidad
+          </Link>
+          .
+        </p>
+      )}
     </>
   );
 }
