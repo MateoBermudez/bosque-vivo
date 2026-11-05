@@ -64,7 +64,9 @@ class GeminiProvider:
         sleep=time.sleep,
     ) -> None:
         if not api_key or not model:
-            raise ExternalServiceError("GEMINI_API_KEY y GEMINI_MODEL son obligatorios")
+            raise ExternalServiceError(
+                "falta GEMINI_API_KEY (se crea gratis en aistudio.google.com/apikey)"
+            )
         self.model = model
         self.light_model = light_model or model
         self.client = genai.Client(api_key=api_key)

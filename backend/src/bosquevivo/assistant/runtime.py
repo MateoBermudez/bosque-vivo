@@ -18,8 +18,8 @@ REQUESTS_PER_DAY = 400
 def build_llm(settings: Settings) -> LLMProvider:
     return GeminiProvider(
         settings.gemini_api_key,
-        settings.gemini_model,
-        light_model=settings.gemini_model_light or None,
+        settings.llm_model,
+        light_model=settings.llm_model_light,
         limiter=RateLimiter(REQUESTS_PER_MINUTE, REQUESTS_PER_DAY),
         cache=ResponseCache(settings.cache_dir / "llm"),
     )

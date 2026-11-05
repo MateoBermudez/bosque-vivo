@@ -5,6 +5,9 @@ from pathlib import Path
 from pydantic import AliasChoices, Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+DEFAULT_GEMINI_MODEL = "gemini-flash-latest"
+DEFAULT_GEMINI_MODEL_LIGHT = "gemini-flash-lite-latest"
+
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
@@ -61,6 +64,14 @@ class Settings(BaseSettings):
     auth_code_ttl_minutes: int = Field(default=10, ge=2, le=60)
     auth_login_alerts: bool = True
     invitation_ttl_hours: int = Field(default=72, ge=1, le=720)
+
+    @property
+    def llm_model(self) -> str:
+        return self.gemini_model.strip() or DEFAULT_GEMINI_MODEL
+
+    @property
+    def llm_model_light(self) -> str:
+        return self.gemini_model_light.strip() or DEFAULT_GEMINI_MODEL_LIGHT
 
     @property
     def serverless(self) -> bool:

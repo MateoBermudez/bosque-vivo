@@ -59,3 +59,19 @@ def test_admin_invites_user_and_returns_link_without_smtp(client, tmp_path):
     users = client.get("/api/v1/admin/users", headers=ADMIN).json()
     assert users == [{"email": "nueva@elpoli.edu.co", "name": "Nueva", "active": True}]
     assert client.post("/api/v1/admin/users/invite", json=body).status_code == 401
+
+
+def test_gemini_model_defaults_to_latest_aliases():
+    settings = Settings(gemini_model="", gemini_model_light="")
+    assert settings.llm_model == "gemini-flash-latest"
+    assert settings.llm_model_light == "gemini-flash-lite-latest"
+    assert Settings(gemini_model="otro").llm_model == "otro"
+
+
+def test_admin_mail_test(client, tmp_path):
+    client.app.dependency_overrides[get_settings] = lambda: Settings(
+        admin_token="secreto", data_dir=tmp_path, mail_backend="outbox"
+    )
+    response = client.post("/api/v1/admin/mail-test", headers=ADMIN, json={"to": "a@b.co"})
+    assert response.json() == {"backend": "outbox", "to": "a@b.co"}
+    assert len(list((tmp_path / "outbox").glob("*.eml"))) == 1

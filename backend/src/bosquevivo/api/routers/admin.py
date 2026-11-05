@@ -9,7 +9,7 @@ from bosquevivo.accounts import AccountService, build_mailer
 from bosquevivo.api.deps import db_session, require_admin
 from bosquevivo.api.schemas import ImportOut, ImportRequest
 from bosquevivo.core.config import Settings, get_settings
-from bosquevivo.core.errors import ValidationFailedError
+from bosquevivo.core.errors import ExternalServiceError, ValidationFailedError
 from bosquevivo.db.remote import (
     CLEAR_CONFIRMATION,
     clear_all,
@@ -115,3 +115,21 @@ def invite_user(
         raise HTTPException(status_code=422, detail=str(exc)) from exc
     emailed = mailer.name == "smtp"
     return {"email": user.email, "emailed": emailed, "link": None if emailed else link}
+
+
+class MailTestIn(BaseModel):
+    to: str
+
+
+@router.post("/mail-test")
+def mail_test(
+    body: MailTestIn,
+    session: Session = Depends(db_session),
+    settings: Settings = Depends(get_settings),
+):
+    mailer = build_mailer(settings)
+    try:
+        AccountService(session, mailer, settings).send_test(body.to)
+    except ExternalServiceError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+    return {"backend": mailer.name, "to": body.to}

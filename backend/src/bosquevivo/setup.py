@@ -97,7 +97,7 @@ GUIDES = "docs/guias"
 REQUIREMENTS = (
     Requirement(
         "IA (Gemini, capa gratuita)",
-        ("GEMINI_API_KEY", "GEMINI_MODEL"),
+        ("GEMINI_API_KEY",),
         f"{GUIDES}/gemini.md",
     ),
     Requirement(

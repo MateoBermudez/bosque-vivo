@@ -5,13 +5,11 @@ El agente de IA (RA01–RA09) usa la API de Gemini de Google AI Studio. La capa 
 ## Pasos
 
 1. Entre a [aistudio.google.com/apikey](https://aistudio.google.com/apikey) con una cuenta de Google y pulse **Crear clave de API**.
-2. En `backend/.env`:
+2. Ponga la clave en `GEMINI_API_KEY` (en Vercel: proyecto `bosque-vivo-api` → Settings → Environment Variables → Redeploy; en local: `backend/.env`). **Es lo único obligatorio.**
 
-   ```
-   GEMINI_API_KEY=<la clave>
-   GEMINI_MODEL=<modelo principal>
-   GEMINI_MODEL_LIGHT=<modelo liviano, opcional>
-   ```
+   `GEMINI_MODEL` y `GEMINI_MODEL_LIGHT` se dejan vacíos: el sistema usa los alias `gemini-flash-latest` y `gemini-flash-lite-latest`, que Google mantiene apuntando siempre al modelo Flash más reciente, la familia con capa gratuita. Así no hay que cambiar nada cuando Google retira una versión. Solo se definen para fijar un modelo concreto.
+
+   Con cuentas institucionales de Google Workspace el administrador puede tener AI Studio deshabilitado; en ese caso cree la clave con una cuenta personal de Gmail (la capa gratuita es la misma).
 
 3. Liste los modelos disponibles con su clave y pruebe los elegidos:
 
@@ -20,7 +18,7 @@ El agente de IA (RA01–RA09) usa la API de Gemini de Google AI Studio. La capa 
    uv run bosquevivo gemini-check
    ```
 
-   Elija de la lista un modelo **Flash** para `GEMINI_MODEL` y un **Flash-Lite** para `GEMINI_MODEL_LIGHT`; son los que tienen capa gratuita. Los nombres cambian con frecuencia: use los que muestre el comando.
+   El comando muestra los modelos disponibles para la clave y prueba los que están en uso.
 
 4. Ejecute la evaluación del agente (20 casos) y guarde el resultado como evidencia del plan de pruebas (CP-50):
 

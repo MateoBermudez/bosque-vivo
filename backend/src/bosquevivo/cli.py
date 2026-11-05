@@ -164,8 +164,8 @@ def cmd_gemini_check(_: argparse.Namespace) -> int:
     for name in models:
         print(f"  {name}")
     for label, model in (
-        ("GEMINI_MODEL", settings.gemini_model),
-        ("GEMINI_MODEL_LIGHT", settings.gemini_model_light),
+        ("GEMINI_MODEL", settings.llm_model),
+        ("GEMINI_MODEL_LIGHT", settings.llm_model_light),
     ):
         if not model:
             print(f"{label}: sin configurar (elige uno de la lista y ponlo en backend/.env)")
