@@ -5,7 +5,7 @@ from google.genai import errors as genai_errors
 
 from bosquevivo.ai.llm import LLMResponse, Message, QuotaExceededError, ScriptedLLM, ToolCall
 from bosquevivo.ai.llm.cache import ResponseCache, request_key
-from bosquevivo.ai.llm.gemini import GeminiProvider
+from bosquevivo.ai.llm.gemini import _COOLING, GeminiProvider
 from bosquevivo.ai.llm.limits import RateLimiter
 from bosquevivo.core.errors import ExternalServiceError
 
@@ -91,13 +91,22 @@ def test_overloaded_model_switches_to_another_free_model(monkeypatch):
                 candidates=[candidate], prompt_feedback=None, usage_metadata=None
             )
 
+    _COOLING.clear()
+    now = [1000.0]
     provider = GeminiProvider(
         "clave",
         "gemini-flash-latest",
         light_model="gemini-flash-lite-latest",
         sleep=lambda _: None,
         client=SimpleNamespace(models=Models()),
+        clock=lambda: now[0],
     )
     response = provider.generate("sistema", [Message(role="user", text="hola")])
     assert response.text == "hola"
-    assert calls == ["gemini-flash-latest", "gemini-flash-latest", "gemini-flash-lite-latest"]
+    assert calls == ["gemini-flash-latest", "gemini-flash-lite-latest"]
+    provider.generate("sistema", [Message(role="user", text="otra")])
+    assert calls[-1] == "gemini-flash-lite-latest" and len(calls) == 3
+    now[0] += 200
+    provider.generate("sistema", [Message(role="user", text="tercera")])
+    assert calls[-2:] == ["gemini-flash-latest", "gemini-flash-lite-latest"]
+    _COOLING.clear()

@@ -16,7 +16,9 @@ log = get_logger(__name__)
 RETRYABLE = {429, 500, 502, 503, 504}
 SWITCHABLE = RETRYABLE | {404}
 FREE_FALLBACKS = ("gemini-flash-latest", "gemini-flash-lite-latest")
-REQUEST_TIMEOUT_MS = 25_000
+REQUEST_TIMEOUT_MS = 20_000
+COOLDOWN_SECONDS = 180.0
+_COOLING: dict[str, float] = {}
 
 
 def _to_contents(messages: list[Message]) -> list[Any]:
@@ -66,6 +68,7 @@ class GeminiProvider:
         max_retries: int = 1,
         sleep=time.sleep,
         client: Any = None,
+        clock=time.monotonic,
     ) -> None:
         if not api_key or not model:
             raise ExternalServiceError(
@@ -80,6 +83,7 @@ class GeminiProvider:
         self.cache = cache
         self.max_retries = max_retries
         self.sleep = sleep
+        self.clock = clock
 
     def generate(
         self,
@@ -124,24 +128,39 @@ class GeminiProvider:
         return parsed
 
     def candidates(self, model: str) -> list[str]:
-        ordered = [model, self.light_model, *FREE_FALLBACKS]
-        return list(dict.fromkeys(name for name in ordered if name))
+        ordered = list(dict.fromkeys(n for n in (model, self.light_model, *FREE_FALLBACKS) if n))
+        now = self.clock()
+        ready = [n for n in ordered if _COOLING.get(n, 0.0) <= now]
+        cooling = [n for n in ordered if n not in ready]
+        return ready + cooling
 
     def _call(self, model: str, contents: list[Any], config: types.GenerateContentConfig):
         last: ExternalServiceError | None = None
-        for candidate in self.candidates(model):
+        options = self.candidates(model)
+        for position, candidate in enumerate(options):
+            retries = self.max_retries if position == len(options) - 1 else 0
             try:
-                return self._call_model(candidate, contents, config)
+                response = self._call_model(candidate, contents, config, retries)
             except ExternalServiceError as exc:
-                if getattr(exc, "code", None) not in SWITCHABLE:
+                if exc.code not in SWITCHABLE:
                     raise
                 last = exc
-                log.warning("gemini_switch_model", model=candidate, code=getattr(exc, "code", None))
+                _COOLING[candidate] = self.clock() + COOLDOWN_SECONDS
+                log.warning("gemini_switch_model", model=candidate, code=exc.code)
+                continue
+            _COOLING.pop(candidate, None)
+            return response
         assert last is not None
         raise last
 
-    def _call_model(self, model: str, contents: list[Any], config: types.GenerateContentConfig):
-        for attempt in range(self.max_retries + 1):
+    def _call_model(
+        self,
+        model: str,
+        contents: list[Any],
+        config: types.GenerateContentConfig,
+        retries: int,
+    ):
+        for attempt in range(retries + 1):
             if self.limiter:
                 self.limiter.acquire()
             try:
@@ -150,7 +169,7 @@ class GeminiProvider:
                 )
             except errors.APIError as exc:
                 code = getattr(exc, "code", 0)
-                if code in RETRYABLE and attempt < self.max_retries:
+                if code in RETRYABLE and attempt < retries:
                     delay = 2**attempt
                     log.warning("gemini_retry", code=code, attempt=attempt, delay=delay)
                     self.sleep(delay)
