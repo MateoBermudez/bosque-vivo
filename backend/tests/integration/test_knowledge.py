@@ -39,3 +39,13 @@ def test_reload_replaces_chunks(db):
     first = base.load_directory()
     second = base.load_directory()
     assert first == second
+
+
+def test_search_indexes_the_corpus_when_the_table_is_empty(db):
+    from bosquevivo.ai.knowledge import KnowledgeBase
+    from bosquevivo.db.models import KbChunk
+
+    assert db.query(KbChunk).count() == 0
+    hits = KnowledgeBase(db).search("¿qué significa la confianza del índice?")
+    assert hits and any("onfianza" in hit.title or "onfianza" in hit.content for hit in hits)
+    assert db.query(KbChunk).count() > 0

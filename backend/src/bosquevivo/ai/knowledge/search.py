@@ -119,6 +119,9 @@ class KnowledgeBase:
 
     def search(self, query: str, limit: int = 3) -> list[KnowledgeHit]:
         chunks = self.session.scalars(select(KbChunk)).all()
+        if not chunks:
+            self.load_directory()
+            chunks = self.session.scalars(select(KbChunk)).all()
         terms = tokenize(query)
         if not chunks or not terms:
             return []
