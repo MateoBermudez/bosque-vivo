@@ -11,7 +11,7 @@ lang: es-CO
 
 **Fecha:** 03/11/2026
 
-Estructura: plantilla «Formato_ieee829» del Politécnico Colombiano Jaime Isaza Cadavid, basada en IEEE Std 829. Este documento cubre el objetivo específico 4 del proyecto (probar el sistema mediante un plan de pruebas que verifique el cumplimiento de los requerimientos) y se apoya en la Especificación de Requisitos de Software (ERS, IEEE 830) del 20/10/2026.
+Estructura: plantilla «Formato_ieee829» del Politécnico Colombiano Jaime Isaza Cadavid, basada en IEEE Std 829. Este documento cubre el objetivo específico 4 del proyecto (probar el sistema mediante un plan de pruebas que verifique el cumplimiento de los requerimientos) y se apoya en la Especificación de Requisitos de Software (ERS, IEEE 830), revisión 1.1 del 05/11/2026; los requisitos RF01–RF09 y los no funcionales son los mismos de la versión del 20/10/2026.
 
 Documentos que lo acompañan:
 
@@ -31,6 +31,7 @@ Documentos que lo acompañan:
 | 03/11/2026 | 1.0 | Equipo Bosque Vivo | Plan completo según la plantilla IEEE 829, alineado con el ERS del 20/10/2026 (RF01–RF09 y requisitos no funcionales), casos de prueba, ejecución y resultados |
 | 03/11/2026 | 1.1 | Equipo Bosque Vivo | Correo SMTP con verificación en dos pasos, avisos de seguridad e invitaciones; configuración automática; casos CP-53 a CP-58 |
 | 04/11/2026 | 1.2 | Equipo Bosque Vivo | PostgreSQL en Supabase, migración desde SQLite y despliegue en Vercel; casos CP-59 a CP-62 |
+| 05/11/2026 | 1.3 | Equipo Bosque Vivo | Referencia a la revisión 1.1 del ERS (correcciones de edición e interfaces de IA, correo, datos abiertos y alojamiento; requisitos sin cambios) |
 |  |  |  |  |
 
 ## 2. Información del Proyecto
@@ -262,7 +263,7 @@ Propuesta de reparto; el equipo puede ajustarla antes de firmar.
 | Referencia | Documento |
 |---|---|
 | Plan de Proyecto | `docs/planning/PLAN_IMPLEMENTACION.md`, `docs/planning/PLAN_AGENTE_IA.md` |
-| Especificación de Requerimientos | ERS «Formato_ieee830» (Drive del proyecto, 20/10/2026); `docs/ers/ERS-Bosque-Vivo.pdf`; `docs/ers/matriz-de-trazabilidad.md` |
+| Especificación de Requerimientos | ERS «Formato_ieee830», revisión 1.1 del 05/11/2026 (`docs/ers/ERS_Bosque_Vivo.docx` y `.pdf`); `docs/ers/matriz-de-trazabilidad.md` |
 | Diseño General | `docs/architecture/arquitectura.md` |
 | Diseño Detallado | `docs/architecture/adr/0001` a `0013`; `docs/methodology/indice-v0.md` e `indice-v1.md` |
 | Procedimientos y estándares de Desarrollo | `README.md` (reglas del repositorio), `.pre-commit-config.yaml`, `.github/workflows/ci.yml` |

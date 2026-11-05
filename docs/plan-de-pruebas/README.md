@@ -1,6 +1,6 @@
 # Plan de pruebas (IEEE 829)
 
-Objetivo específico 4 del proyecto: probar Bosque Vivo con un plan que verifique el cumplimiento de los requisitos del ERS (IEEE 830, versión del 20/10/2026). Sigue la plantilla «Formato_ieee829» del Politécnico.
+Objetivo específico 4 del proyecto: probar Bosque Vivo con un plan que verifique el cumplimiento de los requisitos del ERS (IEEE 830, revisión 1.1 del 05/11/2026, en [`docs/ers`](../ers)). Sigue la plantilla «Formato_ieee829» del Politécnico.
 
 | Documento | Contenido |
 |---|---|

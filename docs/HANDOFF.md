@@ -23,7 +23,7 @@ Repositorio: https://github.com/MateoBermudez/bosque-vivo (público, rama `main`
 
 1. `README.md`: decisiones del equipo y ejecución.
 2. `docs/planning/PLAN_IMPLEMENTACION.md` y `docs/planning/PLAN_AGENTE_IA.md`.
-3. `docs/ers/matriz-de-trazabilidad.md` (requisito → código → pruebas) y `docs/ers/ERS-Bosque-Vivo.pdf`.
+3. `docs/ers/matriz-de-trazabilidad.md` (requisito → código → pruebas) y `docs/ers/ERS_Bosque_Vivo.docx` (y `.pdf`).
 4. `docs/architecture/arquitectura.md` y los ADR 0001–0013.
 5. `docs/methodology/indice-v0.md` e `indice-v1.md`.
 6. `docs/fuentes-de-datos/karnik.md` y `datos-abiertos.md`.
