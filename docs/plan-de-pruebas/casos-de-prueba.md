@@ -25,10 +25,10 @@ Estados: **Aprobado**, **Fallido**, **Bloqueado** (depende de credenciales o usu
 | 3.3.4 Disponibilidad | CP-46 | 0 | 1 |
 | 3.3.5 Mantenibilidad | CP-47 | 1 | 0 |
 | 3.3.6 Portabilidad | CP-48 | 1 | 0 |
-| Interfaces externas y regresión | CP-49 a CP-52 | 2 | 2 |
+| Interfaces externas y regresión | CP-49 a CP-52 | 3 | 1 |
 | Correo SMTP, 2FA y configuración | CP-53 a CP-58 | 5 | 1 |
 | PostgreSQL, migración y despliegue | CP-59 a CP-62 | 4 | 0 |
-| **Total** | **62** | **57** | **5** |
+| **Total** | **62** | **58** | **4** |
 
 ## RF01 — Importar polígonos públicos
 
@@ -398,7 +398,8 @@ Estados: **Aprobado**, **Fallido**, **Bloqueado** (depende de credenciales o usu
 ### CP-50 Evaluación del agente con Gemini real
 
 - **Pasos:** `uv run bosquevivo eval --output data/eval/report.json` (20 casos: herramientas, fidelidad, neutralidad, incertidumbre, fugas, longitud y latencia).
-- **Resultado:** Bloqueado (requiere `GEMINI_API_KEY`). El arnés se prueba con un modelo guionizado: `eval/test_eval_harness.py`.
+- **Verificación en producción (05/11/2026):** con la clave configurada, el chat del auditor respondió con datos reales usando `buscar_proyecto`, `obtener_auditoria`, `obtener_perdida_anual` y `buscar_conocimiento`, sin respaldo, en 3–5 s por pregunta (tras corregir INC-17 e INC-18); el chat comunitario respondió una pregunta libre en 2 s.
+- **Resultado:** Aprobado en producción. La evaluación formal de 20 casos (`bosquevivo eval`) queda para registrar su informe.
 
 ### CP-51 Regresión del agente de IA (RA01–RA09)
 

@@ -7,9 +7,9 @@ Ejecución del [plan de pruebas](plan-de-pruebas.md) sobre la rama de trabajo qu
 | Indicador | Resultado |
 |---|---|
 | Casos especificados | 62 |
-| Casos aprobados | 57 (92 %) |
+| Casos aprobados | 58 (94 %) |
 | Casos fallidos | 0 |
-| Casos bloqueados por dependencias externas | 5 (CP-29, CP-46, CP-49, CP-50 y el envío SMTP real de CP-57) |
+| Casos bloqueados por dependencias externas | 4 (CP-29 y CP-46 del piloto, CP-49 WhatsApp y la evaluación formal de CP-50) |
 | Requisitos funcionales RF01–RF09 con casos aprobados | 9 de 9 (100 %) |
 | Pruebas automáticas del backend | 330 aprobadas, 0 fallidas, tanto en SQLite como en PostgreSQL 16 |
 | Cobertura de líneas del backend | 88 % (5.438 sentencias) |
@@ -18,7 +18,7 @@ Ejecución del [plan de pruebas](plan-de-pruebas.md) sobre la rama de trabajo qu
 | Verificaciones E2E en navegador | 30 de 30 aprobadas |
 | Análisis estático | `ruff` y `pyright`: 0 errores; `eslint` y `tsc`: 0 errores |
 | Compilación de producción del sitio | Correcta |
-| Incidencias registradas | 16 (todas cerradas; ver [`incidencias.md`](incidencias.md)) |
+| Incidencias registradas | 18 (todas cerradas; ver [`incidencias.md`](incidencias.md)) |
 
 ## 2. Resultados por suite
 
