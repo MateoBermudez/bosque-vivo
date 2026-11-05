@@ -77,7 +77,7 @@ Hecho: polígonos completos de Karnik en Supabase, despliegue automático desde 
 
 Falta, con credenciales o decisiones del equipo:
 
-1. **Claves en Vercel** (proyecto `bosque-vivo-api` → Settings → Environment Variables, y luego Redeploy): `GEMINI_API_KEY` y `GEMINI_MODEL`; `WHATSAPP_TOKEN`, `WHATSAPP_PHONE_NUMBER_ID`, `WHATSAPP_APP_SECRET`; `SMTP_USER` y `SMTP_PASSWORD`. Luego CP-49, CP-50 y CP-57.
+1. **Claves en Vercel** (proyecto `bosque-vivo-api` → Settings → Environment Variables, y luego Redeploy): `GEMINI_API_KEY` (el modelo se elige solo: el Flash más reciente de la capa gratuita) y `WHATSAPP_TOKEN`, `WHATSAPP_PHONE_NUMBER_ID`, `WHATSAPP_APP_SECRET`. Luego CP-49 y CP-50. El SMTP ya está configurado (Gmail, 05/11/2026) y con él la verificación en dos pasos quedó activa; se prueba con `POST /api/v1/admin/mail-test`.
 2. **Seguridad**: rotar la contraseña de la base y los tokens de Vercel que se compartieron por chat; al rotar la contraseña, actualizar `DATABASE_PASSWORD` en Vercel y hacer Redeploy.
 3. **Revisión del docente**: aprobar RA01–RA09, decidir índice v0/v1 y firmar el plan de pruebas.
 4. **Piloto**: disponibilidad (CP-46) y comprensión con 5 personas (CP-29). RA03, RA06 y RA08 quedan como evolución.
