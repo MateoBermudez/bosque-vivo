@@ -10,6 +10,7 @@ from bosquevivo.api.deps import db_session, require_admin
 from bosquevivo.api.schemas import ImportOut, ImportRequest
 from bosquevivo.core.config import Settings, get_settings
 from bosquevivo.core.errors import ExternalServiceError, ValidationFailedError
+from bosquevivo.core.incidents import duration_minutes, is_critical, list_incidents, summarize
 from bosquevivo.db.remote import (
     CLEAR_CONFIRMATION,
     clear_all,
@@ -94,6 +95,27 @@ def restore_finish(session: Session = Depends(db_session)):
 class InviteIn(BaseModel):
     email: str
     name: str = ""
+
+
+@router.get("/incidents")
+def incidents(days: int = 30, limit: int = 50, session: Session = Depends(db_session)):
+    rows = list_incidents(session, days=max(1, min(days, 365)))
+    return {
+        "summary": summarize(rows),
+        "incidents": [
+            {
+                "id": row.id,
+                "component": row.component,
+                "origin": row.origin,
+                "severity": row.severity,
+                "critical": is_critical(row),
+                "cause": row.cause,
+                "started_at": row.started_at.isoformat(),
+                "minutes": duration_minutes(row),
+            }
+            for row in rows[: max(1, min(limit, 500))]
+        ],
+    }
 
 
 @router.get("/users")

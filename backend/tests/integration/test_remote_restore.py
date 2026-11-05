@@ -1,6 +1,8 @@
 from pathlib import Path
 
 from bosquevivo.core.config import Settings, get_settings
+from bosquevivo.core.errors import ExternalServiceError
+from bosquevivo.core.incidents import record_incident
 from bosquevivo.db.models import AuditRun, Project
 from bosquevivo.db.remote import push_database
 from bosquevivo.db.session import build_engine, init_db, make_session_factory
@@ -59,6 +61,16 @@ def test_admin_invites_user_and_returns_link_without_smtp(client, tmp_path):
     users = client.get("/api/v1/admin/users", headers=ADMIN).json()
     assert users == [{"email": "nueva@elpoli.edu.co", "name": "Nueva", "active": True}]
     assert client.post("/api/v1/admin/users/invite", json=body).status_code == 401
+
+
+def test_admin_lists_recent_incidents(client, session):
+    record_incident(session, "ia", ExternalServiceError("modelo saturado (503)"), origin="externo")
+    session.commit()
+    assert client.get("/api/v1/admin/incidents").status_code == 401
+    body = client.get("/api/v1/admin/incidents?days=7", headers=ADMIN).json()
+    assert body["summary"]["total"] == 1 and body["summary"]["externos"] == 1
+    row = body["incidents"][0]
+    assert row["component"] == "ia" and "503" in row["cause"]
 
 
 def test_gemini_model_defaults_to_latest_aliases():
