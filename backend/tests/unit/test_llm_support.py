@@ -1,3 +1,4 @@
+import time
 from types import SimpleNamespace
 
 import httpx
@@ -130,21 +131,24 @@ def _provider(models):
     )
 
 
-def test_call_timeout_never_exceeds_the_time_budget():
-    timeouts = []
+def test_slow_calls_are_cut_at_the_time_budget():
+    calls = []
 
     class Models:
         def generate_content(self, model, contents, config):
-            timeouts.append(config.http_options.timeout)
+            calls.append(model)
+            assert config.http_options is None
+            time.sleep(3)
             return _ok_response()
 
     _COOLING.clear()
-    provider = _provider(Models())
-    provider.generate("s", [Message(role="user", text="sin presupuesto")])
-    with time_budget(5):
-        provider.generate("s", [Message(role="user", text="con presupuesto")])
-    assert timeouts[0] == 20_000
-    assert 4_000 < timeouts[1] <= 5_000
+    started = time.monotonic()
+    with time_budget(1.8), pytest.raises(ExternalServiceError):
+        _provider(Models()).generate("s", [Message(role="user", text="lento")])
+    assert time.monotonic() - started < 2.5
+    assert calls == ["gemini-flash-latest"]
+    assert "gemini-flash-latest" in _COOLING
+    _COOLING.clear()
 
 
 def test_exhausted_budget_fails_fast_without_cooling_models():

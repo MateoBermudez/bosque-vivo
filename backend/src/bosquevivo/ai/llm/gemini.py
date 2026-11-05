@@ -1,4 +1,6 @@
 import time
+from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import TimeoutError as FutureTimeout
 from typing import Any
 
 import httpx
@@ -22,6 +24,7 @@ REQUEST_TIMEOUT_MS = 20_000
 MIN_CALL_SECONDS = 1.5
 COOLDOWN_SECONDS = 180.0
 _COOLING: dict[str, float] = {}
+_POOL = ThreadPoolExecutor(max_workers=8, thread_name_prefix="gemini")
 
 
 def _to_contents(messages: list[Message]) -> list[Any]:
@@ -167,17 +170,11 @@ class GeminiProvider:
             left = remaining_seconds()
             if left is not None and left < MIN_CALL_SECONDS:
                 raise TimeBudgetExceededError("se agotó el tiempo disponible para responder")
-            timeout_ms = (
-                REQUEST_TIMEOUT_MS if left is None else min(REQUEST_TIMEOUT_MS, left * 1000)
-            )
-            config.http_options = types.HttpOptions(timeout=int(timeout_ms))
             if self.limiter:
                 self.limiter.acquire()
             try:
-                return self.client.models.generate_content(
-                    model=model, contents=contents, config=config
-                )
-            except httpx.TimeoutException as exc:
+                return self._invoke(model, contents, config, left)
+            except (httpx.TimeoutException, FutureTimeout) as exc:
                 error = ExternalServiceError(f"el modelo {model} no respondió a tiempo")
                 error.code = 504
                 raise error from exc
@@ -197,6 +194,16 @@ class GeminiProvider:
                 error.code = code
                 raise error from exc
         raise ExternalServiceError("reintentos agotados")
+
+    def _invoke(self, model: str, contents: list[Any], config, left: float | None):
+        if left is None:
+            return self.client.models.generate_content(
+                model=model, contents=contents, config=config
+            )
+        future = _POOL.submit(
+            self.client.models.generate_content, model=model, contents=contents, config=config
+        )
+        return future.result(timeout=left)
 
     def _parse(self, response) -> LLMResponse:
         usage = getattr(response, "usage_metadata", None)
