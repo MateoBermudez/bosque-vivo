@@ -14,6 +14,9 @@ from bosquevivo.core.logging import get_logger
 log = get_logger(__name__)
 
 RETRYABLE = {429, 500, 502, 503, 504}
+SWITCHABLE = RETRYABLE | {404}
+FREE_FALLBACKS = ("gemini-flash-latest", "gemini-flash-lite-latest")
+REQUEST_TIMEOUT_MS = 25_000
 
 
 def _to_contents(messages: list[Message]) -> list[Any]:
@@ -60,8 +63,9 @@ class GeminiProvider:
         light_model: str | None = None,
         limiter: RateLimiter | None = None,
         cache: ResponseCache | None = None,
-        max_retries: int = 3,
+        max_retries: int = 1,
         sleep=time.sleep,
+        client: Any = None,
     ) -> None:
         if not api_key or not model:
             raise ExternalServiceError(
@@ -69,7 +73,9 @@ class GeminiProvider:
             )
         self.model = model
         self.light_model = light_model or model
-        self.client = genai.Client(api_key=api_key)
+        self.client = client or genai.Client(
+            api_key=api_key, http_options=types.HttpOptions(timeout=REQUEST_TIMEOUT_MS)
+        )
         self.limiter = limiter
         self.cache = cache
         self.max_retries = max_retries
@@ -117,7 +123,24 @@ class GeminiProvider:
             self.cache.put(key, parsed)
         return parsed
 
+    def candidates(self, model: str) -> list[str]:
+        ordered = [model, self.light_model, *FREE_FALLBACKS]
+        return list(dict.fromkeys(name for name in ordered if name))
+
     def _call(self, model: str, contents: list[Any], config: types.GenerateContentConfig):
+        last: ExternalServiceError | None = None
+        for candidate in self.candidates(model):
+            try:
+                return self._call_model(candidate, contents, config)
+            except ExternalServiceError as exc:
+                if getattr(exc, "code", None) not in SWITCHABLE:
+                    raise
+                last = exc
+                log.warning("gemini_switch_model", model=candidate, code=getattr(exc, "code", None))
+        assert last is not None
+        raise last
+
+    def _call_model(self, model: str, contents: list[Any], config: types.GenerateContentConfig):
         for attempt in range(self.max_retries + 1):
             if self.limiter:
                 self.limiter.acquire()
@@ -132,9 +155,13 @@ class GeminiProvider:
                     log.warning("gemini_retry", code=code, attempt=attempt, delay=delay)
                     self.sleep(delay)
                     continue
-                if code == 429:
-                    raise QuotaExceededError("cuota del modelo agotada") from exc
-                raise ExternalServiceError(f"error del modelo ({code}): {exc}") from exc
+                error: ExternalServiceError = (
+                    QuotaExceededError("cuota del modelo agotada")
+                    if code == 429
+                    else ExternalServiceError(f"error del modelo {model} ({code}): {exc}")
+                )
+                error.code = code
+                raise error from exc
         raise ExternalServiceError("reintentos agotados")
 
     def _parse(self, response) -> LLMResponse:

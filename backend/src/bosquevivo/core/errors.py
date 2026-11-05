@@ -11,4 +11,4 @@ class ValidationFailedError(BosqueVivoError):
 
 
 class ExternalServiceError(BosqueVivoError):
-    pass
+    code: int | None = None

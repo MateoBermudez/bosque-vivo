@@ -1,4 +1,7 @@
+from types import SimpleNamespace
+
 import pytest
+from google.genai import errors as genai_errors
 
 from bosquevivo.ai.llm import LLMResponse, Message, QuotaExceededError, ScriptedLLM, ToolCall
 from bosquevivo.ai.llm.cache import ResponseCache, request_key
@@ -72,3 +75,29 @@ def test_scripted_llm_returns_in_order_and_blocks_when_exhausted():
 def test_gemini_requires_credentials():
     with pytest.raises(ExternalServiceError):
         GeminiProvider("", "")
+
+
+def test_overloaded_model_switches_to_another_free_model(monkeypatch):
+    calls = []
+
+    class Models:
+        def generate_content(self, model, contents, config):
+            calls.append(model)
+            if model == "gemini-flash-latest":
+                raise genai_errors.APIError(503, {"error": {"message": "high demand"}})
+            part = SimpleNamespace(text="hola", function_call=None, thought=None)
+            candidate = SimpleNamespace(content=SimpleNamespace(parts=[part]), finish_reason=None)
+            return SimpleNamespace(
+                candidates=[candidate], prompt_feedback=None, usage_metadata=None
+            )
+
+    provider = GeminiProvider(
+        "clave",
+        "gemini-flash-latest",
+        light_model="gemini-flash-lite-latest",
+        sleep=lambda _: None,
+        client=SimpleNamespace(models=Models()),
+    )
+    response = provider.generate("sistema", [Message(role="user", text="hola")])
+    assert response.text == "hola"
+    assert calls == ["gemini-flash-latest", "gemini-flash-latest", "gemini-flash-lite-latest"]
