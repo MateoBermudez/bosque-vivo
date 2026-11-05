@@ -14,14 +14,14 @@ Requisitos del ERS (IEEE 830, revisión 1.1 del 05/11/2026: [`ERS_Bosque_Vivo.do
 | RF06 Reporte de auditoría | OE3 | `reports/*`, `web/src/app/informe` | `test_reports.py` | CP-19, CP-20 |
 | RF07 Consultas conversacionales | OE3 | `assistant/*`, `api/routers/whatsapp.py`, `api/routers/community.py` | `test_whatsapp_flow.py`, `test_whatsapp_support.py`, `test_whatsapp_intents.py`, `test_community_chat.py` | CP-21 a CP-26 |
 | RF08 Lenguaje sencillo | OE3 | `assistant/community.py`, `assistant/texts.py`, `ai/prompts`, `ai/guardrails` | `test_whatsapp_intents.py`, `test_guardrails.py`, `test_agent.py` | CP-27 a CP-29 |
-| RF09 Recuperación de contraseña | OE3 | `accounts/*` (correo SMTP, verificación en dos pasos, avisos, invitaciones), `api/routers/auth.py`, `web/src/app/acceso/*` | `test_password_recovery.py`, `test_two_factor.py`, `session.test.ts`, `access.test.ts`, `accounts.test.ts`, `throttle.test.ts` | CP-30 a CP-37, CP-53 a CP-57 |
+| RF09 Recuperación de contraseña | OE3 | `accounts/*` (correo SMTP, verificación en dos pasos, avisos, invitaciones), `api/routers/auth.py`, `web/src/app/acceso/*` | `test_password_recovery.py`, `test_two_factor.py`, `session.test.ts`, `access.test.ts`, `accounts.test.ts`, `throttle.test.ts` | CP-30 a CP-37, CP-53 a CP-57, CP-64 |
 
 ## Requisitos no funcionales del ERS
 
 | Requisito | Cómo se cumple | Verificación |
 |---|---|---|
-| 3.3.1 Rendimiento | `AgentRun.latency_ms`, `AuditRun.duration_seconds` | `scripts/medir_rnf.py` (CP-38, CP-39) |
-| 3.3.2 Seguridad | HMAC del teléfono, firma del webhook, scrypt, tokens SHA-256, verificación en dos pasos por correo, avisos de seguridad, secretos en `.env` generados por `bosquevivo setup` | CP-40 a CP-43, CP-53 a CP-55 |
+| 3.3.1 Rendimiento | `AgentRun.latency_ms`, `AuditRun.duration_seconds`, presupuesto de 8 s por respuesta de la IA (`AGENT_TIME_BUDGET_SECONDS`) | `bosquevivo medir-rnf` y medición en producción (CP-38, CP-39) |
+| 3.3.2 Seguridad | HMAC del teléfono, firma del webhook, scrypt, tokens SHA-256, verificación en dos pasos por correo, avisos de seguridad, secretos en `.env` generados por `bosquevivo setup` | CP-40 a CP-43, CP-53 a CP-55, CP-63 |
 | 3.3.3 Fiabilidad | Registro de incidentes (`core/incidents.py`, `bosquevivo incidents`), cálculos deterministas | CP-44, CP-45 |
 | 3.3.4 Disponibilidad | Medición en el horario del piloto | CP-46 (pendiente del piloto) |
 | 3.3.5 Mantenibilidad | Parámetros en configuración, origen externo/interno en los registros, configuración automática | CP-47, CP-58 |

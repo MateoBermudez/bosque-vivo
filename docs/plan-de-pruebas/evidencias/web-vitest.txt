@@ -1,25 +1,25 @@
 
  RUN  v5.0.5 <repo>/web
 
- ✓ src/lib/api/accounts.test.ts (5 tests) 41ms
- ✓ src/lib/api/backend.test.ts (9 tests) 49ms
- ✓ src/lib/profile.test.ts (11 tests) 25ms
- ✓ src/lib/domain.test.ts (12 tests) 12ms
- ✓ src/lib/auth/access.test.ts (16 tests) 24ms
- ✓ src/lib/auth/session.test.ts (13 tests) 16ms
- ✓ src/lib/format.test.ts (6 tests) 12ms
+ ✓ src/lib/api/accounts.test.ts (5 tests) 38ms
+ ✓ src/lib/api/backend.test.ts (10 tests) 62ms
+ ✓ src/lib/profile.test.ts (11 tests) 22ms
+ ✓ src/lib/auth/access.test.ts (16 tests) 30ms
+ ✓ src/lib/format.test.ts (6 tests) 13ms
+ ✓ src/lib/auth/session.test.ts (13 tests) 21ms
+ ✓ src/lib/domain.test.ts (12 tests) 8ms
  ✓ src/lib/rich-text.test.ts (6 tests) 7ms
- ✓ src/lib/auth/throttle.test.ts (7 tests) 6ms
- ✓ src/lib/api/mock.test.ts (9 tests) 2833ms
+ ✓ src/lib/auth/throttle.test.ts (7 tests) 5ms
+ ✓ src/lib/api/mock.test.ts (9 tests) 2842ms
    ✓ chat y trazas de ejemplo (3)
-     ✓ las respuestas del chat cumplen el esquema 2809ms
+     ✓ las respuestas del chat cumplen el esquema 2808ms
 
  Test Files  10 passed (10)
-      Tests  94 passed (94)
-   Start at  01:39:12
-   Duration  3.14s (tests 81%, import 10%, transform 8%, worker 1%)
+      Tests  95 passed (95)
+   Start at  11:51:22
+   Duration  3.11s (tests 85%, import 11%, transform 3%, worker 1%)
 
     Isolate  10 workers spawned · ~110ms startup each (spawn + environment, per file)
-             at least ~256ms faster with isolate: false — reuses workers across files instead of one per file
+             at least ~258ms faster with isolate: false — reuses workers across files instead of one per file
 
 JUNIT report written to <repo>/docs/plan-de-pruebas/evidencias/web-junit.xml

@@ -1,7 +1,7 @@
 ---
 title: "Plan de Pruebas de Software"
 subtitle: "Bosque Vivo"
-date: "03/11/2026"
+date: "05/11/2026"
 lang: es-CO
 ---
 
@@ -9,7 +9,7 @@ lang: es-CO
 
 **Proyecto:** Bosque Vivo — Sistema de información para la auditoría de la supervivencia forestal posterior a la certificación de proyectos de carbono
 
-**Fecha:** 03/11/2026
+**Fecha:** 05/11/2026 (versión 1.3)
 
 Estructura: plantilla «Formato_ieee829» del Politécnico Colombiano Jaime Isaza Cadavid, basada en IEEE Std 829. Este documento cubre el objetivo específico 4 del proyecto (probar el sistema mediante un plan de pruebas que verifique el cumplimiento de los requerimientos) y se apoya en la Especificación de Requisitos de Software (ERS, IEEE 830), revisión 1.1 del 05/11/2026; los requisitos RF01–RF09 y los no funcionales son los mismos de la versión del 20/10/2026.
 
@@ -17,7 +17,7 @@ Documentos que lo acompañan:
 
 | Documento | Contenido |
 |---|---|
-| [`casos-de-prueba.md`](casos-de-prueba.md) | Especificación de los 62 casos de prueba (CP-01 a CP-62) |
+| [`casos-de-prueba.md`](casos-de-prueba.md) | Especificación de los 64 casos de prueba (CP-01 a CP-64) |
 | [`informe-de-resultados.md`](informe-de-resultados.md) | Ejecución, métricas, mediciones de requisitos no funcionales y evaluación de los criterios de aceptación |
 | [`incidencias.md`](incidencias.md) | Registro de incidencias encontradas durante la ejecución |
 | [`evidencias/`](evidencias) | Salidas de las herramientas, reportes JUnit, cobertura, mediciones y capturas |
@@ -31,7 +31,7 @@ Documentos que lo acompañan:
 | 03/11/2026 | 1.0 | Equipo Bosque Vivo | Plan completo según la plantilla IEEE 829, alineado con el ERS del 20/10/2026 (RF01–RF09 y requisitos no funcionales), casos de prueba, ejecución y resultados |
 | 03/11/2026 | 1.1 | Equipo Bosque Vivo | Correo SMTP con verificación en dos pasos, avisos de seguridad e invitaciones; configuración automática; casos CP-53 a CP-58 |
 | 04/11/2026 | 1.2 | Equipo Bosque Vivo | PostgreSQL en Supabase, migración desde SQLite y despliegue en Vercel; casos CP-59 a CP-62 |
-| 05/11/2026 | 1.3 | Equipo Bosque Vivo | Referencia a la revisión 1.1 del ERS (correcciones de edición e interfaces de IA, correo, datos abiertos y alojamiento; requisitos sin cambios) |
+| 05/11/2026 | 1.3 | Equipo Bosque Vivo | Referencia a la revisión 1.1 del ERS (requisitos sin cambios); casos CP-63 (documentos legales) y CP-64 (correos con la plantilla de la marca); Gemini y SMTP verificados en producción (CP-50, CP-57) con medición del asistente en producción; nueva ejecución completa |
 |  |  |  |  |
 
 ## 2. Información del Proyecto
@@ -55,7 +55,7 @@ Documentos que lo acompañan:
 
 ## 4. Alcance y Estrategia de las Pruebas
 
-El objeto de prueba es la versión de Bosque Vivo de la rama `main` del repositorio `MateoBermudez/bosque-vivo` a 03/11/2026: la API y los módulos de dominio (`backend/`), el sitio web (`web/`) y el panel Streamlit en desuso (`panel/`). Se prueban los dos sistemas de información del ERS —Verificación y Auditoría, y Asistente Conversacional— más el panel web de solo lectura con su administración de cuentas (RF09).
+El objeto de prueba es la versión de Bosque Vivo de la rama `main` del repositorio `MateoBermudez/bosque-vivo` a 05/11/2026: la API y los módulos de dominio (`backend/`), el sitio web (`web/`), el panel Streamlit en desuso (`panel/`) y su despliegue en producción (Vercel y Supabase). Se prueban los dos sistemas de información del ERS —Verificación y Auditoría, y Asistente Conversacional— más el panel web de solo lectura con su administración de cuentas (RF09).
 
 ### 4.1 Elementos de Pruebas
 
@@ -69,11 +69,12 @@ El objeto de prueba es la versión de Bosque Vivo de la rama `main` del reposito
 | Reportes | `backend/src/bosquevivo/reports`, `web/src/app/informe` | RF06 | Reporte HTML y PDF con polígono, serie NDVI, comparación, índice, fuentes y fecha; descarga desde el sitio |
 | Asistente conversacional | `backend/src/bosquevivo/assistant`, `api/routers/whatsapp.py`, `api/routers/community.py`, `web/src/app/asistente` | RF07, RF08 | Webhook firmado; consentimiento (Ley 1581); intenciones estado, alertas y ayuda; registro del polígono de interés; números autorizados; respuestas en español sencillo y de longitud acotada; chat en línea como canal alterno |
 | Cuentas y recuperación de contraseña | `backend/src/bosquevivo/accounts`, `api/routers/auth.py`, `web/src/app/acceso` | RF09 | Inicio de sesión; mensaje genérico; token de un solo uso con vencimiento; validación de la contraseña nueva; confirmación; bloqueo por intentos; invitaciones |
-| Correo SMTP y verificación en dos pasos | `accounts/mailer.py`, `accounts/templates.py`, `accounts/service.py` | RF09, 3.3.2 | Código de 6 dígitos por correo (intentos, vencimiento, reenvío); avisos de inicio de sesión, cambio de contraseña y bloqueo; detección del servidor SMTP, TLS, reintentos; buzón local sin SMTP |
+| Correo SMTP y verificación en dos pasos | `accounts/mailer.py`, `accounts/templates.py`, `accounts/service.py` | RF09, 3.3.2 | Código de 6 dígitos por correo (intentos, vencimiento, reenvío); avisos de inicio de sesión, cambio de contraseña y bloqueo; detección del servidor SMTP, TLS, reintentos; buzón local sin SMTP; plantilla HTML con la marca, versión de texto y enlaces a privacidad y términos |
+| Documentos legales | `web/src/app/terminos`, `web/src/app/privacidad`, `web/src/app/uso-de-datos`, `web/src/components/legal` | 3.3.2, 3.4 (Ley 1581, licencias) | Términos y condiciones; política de tratamiento (responsable, finalidades, autorización, encargados y transferencias, derechos, plazos, seguridad, retención, cookies); fuentes con licencia y cita; enlaces desde el pie, el acceso, la activación y el chat |
 | Configuración automática | `bosquevivo/setup.py`, `scripts/dev.*`, `scripts/start.*` | 3.3.5, 3.3.6 | Generación de secretos y `.env`, base y datos de demostración, lista de claves externas pendientes, modo producción |
 | Base de datos y despliegue | `db/session.py`, `db/urls.py`, `db/migrate.py`, `jobs/dispatch.py`, `backend/index.py`, `scripts/deploy-vercel.sh` | 3.3.3, 3.3.6 | Suite completa en PostgreSQL, conexión por el pooler de Supabase, migración desde SQLite, API liviana en modo Vercel |
-| Agente de IA (ampliación) | `backend/src/bosquevivo/ai` | RA01–RA09 | Herramientas, validador de fidelidad, neutralidad, inyección de instrucciones, respaldo determinista (regresión con modelo guionizado) |
-| Incidentes y mediciones | `core/incidents.py`, `measure.py` | 3.3.1, 3.3.3, 3.3.5 | Registro de incidentes con origen externo/interno y duración; tiempos de respuesta y de cálculo; determinismo |
+| Agente de IA (ampliación) | `backend/src/bosquevivo/ai` | RA01–RA09, 3.3.1 | Herramientas, validador de fidelidad, neutralidad, inyección de instrucciones, respaldo determinista (regresión con modelo guionizado); cambio de modelo y presupuesto de tiempo por respuesta con Gemini saturado |
+| Incidentes y mediciones | `core/incidents.py`, `measure.py`, `GET /api/v1/admin/incidents` | 3.3.1, 3.3.3, 3.3.5 | Registro de incidentes con origen externo/interno y duración, también consultable en producción; tiempos de respuesta y de cálculo; determinismo |
 | Sitio web | `web/` | 3.1.1 | Contrato de la API (zod), sesión firmada, componentes de dominio, compilación de producción |
 
 ### 4.2 Pruebas de Regresión
@@ -98,8 +99,7 @@ Aspectos que se revisan en cada regresión: (1) toda la suite automática pasa (
 |---|---|---|
 | Google Earth Engine real (`SATELLITE_PROVIDER=gee`) | Requiere una cuenta y un proyecto de Earth Engine del dueño; no está disponible en el entorno de pruebas | Los tiempos de cálculo con Earth Engine pueden superar los medidos con datos abiertos. Mitigación: el cálculo se probó con el proveedor de datos abiertos real (MODIS + Hansen) y la lógica de Earth Engine se aísla tras `SatelliteProvider`. Queda como CP-39 en ejecución complementaria |
 | Envío real por WhatsApp Cloud API | Requiere credenciales de Meta del dueño ([guía](../guias/whatsapp.md)) | Diferencias del formato real del webhook. Mitigación: el webhook se prueba con cargas reales de la documentación de Meta, firma HMAC y el mismo flujo por el chat en línea. Queda como CP-49 |
-| Respuestas de Gemini real y evaluación del agente | Requiere `GEMINI_API_KEY` ([guía](../guias/gemini.md)) | Calidad de las respuestas libres no medida. Mitigación: modelo guionizado, validador de fidelidad, respuesta de respaldo y las intenciones del ERS funcionan sin IA. Queda como CP-50 |
-| Envío SMTP real de correos | Requiere una cuenta de correo del dueño ([guía](../guias/correo.md)) | Bloqueo del proveedor de correo. Mitigación: el remitente SMTP (TLS, autenticación, reintentos) se prueba con un servidor simulado y el flujo completo —invitación, 2FA, avisos y recuperación— con el buzón local `.eml` y `AUTH_TWO_FACTOR=on`. Se verifica en el piloto con `bosquevivo mail-test` (CP-57) |
+| Evaluación formal del agente con Gemini real (`bosquevivo eval`, 20 casos) | La clave de Gemini solo está configurada en producción (Vercel) y el comando se ejecuta en un equipo local ([guía](../guias/gemini.md)) | Calidad de las respuestas libres sin un informe formal. Mitigación: modelo guionizado y validador de fidelidad en la suite, medición en producción con Gemini real (`evidencias/rnf-produccion.json`) y respuesta de respaldo; las intenciones del ERS funcionan sin IA. Queda como parte de CP-50 |
 | Disponibilidad 95 % y ≤ 2 incidentes críticos al mes | Solo se puede medir durante el piloto, en el horario que se acuerde con el docente | Se entrega el script `scripts/disponibilidad.sh` y el comando `bosquevivo incidents`. Queda como CP-46 |
 | Comprensión con 5 personas no técnicas | Requiere usuarios reales | Mensajes poco claros. Mitigación: textos breves, revisados contra la lista de jerga. Queda como CP-29 |
 | RA03, RA06 y RA08 (modelo propio de visión, alertas en tiempo casi real, extracción de PDD) | Fuera del alcance de esta entrega (sección 2.6 del ERS) | Ninguno para el alcance comprometido |
@@ -120,8 +120,8 @@ Aspectos que se revisan en cada regresión: (1) toda la suite automática pasa (
 
 | Cuadrante | Propósito | En Bosque Vivo |
 |---|---|---|
-| Q1 — tecnología, apoyo al equipo | Pruebas unitarias y de componentes, automatizadas | 108 pruebas unitarias (NDVI, índice, guardas, contraseñas, firma, privacidad) y pruebas de componentes del sitio |
-| Q2 — negocio, apoyo al equipo | Pruebas funcionales y de ejemplos, automatizadas | 179 pruebas de integración por requisito, 5 «golden» con categoría esperada, 20 verificaciones E2E |
+| Q1 — tecnología, apoyo al equipo | Pruebas unitarias y de componentes, automatizadas | 124 pruebas unitarias (NDVI, índice, guardas, contraseñas, firma, privacidad, plantillas de correo, presupuesto de tiempo de la IA) y 95 pruebas del sitio |
+| Q2 — negocio, apoyo al equipo | Pruebas funcionales y de ejemplos, automatizadas | 229 pruebas de integración y de regresión por requisito (incluidos 5 casos «golden» con categoría esperada), 36 verificaciones E2E |
 | Q3 — negocio, crítica al producto | Exploratorias, usabilidad, aceptación | Revisión visual de pantallas (capturas), prueba de comprensión y piloto (pendientes con usuarios) |
 | Q4 — tecnología, crítica al producto | Rendimiento, seguridad, fiabilidad | `medir-rnf`, determinismo, incidentes, análisis estático (`ruff`, `pyright`, `eslint`) |
 
@@ -156,7 +156,7 @@ Criterios para dar por completado el plan:
 
 Criterios del usuario para aceptar el aplicativo (ERS): el auditor puede consultar el índice, la serie y el reporte de un proyecto; la comunidad recibe respuestas cortas en español sencillo; los datos personales se tratan según la Ley 1581; y el resultado se presenta como análisis metodológico, sin atribuir fraude.
 
-Los casos o partes que dependen de credenciales o usuarios externos (CP-29, CP-46, CP-49, CP-50 y el envío SMTP real de CP-57) se registran como «Bloqueado» y no impiden cerrar el plan; se ejecutan en el piloto.
+Los casos o partes que dependen de credenciales o usuarios externos (CP-29, CP-46, CP-49 y la evaluación formal de CP-50) se registran como «Bloqueado» y no impiden cerrar el plan; se ejecutan en el piloto.
 
 ### 4.6 Entregables
 
@@ -164,7 +164,7 @@ Los casos o partes que dependen de credenciales o usuarios externos (CP-29, CP-4
 - Especificación de casos de prueba (`casos-de-prueba.md`).
 - Informe de resultados con métricas y evaluación de criterios (`informe-de-resultados.md`).
 - Registro de incidencias (`incidencias.md`).
-- Evidencias: reportes JUnit (`backend-junit.xml`, `web-junit.xml`), salidas de `pytest` con cobertura, `vitest`, `ruff`, `pyright`, `eslint`, `next build`, mediciones de requisitos no funcionales (`rnf-fake.json`, `rnf-open.json`), resultado E2E (`e2e-resultados.json`, `e2e-salida.txt`) y capturas de pantalla.
+- Evidencias: reportes JUnit (`backend-junit.xml`, `web-junit.xml`), reporte JUnit de la suite en PostgreSQL (`backend-postgres-junit.xml`), salidas de `pytest` con cobertura, `vitest`, `ruff`, `pyright`, `eslint`, `next build`, mediciones de requisitos no funcionales (`rnf-fake.json`, `rnf-open.json` y, en producción con Gemini real, `rnf-produccion.json`), resultado E2E (`e2e-resultados.json`, `e2e-salida.txt`) y capturas de pantalla.
 - Scripts reutilizables: `scripts/ejecutar-e2e.sh`, `scripts/e2e.cjs`, `scripts/disponibilidad.sh` y los comandos `bosquevivo medir-rnf`, `bosquevivo mail-test` y `bosquevivo setup`.
 
 ## 5. Recursos
@@ -174,7 +174,7 @@ Los casos o partes que dependen de credenciales o usuarios externos (CP-29, CP-4
 | Recurso | Especificación |
 |---|---|
 | Equipo de prueba | Computador personal con Windows 11 o Linux, 8 GB de RAM o más, 5 GB libres en disco (el ERS y el ADR 0002 definen ejecución local, sin servidores ni máquinas virtuales) |
-| Red | Conexión a Internet estable para las fuentes de datos abiertos (Hansen en Google Cloud Storage, MODIS en Planetary Computer) y, en el piloto, para WhatsApp, Gemini y el túnel HTTPS |
+| Red | Conexión a Internet estable para las fuentes de datos abiertos (Hansen en Google Cloud Storage, MODIS en Planetary Computer) para Gemini y el correo SMTP en producción y, en el piloto, para WhatsApp (el webhook queda publicado en la API de Vercel) |
 | Usuario final | Cualquier teléfono con WhatsApp o un navegador web |
 | Integración continua | Máquinas `ubuntu-latest` de GitHub Actions |
 
@@ -188,7 +188,7 @@ Los casos o partes que dependen de credenciales o usuarios externos (CP-29, CP-4
 | Base de datos | SQLite (incluida en Python) y PostgreSQL 16 | Base de pruebas en memoria, bases temporales y la misma suite contra PostgreSQL (`TEST_DATABASE_URL`, servicio de la CI); producción en Supabase |
 | Chromium + Playwright | Versión preinstalada | Pruebas de extremo a extremo |
 | Git y GitHub | — | Control de versiones y CI |
-| Accesos (piloto) | — | Clave de Google AI Studio, app de Meta para WhatsApp, cuenta de Earth Engine, cuenta de correo SMTP |
+| Accesos | — | Configurados en producción: clave de Google AI Studio y cuenta de correo SMTP. Pendientes: app de Meta para WhatsApp (piloto) y cuenta de Earth Engine (opcional) |
 
 Datos de prueba: tres proyectos de demostración (`bosquevivo seed-demo`), polígonos sintéticos dentro de las pruebas, cargas de webhook de la documentación de Meta y los 55 polígonos reales de Karnik et al. (2025) para Colombia.
 
@@ -217,7 +217,7 @@ Datos de prueba: tres proyectos de demostración (`bosquevivo seed-demo`), polí
 | Proveedores simulados y modelo guionizado | Quien escriba pruebas nuevas | `backend/tests/conftest.py`, `ai/llm/fake.py`, `satellite/providers/fake.py` |
 | Playwright para E2E | Responsable de la interfaz | `scripts/e2e.cjs` |
 | Configurar WhatsApp, Gemini y correo para el piloto | Representante del equipo | [`docs/guias`](../guias) |
-| Lenguaje neutro y Ley 1581 | Todo el equipo | `docs/privacy/aviso-de-privacidad.md`, ADR 0009 |
+| Lenguaje neutro y Ley 1581 | Todo el equipo | `/privacidad`, `/terminos` y `/uso-de-datos` del sitio, `docs/privacy/README.md`, ADR 0009 |
 
 ## 6. Planificación y Organización
 
@@ -240,7 +240,9 @@ Propuesta de reparto; el equipo puede ajustarla antes de firmar.
 | Plan inicial y suite automática base | 20/10/2026 |
 | Implementación de RF09 y cierre de brechas del ERS | 03/11/2026 |
 | Especificación de casos, ejecución completa, E2E y mediciones | 03/11/2026 |
-| Configuración de credenciales (WhatsApp, Gemini, correo) | Semana del piloto |
+| PostgreSQL en Supabase y despliegue en Vercel | 04/11/2026 |
+| Gemini y correo SMTP en producción, documentos legales y nueva ejecución completa | 05/11/2026 |
+| Credenciales de WhatsApp (Meta) | Semana del piloto |
 | Piloto: CP-29, CP-46, CP-49, CP-50 | Horario acordado con el docente |
 | Cierre y firmas | Entrega final del semestre |
 
@@ -248,11 +250,11 @@ Propuesta de reparto; el equipo puede ajustarla antes de firmar.
 
 | Riesgo | Probabilidad | Impacto | Mitigación / contingencia |
 |---|---|---|---|
-| Cuotas de la capa gratuita de Gemini agotadas durante la evaluación | Media | Medio | Límites propios por minuto, día y usuario; respuesta de respaldo determinista; las intenciones del ERS no usan IA |
+| Cuotas o saturación de la capa gratuita de Gemini | Alta | Medio | Límites propios por minuto, día y usuario; cambio automático al otro modelo gratuito con pausa del saturado (INC-17); presupuesto de 8 s por respuesta (INC-19); respuesta de respaldo determinista; las intenciones del ERS no usan IA |
 | Cambio de precios de WhatsApp Cloud API | Media | Medio | El piloto queda dentro de los 1.000 mensajes de servicio gratuitos al mes; el chat en línea `/asistente` reemplaza a WhatsApp sin costo |
 | Sin acceso a Earth Engine | Media | Medio | Proveedor de datos abiertos (MODIS + Hansen) probado con datos reales |
 | Nubosidad persistente que deja proyectos sin escenas | Alta | Medio | Se registra la incidencia y el índice sale «Insuficiente» con confianza baja, en lugar de un valor |
-| Dependencias de desarrollo pendientes (credenciales del dueño) | Alta | Bajo | Casos marcados «Bloqueado» con guía paso a paso para ejecutarlos |
+| Credenciales pendientes (WhatsApp de Meta) | Alta | Bajo | Casos marcados «Bloqueado» con guía paso a paso para ejecutarlos |
 | Disponibilidad del equipo (semestre académico) | Media | Medio | Suite automatizada en CI; reparto por módulos |
 | Restricciones de tiempo | Media | Medio | Priorización por riesgo (sección 4.4) |
 | Premisa falsa: el polígono publicado no es el área de los créditos | Baja | Alto | Se usa el área de contabilidad de Karnik et al. cuando existe y se documenta |
@@ -268,8 +270,8 @@ Propuesta de reparto; el equipo puede ajustarla antes de firmar.
 | Diseño Detallado | `docs/architecture/adr/0001` a `0013`; `docs/methodology/indice-v0.md` e `indice-v1.md` |
 | Procedimientos y estándares de Desarrollo | `README.md` (reglas del repositorio), `.pre-commit-config.yaml`, `.github/workflows/ci.yml` |
 | Procedimientos y estándares de Pruebas | IEEE Std 829-2008 (documentación de pruebas de software); plantilla «Formato_ieee829» del Politécnico (Drive del proyecto) |
-| Metodologías y estándares | IEEE Std 830-1998; Ley 1581 de 2012; Crispin, L. y Gregory, J. (2009). *Agile Testing*. Addison-Wesley; Cohn, M. (2009). *Succeeding with Agile* (pirámide de automatización) |
-| Datos | Karnik et al. (2025), doi:10.1038/s41597-025-04868-2; Hansen et al. (2013), Global Forest Change |
+| Metodologías y estándares | IEEE Std 830-1998; Ley 1581 de 2012 y Decreto 1377 de 2013; Crispin, L. y Gregory, J. (2009). *Agile Testing*. Addison-Wesley; Cohn, M. (2009). *Succeeding with Agile* (pirámide de automatización) |
+| Datos | Karnik et al. (2025), doi:10.1038/s41597-025-04868-2; Hansen et al. (2013), Global Forest Change; Didan (2021), MODIS MOD13Q1 v061; fuentes y licencias en `/uso-de-datos` |
 
 ## 9. Glosario
 

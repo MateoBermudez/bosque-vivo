@@ -126,6 +126,12 @@
     "detail": ""
   },
   {
+    "id": "CP-64",
+    "description": "los correos llevan el diseño de la marca y enlaces a privacidad y términos",
+    "ok": true,
+    "detail": ""
+  },
+  {
     "id": "CP-21",
     "description": "primer contacto: saludo y aviso de privacidad",
     "ok": true,
@@ -176,6 +182,36 @@
   {
     "id": "CP-42",
     "description": "BORRAR MIS DATOS elimina la conversación",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "id": "CP-63",
+    "description": "/terminos publica «Términos y condiciones» con versión y fecha",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "id": "CP-63",
+    "description": "/privacidad publica «Política de privacidad y tratamiento de datos» con versión y fecha",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "id": "CP-63",
+    "description": "/uso-de-datos publica «Uso de datos y fuentes» con versión y fecha",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "id": "CP-63",
+    "description": "el pie enlaza los tres documentos legales",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "id": "CP-63",
+    "description": "el chat en línea remite a la política y a los términos",
     "ok": true,
     "detail": ""
   }

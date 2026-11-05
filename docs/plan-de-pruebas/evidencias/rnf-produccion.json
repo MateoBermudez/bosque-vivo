@@ -1,0 +1,148 @@
+{
+  "fecha": "2026-11-05 11:48 UTC",
+  "api": "https://bosque-vivo-api.vercel.app",
+  "consultas": 17,
+  "http_200": 17,
+  "p50": 0.6,
+  "p90": 8.5,
+  "max": 8.61,
+  "bajo_10_s": 100.0,
+  "respaldo_auditor": 8,
+  "detalle": [
+    {
+      "canal": "auditor",
+      "pregunta": "¿Qué significa la confianza del índice?",
+      "http": 200,
+      "segundos": 8.54,
+      "herramientas": [],
+      "respaldo": true,
+      "respuesta": "No puedo responder con seguridad en este momento porque no tengo datos suficientes. El análisis profundo puede no estar disponible ahora."
+    },
+    {
+      "canal": "auditor",
+      "pregunta": "¿Qué es el NDVI y cómo se usa en el índice?",
+      "http": 200,
+      "segundos": 8.48,
+      "herramientas": [],
+      "respaldo": true,
+      "respuesta": "No puedo responder con seguridad en este momento porque no tengo datos suficientes. El análisis profundo puede no estar disponible ahora."
+    },
+    {
+      "canal": "auditor",
+      "pregunta": "¿Qué normativa colombiana aplica a los datos personales del asistente?",
+      "http": 200,
+      "segundos": 8.5,
+      "herramientas": [],
+      "respaldo": true,
+      "respuesta": "No puedo responder con seguridad en este momento porque no tengo datos suficientes. El análisis profundo puede no estar disponible ahora."
+    },
+    {
+      "canal": "auditor",
+      "pregunta": "¿Cuál es el índice del proyecto 1 y en qué categoría está?",
+      "http": 200,
+      "segundos": 8.61,
+      "herramientas": [],
+      "respaldo": true,
+      "respuesta": "No puedo responder con seguridad en este momento porque no tengo datos suficientes. El análisis profundo puede no estar disponible ahora."
+    },
+    {
+      "canal": "auditor",
+      "pregunta": "¿Cuánta pérdida de bosque tuvo el proyecto 2 por año?",
+      "http": 200,
+      "segundos": 0.69,
+      "herramientas": [],
+      "respaldo": true,
+      "respuesta": "No puedo responder con seguridad en este momento porque no tengo datos suficientes. El análisis profundo puede no estar disponible ahora."
+    },
+    {
+      "canal": "auditor",
+      "pregunta": "¿Bosque Vivo acusa a alguien de fraude?",
+      "http": 200,
+      "segundos": 0.6,
+      "herramientas": [],
+      "respaldo": true,
+      "respuesta": "No puedo responder con seguridad en este momento porque no tengo datos suficientes. El análisis profundo puede no estar disponible ahora."
+    },
+    {
+      "canal": "auditor",
+      "pregunta": "Compara la permanencia de los proyectos 1 y 3",
+      "http": 200,
+      "segundos": 0.43,
+      "herramientas": [],
+      "respaldo": true,
+      "respuesta": "No puedo responder con seguridad en este momento porque no tengo datos suficientes. El análisis profundo puede no estar disponible ahora."
+    },
+    {
+      "canal": "auditor",
+      "pregunta": "¿Qué limitaciones tiene usar MODIS en lugar de Sentinel-2?",
+      "http": 200,
+      "segundos": 8.43,
+      "herramientas": [],
+      "respaldo": true,
+      "respuesta": "No puedo responder con seguridad en este momento porque no tengo datos suficientes. El análisis profundo puede no estar disponible ahora."
+    },
+    {
+      "canal": "comunitario",
+      "pregunta": "Hola",
+      "http": 200,
+      "segundos": 0.46,
+      "respuesta": "Hola, soy el asistente de Bosque Vivo. Soy una inteligencia artificial: puedo contarle qué se ve desde el satélite en proyectos de bosque. Puedo equivocarme. | "
+    },
+    {
+      "canal": "comunitario",
+      "pregunta": "ACEPTO",
+      "http": 200,
+      "segundos": 0.1,
+      "respuesta": "Gracias. Ya puede preguntarme, por ejemplo: ¿cómo está el bosque de mi finca?"
+    },
+    {
+      "canal": "comunitario",
+      "pregunta": "AYUDA",
+      "http": 200,
+      "segundos": 0.1,
+      "respuesta": "Puede escribirme: ESTADO (cómo está su bosque), ALERTAS (cambios recientes), PROYECTO y el número (para elegir su proyecto) o enviar su ubicación. También puede"
+    },
+    {
+      "canal": "comunitario",
+      "pregunta": "PROYECTO 1",
+      "http": 200,
+      "segundos": 0.12,
+      "respuesta": "Listo, quedó registrado el proyecto Acapa - Bajo Mira Y Frontera REDD+ Project. Escriba ESTADO o ALERTAS cuando quiera."
+    },
+    {
+      "canal": "comunitario",
+      "pregunta": "ESTADO",
+      "http": 200,
+      "segundos": 0.13,
+      "respuesta": "En Acapa - Bajo Mira Y Frontera REDD+ Project se conserva el 98,8 % del bosque que había desde 2013. En general, lo que se ve desde el satélite coincide bien co"
+    },
+    {
+      "canal": "comunitario",
+      "pregunta": "ALERTAS",
+      "http": 200,
+      "segundos": 0.14,
+      "respuesta": "Sin alertas para Acapa - Bajo Mira Y Frontera REDD+ Project: hasta 2024 la pérdida de bosque fue baja (menos del 0,5 % por año)."
+    },
+    {
+      "canal": "comunitario",
+      "pregunta": "¿Qué es un crédito de carbono?",
+      "http": 200,
+      "segundos": 4.11,
+      "respuesta": "No puedo responder con seguridad en este momento porque no tengo datos suficientes. El análisis profundo puede no estar disponible ahora. Si quiere, una persona"
+    },
+    {
+      "canal": "comunitario",
+      "pregunta": "¿Mi bosque está bien cuidado?",
+      "http": 200,
+      "segundos": 8.13,
+      "respuesta": "No puedo responder con seguridad en este momento porque no tengo datos suficientes. El análisis profundo puede no estar disponible ahora. Si quiere, una persona"
+    },
+    {
+      "canal": "comunitario",
+      "pregunta": "BORRAR MIS DATOS",
+      "http": 200,
+      "segundos": 0.17,
+      "respuesta": "Listo. Borré sus datos, consultas y permisos. Si me escribe de nuevo empezamos de cero."
+    }
+  ]
+}

@@ -19,6 +19,7 @@ OK    CP-37 la sesión muestra el correo del auditor
 OK    CP-55 llega el aviso de nuevo inicio de sesión
 OK    CP-55 llega el aviso de cambio de contraseña
 OK    CP-55 los correos tienen versión HTML
+OK    CP-64 los correos llevan el diseño de la marca y enlaces a privacidad y términos
 OK    CP-21 primer contacto: saludo y aviso de privacidad
 OK    CP-22 sin autorización no responde consultas
 OK    CP-23 AYUDA lista las consultas disponibles
@@ -28,3 +29,8 @@ OK    CP-28 sin términos técnicos ni acusaciones
 OK    CP-25 ALERTAS responde para el proyecto
 OK    CP-26 consulta no reconocida orienta con la ayuda
 OK    CP-42 BORRAR MIS DATOS elimina la conversación
+OK    CP-63 /terminos publica «Términos y condiciones» con versión y fecha
+OK    CP-63 /privacidad publica «Política de privacidad y tratamiento de datos» con versión y fecha
+OK    CP-63 /uso-de-datos publica «Uso de datos y fuentes» con versión y fecha
+OK    CP-63 el pie enlaza los tres documentos legales
+OK    CP-63 el chat en línea remite a la política y a los términos

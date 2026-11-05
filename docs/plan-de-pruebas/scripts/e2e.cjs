@@ -149,6 +149,36 @@ async function twoFactor(page) {
   check("CP-55", "llega el aviso de nuevo inicio de sesión", all.some((mail) => mail.includes("Se inició sesión en tu cuenta")));
   check("CP-55", "llega el aviso de cambio de contraseña", all.some((mail) => mail.includes("se cambió el")));
   check("CP-55", "los correos tienen versión HTML", all.every((mail) => mail.includes("text/html")));
+  check(
+    "CP-64",
+    "los correos llevan el diseño de la marca y enlaces a privacidad y términos",
+    all.every((mail) => mail.includes("Auditoría satelital de carbono forestal") && mail.includes(`${BASE}/privacidad`) && mail.includes(`${BASE}/terminos`)),
+  );
+}
+
+async function legal(page) {
+  const pages = [
+    ["/terminos", "Términos y condiciones", ["Alcance de los resultados", "Uso aceptable", "República de Colombia"]],
+    ["/privacidad", "Política de privacidad y tratamiento de datos", ["Responsable del tratamiento", "10 días hábiles", "15 días hábiles", "BORRAR MIS DATOS", "Superintendencia de Industria y Comercio"]],
+    ["/uso-de-datos", "Uso de datos y fuentes", ["CC BY 4.0", "Karnik", "Hansen", "Limitaciones y descargo"]],
+  ];
+  for (const [route, title, phrases] of pages) {
+    const response = await page.goto(`${BASE}${route}`);
+    const text = await page.textContent("main");
+    const missing = phrases.filter((phrase) => !text.includes(phrase));
+    check(
+      "CP-63",
+      `${route} publica «${title}» con versión y fecha`,
+      response.status() === 200 && (await page.textContent("h1")).includes(title) && /Versión v\d/.test(text) && missing.length === 0,
+      missing.join(", "),
+    );
+  }
+  await shot(page, "09-uso-de-datos.png");
+  const footer = await page.locator("footer a").evaluateAll((links) => links.map((link) => link.getAttribute("href")));
+  check("CP-63", "el pie enlaza los tres documentos legales", ["/terminos", "/privacidad", "/uso-de-datos"].every((href) => footer.includes(href)));
+  await page.goto(`${BASE}/asistente`);
+  const notice = await page.locator("main a").evaluateAll((links) => links.map((link) => link.getAttribute("href")));
+  check("CP-63", "el chat en línea remite a la política y a los términos", notice.includes("/privacidad") && notice.includes("/terminos"));
 }
 
 async function chat(page) {
@@ -191,6 +221,7 @@ async function chat(page) {
     await recovery(page);
     await twoFactor(page);
     await chat(page);
+    await legal(page);
   } catch (error) {
     check("E2E", "ejecución sin errores", false, String(error.message ?? error));
   } finally {

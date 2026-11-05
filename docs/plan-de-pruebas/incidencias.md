@@ -1,6 +1,6 @@
 # Registro de incidencias
 
-Incidencias encontradas al contrastar el sistema con el ERS (20/10/2026) y al ejecutar el plan de pruebas el 03/11/2026. Severidad: crítica, alta, media, baja. Todas quedaron cerradas y verificadas con la suite completa (18 incidencias).
+Incidencias encontradas al contrastar el sistema con el ERS (20/10/2026) y al ejecutar el plan de pruebas el 03/11/2026 y el 05/11/2026. Severidad: crítica, alta, media, baja. Todas quedaron cerradas y verificadas con la suite completa (19 incidencias).
 
 | ID | Caso | Requisito | Descripción | Severidad | Causa | Corrección | Estado |
 |---|---|---|---|---|---|---|---|
@@ -17,11 +17,12 @@ Incidencias encontradas al contrastar el sistema con el ERS (20/10/2026) y al ej
 | INC-11 | E2E | Entorno de pruebas | El script E2E contaba el texto de bienvenida del chat como una burbuja de respuesta | Baja | Selector demasiado amplio | Atributo `data-from` en cada burbuja | Cerrada |
 | INC-12 | CP-56 | RF09 | Al activar una cuenta invitada, el enlace no quedaba marcado como usado y podía reutilizarse | Alta | La lista de enlaces del usuario estaba en la caché de la sesión de SQLAlchemy y no incluía el recién creado | Los enlaces abiertos se consultan en la base y el enlace usado se marca de forma explícita | Cerrada |
 | INC-13 | CP-53 | RF09 | Con la verificación en dos pasos siempre activa, sin SMTP nadie podía iniciar sesión (el código quedaba en el buzón local) | Alta | El segundo factor no consideraba si el correo se puede entregar | `AUTH_TWO_FACTOR=auto`: se activa solo con SMTP; `on`/`off` lo fuerzan | Cerrada |
+| INC-14 | CP-56 | Entorno de pruebas | El E2E leía la bienvenida de la invitación antes de que la página terminara de cargar | Baja | Contenido transmitido con Suspense | Se espera el formulario antes de verificar | Cerrada |
 | INC-15 | CP-62 | 3.3.3 | Al primer despliegue, varias instancias de Vercel crearon las tablas a la vez y Supabase respondió `UniqueViolation` en el catálogo; la API devolvía 500 | Alta | `CREATE TABLE` concurrente sin coordinación | Candado `pg_advisory_xact_lock` alrededor de la creación del esquema; probado con 8 arranques simultáneos | Cerrada |
 | INC-16 | CP-62 | 3.3.1 | En producción `/proyectos` tardaba 15–25 s | Media | El sitio hacía 116 llamadas a la API (polígono y auditoría por proyecto), cada una con su conexión a la base | Endpoint `/api/v1/explorer` que entrega todo en una llamada; ahora 1–2 s | Cerrada |
 | INC-17 | CP-50 | 3.3.1 | Con Gemini real, el chat tardó 78–111 s y a veces cayó al respaldo | Alta | `gemini-flash-latest` respondía 503/504 por alta demanda; cada paso del agente reintentaba el mismo modelo hasta 4 veces | Cambio inmediato a otro modelo gratuito (`gemini-flash-lite-latest`), pausa de 3 minutos al modelo saturado y tiempo límite de 20 s por llamada; ahora 3–5 s por pregunta | Cerrada |
 | INC-18 | CP-51 | RA07 | La herramienta `buscar_conocimiento` nunca encontraba nada (metodología, glosario, normativa) | Alta | El corpus no se indexaba en la tabla `kb_chunk` en ningún flujo | Se indexa automáticamente en la primera búsqueda | Cerrada |
-| INC-14 | CP-56 | Entorno de pruebas | El E2E leía la bienvenida de la invitación antes de que la página terminara de cargar | Baja | Contenido transmitido con Suspense | Se espera el formulario antes de verificar | Cerrada |
+| INC-19 | CP-38, CP-50 | 3.3.1 | En la nueva medición en producción (05/11/2026) las preguntas libres tardaron entre 12 y 61 s (solo el 41 % bajo 10 s) y 5 de 8 terminaron en la respuesta de respaldo | Alta | Los dos modelos gratuitos de Gemini respondían 503 por alta demanda o tardaban; cada intento esperaba hasta 20 s y las instancias nuevas de Vercel no recuerdan qué modelo está en pausa. Un primer intento de corrección envió a Gemini un plazo de 8 s y la API lo rechazó (mínimo 10 s) | Presupuesto de 8 s por respuesta (`AGENT_TIME_BUDGET_SECONDS`) con corte del lado del cliente; un modelo que no responde a tiempo se pausa y se usa el otro; si se agota el tiempo se responde con el respaldo. Endpoint `GET /api/v1/admin/incidents` para revisar los incidentes de producción. Nueva medición: 100 % bajo 10 s, máximo 8,6 s | Cerrada |
 
 ## Observaciones que no son defectos
 

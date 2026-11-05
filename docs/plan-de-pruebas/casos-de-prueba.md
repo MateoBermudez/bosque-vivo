@@ -1,6 +1,6 @@
 # Especificación de casos de prueba
 
-Acompaña al [plan de pruebas](plan-de-pruebas.md). Versión 1.2 (04/11/2026): se añaden CP-59 a CP-62 (PostgreSQL en Supabase, migración y despliegue en Vercel). Versión 1.1: CP-53 a CP-58 (correo SMTP, verificación en dos pasos y configuración automática). Cada caso indica el requisito del ERS que verifica, la técnica, las precondiciones, los pasos, los datos, el resultado esperado, la prueba automática que lo ejecuta y el resultado de la ejecución del 03/11/2026.
+Acompaña al [plan de pruebas](plan-de-pruebas.md). Versión 1.3 (05/11/2026): se añaden CP-63 (documentos legales) y CP-64 (correos con la plantilla de la marca), CP-57 se completa con el envío SMTP real en producción y CP-38 y CP-50 se miden en producción con Gemini real. Versión 1.2 (04/11/2026): se añaden CP-59 a CP-62 (PostgreSQL en Supabase, migración y despliegue en Vercel). Versión 1.1: CP-53 a CP-58 (correo SMTP, verificación en dos pasos y configuración automática). Cada caso indica el requisito del ERS que verifica, la técnica, las precondiciones, los pasos, los datos, el resultado esperado, la prueba automática que lo ejecuta y el resultado de la ejecución completa del 05/11/2026 (la primera fue el 03/11/2026).
 
 Rutas de las pruebas: `backend/tests/...` (pytest), `web/src/...` (Vitest) y `docs/plan-de-pruebas/scripts/e2e.cjs` (Playwright, «E2E»).
 
@@ -26,9 +26,10 @@ Estados: **Aprobado**, **Fallido**, **Bloqueado** (depende de credenciales o usu
 | 3.3.5 Mantenibilidad | CP-47 | 1 | 0 |
 | 3.3.6 Portabilidad | CP-48 | 1 | 0 |
 | Interfaces externas y regresión | CP-49 a CP-52 | 3 | 1 |
-| Correo SMTP, 2FA y configuración | CP-53 a CP-58 | 5 | 1 |
+| Correo SMTP, 2FA y configuración | CP-53 a CP-58 | 6 | 0 |
 | PostgreSQL, migración y despliegue | CP-59 a CP-62 | 4 | 0 |
-| **Total** | **62** | **58** | **4** |
+| Documentos legales y correos | CP-63, CP-64 | 2 | 0 |
+| **Total** | **64** | **61** | **3** |
 
 ## RF01 — Importar polígonos públicos
 
@@ -322,8 +323,8 @@ Estados: **Aprobado**, **Fallido**, **Bloqueado** (depende de credenciales o usu
 
 - **Meta:** ≥ 90 % de las consultas en menos de 10 s.
 - **Pasos:** `uv run bosquevivo medir-rnf --rounds 100`.
-- **Resultado obtenido:** 100 % bajo 10 s (p90 = 0,005 s) en las intenciones del ERS; con Gemini real se repite en el piloto.
-- **Automatización:** `integration/test_measure.py`; evidencia `evidencias/rnf-fake.json`, `rnf-open.json`.
+- **Resultado obtenido:** 100 % bajo 10 s (p90 = 0,005 s) en las intenciones del ERS con `medir-rnf`. En producción con Gemini real (05/11/2026, 17 consultas por el chat del auditor y el chat comunitario): 100 % bajo 10 s, p50 0,6 s, p90 8,5 s y máximo 8,6 s, después de corregir INC-19; las intenciones del ERS respondieron en 0,1–0,5 s. Antes de la corrección, con Gemini saturado, solo el 41 % quedaba bajo 10 s (máximo 60,8 s).
+- **Automatización:** `integration/test_measure.py`, `unit/test_llm_support.py` (presupuesto de tiempo), `integration/test_agent.py`; evidencia `evidencias/rnf-fake.json`, `rnf-open.json`, `rnf-produccion.json`.
 - **Resultado:** Aprobado.
 
 ### CP-39 Tiempo de cálculo del índice por polígono (3.3.1)
@@ -399,7 +400,8 @@ Estados: **Aprobado**, **Fallido**, **Bloqueado** (depende de credenciales o usu
 
 - **Pasos:** `uv run bosquevivo eval --output data/eval/report.json` (20 casos: herramientas, fidelidad, neutralidad, incertidumbre, fugas, longitud y latencia).
 - **Verificación en producción (05/11/2026):** con la clave configurada, el chat del auditor respondió con datos reales usando `buscar_proyecto`, `obtener_auditoria`, `obtener_perdida_anual` y `buscar_conocimiento`, sin respaldo, en 3–5 s por pregunta (tras corregir INC-17 e INC-18); el chat comunitario respondió una pregunta libre en 2 s.
-- **Resultado:** Aprobado en producción. La evaluación formal de 20 casos (`bosquevivo eval`) queda para registrar su informe.
+- **Nueva medición (05/11/2026, 11:48 UTC):** los dos modelos gratuitos respondían 503 por alta demanda o no respondían a tiempo; las preguntas libres del auditor terminaron con la respuesta de respaldo en menos de 9 s (INC-19) y el chat comunitario respondió una pregunta libre con Gemini en 4,1 s. La calidad de las respuestas depende de la disponibilidad de la capa gratuita.
+- **Resultado:** Aprobado en producción. La evaluación formal de 20 casos (`bosquevivo eval`) queda para registrar su informe (Bloqueado: la clave solo está en producción).
 
 ### CP-51 Regresión del agente de IA (RA01–RA09)
 
@@ -451,7 +453,8 @@ Estados: **Aprobado**, **Fallido**, **Bloqueado** (depende de credenciales o usu
 - **Prioridad:** 3
 - **Resultado esperado:** con solo `SMTP_USER` y `SMTP_PASSWORD` se detecta el servidor (Gmail, Google Workspace, Outlook, Yahoo); `MAIL_BACKEND=auto` usa SMTP si hay credenciales y el buzón local si no; STARTTLS en 587 y SSL en 465; un error transitorio se reintenta; un error de autenticación explica que se use una contraseña de aplicación; `bosquevivo mail-test` verifica la configuración.
 - **Automatización:** `integration/test_two_factor.py::test_smtp_presets_and_auto_backend`, `::test_smtp_retries_and_explains_auth_errors`, `integration/test_password_recovery.py::test_smtp_mailer_uses_tls_and_login`, `::test_build_mailer_validates_configuration`
-- **Resultado:** Aprobado. El envío por un servidor SMTP real se ejecuta en el piloto con `bosquevivo mail-test` (Bloqueado hasta tener las credenciales).
+- **Envío real (05/11/2026):** en producción, con una cuenta de Gmail y contraseña de aplicación, llegaron los códigos de verificación en dos pasos, el aviso de inicio de sesión y el correo de prueba de `POST /api/v1/admin/mail-test` (respuesta `{"backend": "smtp"}`).
+- **Resultado:** Aprobado.
 
 ### CP-58 Configuración automática
 
@@ -468,7 +471,7 @@ Estados: **Aprobado**, **Fallido**, **Bloqueado** (depende de credenciales o usu
 - **Requisito:** 3.3.6 Portabilidad, 3.3.3 Fiabilidad · **Prioridad:** 2
 - **Pasos:** `TEST_DATABASE_URL=postgresql://… uv run pytest` sobre un PostgreSQL 16 vacío.
 - **Resultado esperado:** las mismas pruebas que con SQLite pasan con PostgreSQL (tipos con zona horaria, largo de columnas, migración ligera, secuencias).
-- **Resultado obtenido:** 330 de 330 aprobadas en PostgreSQL 16; la CI ejecuta las dos variantes en cada cambio.
+- **Resultado obtenido:** 353 de 353 aprobadas en PostgreSQL 16 (ejecución del 05/11/2026); la CI ejecuta las dos variantes en cada cambio.
 - **Resultado:** Aprobado.
 
 ### CP-60 Conexión a Supabase por el pooler
@@ -496,3 +499,23 @@ Estados: **Aprobado**, **Fallido**, **Bloqueado** (depende de credenciales o usu
 - **Despliegue real (04/11/2026):** API en https://bosque-vivo-api.vercel.app y sitio en https://bosque-vivo-web.vercel.app sobre Supabase. Se detectó y corrigió una colisión al crear el esquema con varias instancias a la vez (INC-15). `push-db` subió 7.163 filas en 6 s; `/api/v1/projects` devolvió 58 proyectos; reporte PDF 200 en 1,1 s; chat en línea respondió el saludo y el aviso; `/proyectos` pasó de 15–25 s a 1–2 s con el endpoint `/api/v1/explorer` (INC-16).
 - **Resultado:** Aprobado.
 
+## Documentos legales y correos
+
+### CP-63 Documentos legales publicados
+
+- **Requisito:** 3.3.2 Seguridad (Ley 1581 de 2012), 3.4 Otros requisitos (licencias y atribución) · **Prioridad:** 2
+- **Técnica:** revisión de contenido contra la Ley 1581 y el Decreto 1377 de 2013; prueba E2E.
+- **Pasos:** abrir `/terminos`, `/privacidad` y `/uso-de-datos`; revisar el pie de página, el acceso de auditores, la activación de una invitación y el chat en línea.
+- **Resultado esperado:** los tres documentos responden con versión y fecha. Los términos cubren el alcance de los resultados, el asistente de IA, las cuentas de auditor, el uso aceptable, la propiedad intelectual, la responsabilidad y la ley aplicable. La política de privacidad identifica al responsable, los datos, las finalidades, la autorización, los encargados y las transferencias internacionales (Google, Supabase, Vercel, Meta), los derechos, el procedimiento con plazos (consultas en 10 días hábiles y reclamos en 15), la seguridad, la retención, las cookies y el uso de IA. Uso de datos lista cada fuente con su licencia y su cita (Karnik et al. y Hansen con CC BY 4.0, Copernicus, USGS, NASA y Esri) y las limitaciones. El pie enlaza los tres documentos; el acceso, la activación y el chat remiten a los términos y a la política.
+- **Automatización:** E2E CP-63 (5 verificaciones); captura `evidencias/capturas/09-uso-de-datos.png`.
+- **Resultado obtenido:** 5 de 5 verificaciones E2E aprobadas; en producción las tres páginas responden 200 con el correo de contacto configurado.
+- **Resultado:** Aprobado.
+
+### CP-64 Correos con la plantilla de la marca
+
+- **Requisito:** RF09 (salidas: correo con el enlace de restablecimiento), 3.3.2 · **Prioridad:** 3
+- **Pasos:** generar cada plantilla (restablecimiento, invitación, código, inicio de sesión, cambio de contraseña, bloqueo y prueba) y recorrer el E2E con el buzón local.
+- **Resultado esperado:** cada correo tiene asunto «Bosque Vivo: …», versión de texto y versión HTML con encabezado de la marca, botón y enlace visible, código destacado cuando aplica, nota de seguridad y pie con enlaces a `/privacidad` y `/terminos`; los valores del usuario se escapan; la versión de texto conserva el enlace, el código y el enlace de privacidad.
+- **Automatización:** `unit/test_email_templates.py` (6 pruebas), E2E CP-64.
+- **Resultado obtenido:** pruebas aprobadas; en producción llegó a Gmail el correo de prueba con la nueva plantilla.
+- **Resultado:** Aprobado.
