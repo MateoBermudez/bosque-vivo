@@ -8,9 +8,9 @@
 | API | https://bosque-vivo-api.vercel.app (`/health`, documentación en `/docs`) |
 | Base de datos | Supabase, proyecto `ovdjtikxtbsipzahnapq`, región us-east-1, *Transaction pooler* `aws-0-us-east-1.pooler.supabase.com:6543` |
 
-Datos cargados desde `web/snapshot`: 58 proyectos (55 de Karnik et al. y 3 de demostración), 5.883 observaciones NDVI, 784 registros de pérdida, 36 auditorías y 330 declaraciones. Los polígonos de esa copia están aligerados (tolerancia de 0,0005°); para tener los polígonos completos suba la base SQLite original con `push-db --replace` (sección 2).
+Datos en producción: 58 proyectos (55 de Karnik et al. con sus **polígonos completos**, importados del GeoPackage original de Zenodo con las reglas de `import-karnik`, y 3 de demostración), 5.883 observaciones NDVI, 784 registros de pérdida, 36 auditorías y 330 declaraciones.
 
-Los proyectos de Vercel se desplegaron con la CLI y todavía no están conectados al repositorio: para que cada cambio en `main` se despliegue solo, en cada proyecto de Vercel vaya a **Settings → Git → Connect Git Repository** y elija `MateoBermudez/bosque-vivo`, con *Root Directory* `backend` (API) o `web` (sitio).
+**Despliegue automático:** los dos proyectos de Vercel están conectados a `MateoBermudez/bosque-vivo` (rama `main`), con *Root Directory* `backend` (API) y `web` (sitio). Cada push a `main` despliega los dos. Al cambiar una variable de entorno en Vercel hay que usar **Redeploy** en el último despliegue.
 
 ## Arquitectura
 
