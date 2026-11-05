@@ -1,0 +1,15 @@
+node_modules
+.venv
+data
+*.db
+*.sqlite
+.env
+.env.*
+!.env.example
+web/.next
+backend/tests
+docs
+panel
+.pytest_cache
+.ruff_cache
+__pycache__

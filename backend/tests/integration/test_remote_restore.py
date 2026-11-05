@@ -1,5 +1,6 @@
 from pathlib import Path
 
+from bosquevivo.core.config import Settings, get_settings
 from bosquevivo.db.models import AuditRun, Project
 from bosquevivo.db.remote import push_database
 from bosquevivo.db.session import build_engine, init_db, make_session_factory
@@ -43,3 +44,18 @@ def test_restore_requires_admin_and_known_table(client):
     assert bad.status_code == 422
     wrong = client.post("/api/v1/admin/restore/clear", headers=ADMIN, json={"confirm": "si"})
     assert wrong.status_code == 422
+
+
+def test_admin_invites_user_and_returns_link_without_smtp(client, tmp_path):
+    client.app.dependency_overrides[get_settings] = lambda: Settings(
+        admin_token="secreto", data_dir=tmp_path, mail_backend="outbox"
+    )
+    body = {"email": "Nueva@ElPoli.edu.co", "name": "Nueva"}
+    created = client.post("/api/v1/admin/users/invite", headers=ADMIN, json=body).json()
+    assert created["email"] == "nueva@elpoli.edu.co" and created["emailed"] is False
+    assert "/acceso/restablecer?token=" in created["link"]
+    duplicate = client.post("/api/v1/admin/users/invite", headers=ADMIN, json=body)
+    assert duplicate.status_code == 422
+    users = client.get("/api/v1/admin/users", headers=ADMIN).json()
+    assert users == [{"email": "nueva@elpoli.edu.co", "name": "Nueva", "active": True}]
+    assert client.post("/api/v1/admin/users/invite", json=body).status_code == 401

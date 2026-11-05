@@ -29,7 +29,12 @@ push_env() {
 }
 
 deploy() {
-  vc deploy --prod --yes 2>/dev/null | grep -Eo 'https://[^ ]+\.vercel\.app' | tail -1
+  local ids org project
+  ids="$(cat .vercel/project.json)"
+  org="$(printf '%s' "$ids" | sed -E 's/.*"orgId": *"([^"]+)".*/\1/')"
+  project="$(printf '%s' "$ids" | sed -E 's/.*"projectId": *"([^"]+)".*/\1/')"
+  (cd "$root" && VERCEL_ORG_ID="$org" VERCEL_PROJECT_ID="$project" vc deploy --prod --yes 2>/dev/null) \
+    | grep -Eo 'https://[^ ]+\.vercel\.app' | tail -1
 }
 
 wait_ok() {

@@ -5,8 +5,11 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
+from bosquevivo.accounts import AccountService, build_mailer
 from bosquevivo.api.deps import db_session, require_admin
 from bosquevivo.api.schemas import ImportOut, ImportRequest
+from bosquevivo.core.config import Settings, get_settings
+from bosquevivo.core.errors import ValidationFailedError
 from bosquevivo.db.remote import (
     CLEAR_CONFIRMATION,
     clear_all,
@@ -86,3 +89,29 @@ def restore_clear(body: ClearIn, session: Session = Depends(db_session)):
 @router.post("/restore/finish")
 def restore_finish(session: Session = Depends(db_session)):
     return {"counts": finish_restore(session)}
+
+
+class InviteIn(BaseModel):
+    email: str
+    name: str = ""
+
+
+@router.get("/users")
+def list_users(session: Session = Depends(db_session), settings: Settings = Depends(get_settings)):
+    users = AccountService(session, build_mailer(settings), settings).list_users()
+    return [{"email": u.email, "name": u.name, "active": u.active} for u in users]
+
+
+@router.post("/users/invite")
+def invite_user(
+    body: InviteIn,
+    session: Session = Depends(db_session),
+    settings: Settings = Depends(get_settings),
+):
+    mailer = build_mailer(settings)
+    try:
+        user, link = AccountService(session, mailer, settings).invite_user(body.email, body.name)
+    except ValidationFailedError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    emailed = mailer.name == "smtp"
+    return {"email": user.email, "emailed": emailed, "link": None if emailed else link}
