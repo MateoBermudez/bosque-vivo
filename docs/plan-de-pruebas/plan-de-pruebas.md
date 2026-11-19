@@ -17,7 +17,7 @@ Documentos que lo acompañan:
 
 | Documento | Contenido |
 |---|---|
-| [`casos-de-prueba.md`](casos-de-prueba.md) | Especificación de los 64 casos de prueba (CP-01 a CP-64) |
+| [`casos-de-prueba.md`](casos-de-prueba.md) | Especificación de los 67 casos de prueba (CP-01 a CP-67) |
 | [`informe-de-resultados.md`](informe-de-resultados.md) | Ejecución, métricas, mediciones de requisitos no funcionales y evaluación de los criterios de aceptación |
 | [`incidencias.md`](incidencias.md) | Registro de incidencias encontradas durante la ejecución |
 | [`evidencias/`](evidencias) | Salidas de las herramientas, reportes JUnit, cobertura, mediciones y capturas |
@@ -32,7 +32,7 @@ Documentos que lo acompañan:
 | 03/11/2026 | 1.1 | Equipo Bosque Vivo | Correo SMTP con verificación en dos pasos, avisos de seguridad e invitaciones; configuración automática; casos CP-53 a CP-58 |
 | 04/11/2026 | 1.2 | Equipo Bosque Vivo | PostgreSQL en Supabase, migración desde SQLite y despliegue en Vercel; casos CP-59 a CP-62 |
 | 05/11/2026 | 1.3 | Equipo Bosque Vivo | Referencia a la revisión 1.1 del ERS (requisitos sin cambios); casos CP-63 (documentos legales) y CP-64 (correos con la plantilla de la marca); Gemini y SMTP verificados en producción (CP-50, CP-57) con medición del asistente en producción; nueva ejecución completa |
-| 19/11/2026 | 1.4 | Equipo Bosque Vivo | Referencia a la revisión 1.2 del ERS: el asistente se ofrece por el chat en línea del sitio web y WhatsApp pasa a ampliación futura (exige un número dedicado y la verificación de la cuenta en Meta). CP-49 pasa a verificar el chat en línea en producción; se ajustan elementos a probar y a no probar, recursos, cronograma y riesgos |
+| 19/11/2026 | 1.4 | Equipo Bosque Vivo | Referencia a la revisión 1.2 del ERS: el asistente se ofrece por el chat en línea del sitio web y WhatsApp pasa a ampliación futura (exige un número dedicado y la verificación de la cuenta en Meta). El chat en línea admite texto, ubicación, fotos y notas de voz. CP-49 pasa a verificar el chat en línea en producción; casos CP-65 (cuenta de pruebas compartida sin código), CP-66 (sitio sin WhatsApp) y CP-67 (chat en un celular con ubicación, fotos y voz); nueva ejecución completa, en local y en producción; se ajustan elementos a probar y a no probar, recursos, cronograma y riesgos |
 |  |  |  |  |
 
 ## 2. Información del Proyecto
@@ -56,7 +56,7 @@ Documentos que lo acompañan:
 
 ## 4. Alcance y Estrategia de las Pruebas
 
-El objeto de prueba es la versión de Bosque Vivo de la rama `main` del repositorio `MateoBermudez/bosque-vivo` a 05/11/2026: la API y los módulos de dominio (`backend/`), el sitio web (`web/`), el panel Streamlit en desuso (`panel/`) y su despliegue en producción (Vercel y Supabase). Se prueban los dos sistemas de información del ERS —Verificación y Auditoría, y Asistente Conversacional— más el panel web de solo lectura con su administración de cuentas (RF09).
+El objeto de prueba es la versión de Bosque Vivo de la rama `main` del repositorio `MateoBermudez/bosque-vivo` a 19/11/2026: la API y los módulos de dominio (`backend/`), el sitio web (`web/`), el panel Streamlit en desuso (`panel/`) y su despliegue en producción (Vercel y Supabase). Se prueban los dos sistemas de información del ERS —Verificación y Auditoría, y Asistente Conversacional— más el panel web de solo lectura con su administración de cuentas (RF09).
 
 ### 4.1 Elementos de Pruebas
 
@@ -68,8 +68,8 @@ El objeto de prueba es la versión de Bosque Vivo de la rama `main` del reposito
 | Comparación declarado–observado | `audit/compare.py`, `audit/components.py` | RF04 | Alineación temporal con la fecha T0; umbrales de caída configurables; clasificación |
 | Índice de credibilidad | `audit/index.py`, `audit/confidence.py`, `audit/config.py` | RF05 | Escala 0–1 (y 0–100); categorías alta/media/baja e «Insuficiente»; confianza; reproducibilidad de los insumos |
 | Reportes | `backend/src/bosquevivo/reports`, `web/src/app/informe` | RF06 | Reporte HTML y PDF con polígono, serie NDVI, comparación, índice, fuentes y fecha; descarga desde el sitio |
-| Asistente conversacional | `backend/src/bosquevivo/assistant`, `api/routers/community.py`, `web/src/app/asistente` | RF07, RF08 | Chat en línea del sitio web (canal del asistente): código anónimo de conversación; consentimiento (Ley 1581); intenciones estado, alertas y ayuda; registro del polígono de interés; respuestas en español sencillo y de longitud acotada; borrado de datos; acceso a la API solo desde el servidor del sitio. El webhook de WhatsApp (`api/routers/whatsapp.py`, ampliación futura) conserva sus pruebas automáticas porque comparte el flujo |
-| Cuentas y recuperación de contraseña | `backend/src/bosquevivo/accounts`, `api/routers/auth.py`, `web/src/app/acceso` | RF09 | Inicio de sesión; mensaje genérico; token de un solo uso con vencimiento; validación de la contraseña nueva; confirmación; bloqueo por intentos; invitaciones |
+| Asistente conversacional | `backend/src/bosquevivo/assistant`, `api/routers/community.py`, `web/src/app/asistente` | RF07, RF08 | Chat en línea del sitio web (canal del asistente): texto, ubicación del navegador, fotos (hasta 3 MB, reducidas a 1.280 px) y notas de voz (WAV de 16 kHz, hasta 60 s); código anónimo de conversación; consentimiento (Ley 1581); intenciones estado, alertas y ayuda; registro del polígono de interés; respuestas en español sencillo y de longitud acotada; borrado de datos; acceso a la API solo desde el servidor del sitio. El webhook de WhatsApp (`api/routers/whatsapp.py`, ampliación futura) conserva sus pruebas automáticas porque comparte el flujo |
+| Cuentas y recuperación de contraseña | `backend/src/bosquevivo/accounts`, `api/routers/auth.py`, `web/src/app/acceso` | RF09 | Inicio de sesión; mensaje genérico; token de un solo uso con vencimiento; validación de la contraseña nueva; confirmación; bloqueo por intentos; invitaciones; cuenta de pruebas compartida (`AUTH_TEST_ACCOUNT`) que entra sin código y no recibe correos |
 | Correo SMTP y verificación en dos pasos | `accounts/mailer.py`, `accounts/templates.py`, `accounts/service.py` | RF09, 3.3.2 | Código de 6 dígitos por correo (intentos, vencimiento, reenvío); avisos de inicio de sesión, cambio de contraseña y bloqueo; detección del servidor SMTP, TLS, reintentos; buzón local sin SMTP; plantilla HTML con la marca, versión de texto y enlaces a privacidad y términos |
 | Documentos legales | `web/src/app/terminos`, `web/src/app/privacidad`, `web/src/app/uso-de-datos`, `web/src/components/legal` | 3.3.2, 3.4 (Ley 1581, licencias) | Términos y condiciones; política de tratamiento (responsable, finalidades, autorización, encargados y transferencias, derechos, plazos, seguridad, retención, cookies); fuentes con licencia y cita; enlaces desde el pie, el acceso, la activación y el chat |
 | Configuración automática | `bosquevivo/setup.py`, `scripts/dev.*`, `scripts/start.*` | 3.3.5, 3.3.6 | Generación de secretos y `.env`, base y datos de demostración, lista de claves externas pendientes, modo producción |
@@ -121,8 +121,8 @@ Aspectos que se revisan en cada regresión: (1) toda la suite automática pasa (
 
 | Cuadrante | Propósito | En Bosque Vivo |
 |---|---|---|
-| Q1 — tecnología, apoyo al equipo | Pruebas unitarias y de componentes, automatizadas | 124 pruebas unitarias (NDVI, índice, guardas, contraseñas, firma, privacidad, plantillas de correo, presupuesto de tiempo de la IA) y 95 pruebas del sitio |
-| Q2 — negocio, apoyo al equipo | Pruebas funcionales y de ejemplos, automatizadas | 229 pruebas de integración y de regresión por requisito (incluidos 5 casos «golden» con categoría esperada), 36 verificaciones E2E |
+| Q1 — tecnología, apoyo al equipo | Pruebas unitarias y de componentes, automatizadas | 124 pruebas unitarias (NDVI, índice, guardas, contraseñas, firma, privacidad, plantillas de correo, presupuesto de tiempo de la IA) y 100 pruebas del sitio (incluido el WAV de las notas de voz) |
+| Q2 — negocio, apoyo al equipo | Pruebas funcionales y de ejemplos, automatizadas | 236 pruebas de integración y de regresión por requisito (incluidos 5 casos «golden» con categoría esperada y 4 del arnés de evaluación), 48 verificaciones E2E y 14 en producción |
 | Q3 — negocio, crítica al producto | Exploratorias, usabilidad, aceptación | Revisión visual de pantallas (capturas), prueba de comprensión y piloto (pendientes con usuarios) |
 | Q4 — tecnología, crítica al producto | Rendimiento, seguridad, fiabilidad | `medir-rnf`, determinismo, incidentes, análisis estático (`ruff`, `pyright`, `eslint`) |
 
@@ -176,7 +176,7 @@ Los casos o partes que dependen de credenciales o usuarios externos (CP-29, CP-4
 |---|---|
 | Equipo de prueba | Computador personal con Windows 11 o Linux, 8 GB de RAM o más, 5 GB libres en disco (el ERS y el ADR 0002 definen ejecución local, sin servidores ni máquinas virtuales) |
 | Red | Conexión a Internet estable para las fuentes de datos abiertos (Hansen en Google Cloud Storage, MODIS en Planetary Computer) para Gemini y el correo SMTP en producción |
-| Usuario final | Cualquier celular o computador con navegador web (chat en línea en `/asistente`) |
+| Usuario final | Cualquier celular o computador con navegador web (chat en línea en `/asistente`); para la ubicación y las notas de voz, el navegador pide permiso de ubicación y de micrófono |
 | Integración continua | Máquinas `ubuntu-latest` de GitHub Actions |
 
 ### 5.2 Requerimientos de Entornos – Software
@@ -207,6 +207,8 @@ Datos de prueba: tres proyectos de demostración (`bosquevivo seed-demo`), polí
 | `bosquevivo incidents` | Bitácora de incidentes (origen, duración, criticidad) |
 | `bosquevivo eval` | Evaluación del agente con Gemini real (20 casos) |
 | `scripts/disponibilidad.sh` | Disponibilidad del servicio durante el piloto |
+| `scripts/produccion.cjs` | Chat en línea en producción desde un celular emulado (texto, ubicación, foto y nota de voz) y sitio sin WhatsApp |
+| `espeak-ng` | Pregunta hablada en WAV para probar la transcripción de notas de voz |
 | GitHub Actions | Regresión automática en cada cambio |
 | Técnicas | Partición de equivalencia y valores límite (NDVI en [−1, 1], umbrales del índice, vencimiento del token, intentos fallidos), tablas de decisión (consentimiento y registro del asistente), pruebas basadas en riesgo y casos «golden» |
 
@@ -243,7 +245,7 @@ Propuesta de reparto; el equipo puede ajustarla antes de firmar.
 | Especificación de casos, ejecución completa, E2E y mediciones | 03/11/2026 |
 | PostgreSQL en Supabase y despliegue en Vercel | 04/11/2026 |
 | Gemini y correo SMTP en producción, documentos legales y nueva ejecución completa | 05/11/2026 |
-| Chat en línea como canal único del asistente (ERS 1.2) | 19/11/2026 |
+| Chat en línea como canal único del asistente (ERS 1.2), con ubicación, fotos y notas de voz; nueva ejecución completa en local y en producción | 19/11/2026 |
 | Piloto: CP-29, CP-46, CP-50 | Horario acordado con el docente |
 | Cierre y firmas | Entrega final del semestre |
 
@@ -254,6 +256,7 @@ Propuesta de reparto; el equipo puede ajustarla antes de firmar.
 | Cuotas o saturación de la capa gratuita de Gemini | Alta | Medio | Límites propios por minuto, día y usuario; cambio automático al otro modelo gratuito con pausa del saturado (INC-17); presupuesto de 8 s por respuesta (INC-19); respuesta de respaldo determinista; las intenciones del ERS no usan IA |
 | Usuarios poco habituados a abrir un sitio web para consultar | Media | Medio | Chat liviano pensado para el celular, enlace directo a `/asistente` que puede compartirse por cualquier medio, respuestas rápidas en botones; WhatsApp queda como ampliación (sección 2.6 del ERS) |
 | Sin acceso a Earth Engine | Media | Medio | Proveedor de datos abiertos (MODIS + Hansen) probado con datos reales |
+| La base gratuita de Supabase se pausa tras una semana sin uso y la API deja de responder (INC-20) | Alta | Alto | Usar el sitio al menos una vez por semana durante el piloto; si se pausa, reactivarla desde el panel de Supabase (**Restore project**) |
 | Nubosidad persistente que deja proyectos sin escenas | Alta | Medio | Se registra la incidencia y el índice sale «Insuficiente» con confianza baja, en lugar de un valor |
 | Casos que dependen del piloto (usuarios reales y horario acordado) | Alta | Bajo | Casos marcados «Bloqueado» con guía paso a paso para ejecutarlos |
 | Disponibilidad del equipo (semestre académico) | Media | Medio | Suite automatizada en CI; reparto por módulos |

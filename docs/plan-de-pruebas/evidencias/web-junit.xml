@@ -1,213 +1,227 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<testsuites name="vitest tests" tests="95" failures="0" errors="0" time="3.048611186">
-    <testsuite name="src/lib/api/accounts.test.ts" timestamp="2026-11-05T11:51:25.362Z" hostname="vm" tests="5" failures="0" errors="0" skipped="0" time="0.038362995">
-        <testcase classname="src/lib/api/accounts.test.ts" name="cuentas de auditor (RF09) &gt; inicia sesión con el token de administración del servidor" time="0.029908034">
+<testsuites name="vitest tests" tests="100" failures="0" errors="0" time="2.994030513">
+    <testsuite name="src/lib/api/accounts.test.ts" timestamp="2026-11-19T02:49:34.983Z" hostname="vm" tests="5" failures="0" errors="0" skipped="0" time="0.028415839">
+        <testcase classname="src/lib/api/accounts.test.ts" name="cuentas de auditor (RF09) &gt; inicia sesión con el token de administración del servidor" time="0.021028134">
         </testcase>
-        <testcase classname="src/lib/api/accounts.test.ts" name="cuentas de auditor (RF09) &gt; pide el código de verificación y lo confirma (2FA)" time="0.001658773">
+        <testcase classname="src/lib/api/accounts.test.ts" name="cuentas de auditor (RF09) &gt; pide el código de verificación y lo confirma (2FA)" time="0.001309544">
         </testcase>
-        <testcase classname="src/lib/api/accounts.test.ts" name="cuentas de auditor (RF09) &gt; propaga el mensaje y el estado de credenciales inválidas" time="0.001004058">
+        <testcase classname="src/lib/api/accounts.test.ts" name="cuentas de auditor (RF09) &gt; propaga el mensaje y el estado de credenciales inválidas" time="0.000901964">
         </testcase>
-        <testcase classname="src/lib/api/accounts.test.ts" name="cuentas de auditor (RF09) &gt; solicita, verifica y confirma el restablecimiento" time="0.002416208">
+        <testcase classname="src/lib/api/accounts.test.ts" name="cuentas de auditor (RF09) &gt; solicita, verifica y confirma el restablecimiento" time="0.001997105">
         </testcase>
-        <testcase classname="src/lib/api/accounts.test.ts" name="cuentas de auditor (RF09) &gt; informa un enlace vencido con estado 410" time="0.001351702">
-        </testcase>
-    </testsuite>
-    <testsuite name="src/lib/api/backend.test.ts" timestamp="2026-11-05T11:51:25.365Z" hostname="vm" tests="10" failures="0" errors="0" skipped="0" time="0.062148734">
-        <testcase classname="src/lib/api/backend.test.ts" name="cliente del backend &gt; lee proyectos desde la ruta versionada y valida la forma" time="0.040605775">
-        </testcase>
-        <testcase classname="src/lib/api/backend.test.ts" name="cliente del backend &gt; pide el polígono liviano solo cuando se le indica" time="0.004509315">
-        </testcase>
-        <testcase classname="src/lib/api/backend.test.ts" name="cliente del backend &gt; devuelve null cuando el backend responde 404" time="0.001241898">
-        </testcase>
-        <testcase classname="src/lib/api/backend.test.ts" name="cliente del backend &gt; traduce un error del backend usando su mensaje" time="0.00302656">
-        </testcase>
-        <testcase classname="src/lib/api/backend.test.ts" name="cliente del backend &gt; falla con un mensaje claro si la respuesta no cumple el esquema" time="0.003355181">
-        </testcase>
-        <testcase classname="src/lib/api/backend.test.ts" name="cliente del backend &gt; avisa cuando no puede conectar con el backend" time="0.000866802">
-        </testcase>
-        <testcase classname="src/lib/api/backend.test.ts" name="cliente del backend &gt; envía el token de administración solo en el chat y las trazas" time="0.00163774">
-        </testcase>
-        <testcase classname="src/lib/api/backend.test.ts" name="cliente del backend &gt; no hace la llamada si falta el token de administración" time="0.001166566">
-        </testcase>
-        <testcase classname="src/lib/api/backend.test.ts" name="cliente del backend &gt; devuelve el reporte con su tipo de contenido, o null si no existe" time="0.00192843">
-        </testcase>
-        <testcase classname="src/lib/api/backend.test.ts" name="cliente del backend &gt; pide el explorador completo en una sola llamada y acepta su ausencia" time="0.001831542">
+        <testcase classname="src/lib/api/accounts.test.ts" name="cuentas de auditor (RF09) &gt; informa un enlace vencido con estado 410" time="0.001997676">
         </testcase>
     </testsuite>
-    <testsuite name="src/lib/api/mock.test.ts" timestamp="2026-11-05T11:51:25.369Z" hostname="vm" tests="9" failures="0" errors="0" skipped="0" time="2.842278964">
-        <testcase classname="src/lib/api/mock.test.ts" name="datos de ejemplo frente al contrato de la API &gt; proyectos, geometrías, series y auditorías cumplen el esquema" time="0.026637249">
+    <testsuite name="src/lib/api/backend.test.ts" timestamp="2026-11-19T02:49:34.985Z" hostname="vm" tests="10" failures="0" errors="0" skipped="0" time="0.03624347">
+        <testcase classname="src/lib/api/backend.test.ts" name="cliente del backend &gt; lee proyectos desde la ruta versionada y valida la forma" time="0.02341814">
         </testcase>
-        <testcase classname="src/lib/api/mock.test.ts" name="datos de ejemplo frente al contrato de la API &gt; la categoría es coherente con el puntaje y los umbrales del índice" time="0.00068792">
+        <testcase classname="src/lib/api/backend.test.ts" name="cliente del backend &gt; pide el polígono liviano solo cuando se le indica" time="0.002463426">
         </testcase>
-        <testcase classname="src/lib/api/mock.test.ts" name="datos de ejemplo frente al contrato de la API &gt; hay un proyecto con resultado Insuficiente y datos faltantes por nubes" time="0.000503271">
+        <testcase classname="src/lib/api/backend.test.ts" name="cliente del backend &gt; devuelve null cuando el backend responde 404" time="0.000545706">
         </testcase>
-        <testcase classname="src/lib/api/mock.test.ts" name="datos de ejemplo frente al contrato de la API &gt; el puntaje de permanencia coincide con el porcentaje de bosque en pie" time="0.000611921">
+        <testcase classname="src/lib/api/backend.test.ts" name="cliente del backend &gt; traduce un error del backend usando su mensaje" time="0.001503617">
         </testcase>
-        <testcase classname="src/lib/api/mock.test.ts" name="datos de ejemplo frente al contrato de la API &gt; la comparación anual marca como acreditados los años desde T0" time="0.000662476">
+        <testcase classname="src/lib/api/backend.test.ts" name="cliente del backend &gt; falla con un mensaje claro si la respuesta no cumple el esquema" time="0.0017288">
         </testcase>
-        <testcase classname="src/lib/api/mock.test.ts" name="datos de ejemplo frente al contrato de la API &gt; devuelve null para proyectos que no existen" time="0.000575743">
+        <testcase classname="src/lib/api/backend.test.ts" name="cliente del backend &gt; avisa cuando no puede conectar con el backend" time="0.000597602">
         </testcase>
-        <testcase classname="src/lib/api/mock.test.ts" name="chat y trazas de ejemplo &gt; las respuestas del chat cumplen el esquema" time="2.807851809">
+        <testcase classname="src/lib/api/backend.test.ts" name="cliente del backend &gt; envía el token de administración solo en el chat y las trazas" time="0.001270173">
         </testcase>
-        <testcase classname="src/lib/api/mock.test.ts" name="chat y trazas de ejemplo &gt; las trazas cumplen el esquema" time="0.001802245">
+        <testcase classname="src/lib/api/backend.test.ts" name="cliente del backend &gt; no hace la llamada si falta el token de administración" time="0.000751838">
         </testcase>
-        <testcase classname="src/lib/api/mock.test.ts" name="chat y trazas de ejemplo &gt; el reporte de ejemplo existe para una corrida y no para una inventada" time="0.000772926">
+        <testcase classname="src/lib/api/backend.test.ts" name="cliente del backend &gt; devuelve el reporte con su tipo de contenido, o null si no existe" time="0.001428456">
         </testcase>
-    </testsuite>
-    <testsuite name="src/lib/auth/access.test.ts" timestamp="2026-11-05T11:51:25.370Z" hostname="vm" tests="16" failures="0" errors="0" skipped="0" time="0.030487893">
-        <testcase classname="src/lib/auth/access.test.ts" name="safeNextPath &gt; acepta rutas internas" time="0.003663587">
-        </testcase>
-        <testcase classname="src/lib/auth/access.test.ts" name="safeNextPath &gt; descarta &quot;https://malo.example&quot; y vuelve al chat" time="0.000741033">
-        </testcase>
-        <testcase classname="src/lib/auth/access.test.ts" name="safeNextPath &gt; descarta &quot;//malo.example&quot; y vuelve al chat" time="0.000403241">
-        </testcase>
-        <testcase classname="src/lib/auth/access.test.ts" name="safeNextPath &gt; descarta &quot;/\\malo.example&quot; y vuelve al chat" time="0.000717667">
-        </testcase>
-        <testcase classname="src/lib/auth/access.test.ts" name="safeNextPath &gt; descarta &quot;javascript:alert(1)&quot; y vuelve al chat" time="0.000544911">
-        </testcase>
-        <testcase classname="src/lib/auth/access.test.ts" name="safeNextPath &gt; descarta &quot;&quot; y vuelve al chat" time="0.000320904">
-        </testcase>
-        <testcase classname="src/lib/auth/access.test.ts" name="safeNextPath &gt; descarta undefined y vuelve al chat" time="0.000216654">
-        </testcase>
-        <testcase classname="src/lib/auth/access.test.ts" name="safeNextPath &gt; descarta null y vuelve al chat" time="0.000468681">
-        </testcase>
-        <testcase classname="src/lib/auth/access.test.ts" name="modo de acceso de auditores &gt; queda protegido cuando hay código y secreto" time="0.001444221">
-        </testcase>
-        <testcase classname="src/lib/auth/access.test.ts" name="modo de acceso de auditores &gt; usa cuentas de auditor con la API en vivo y basta el secreto" time="0.000770258">
-        </testcase>
-        <testcase classname="src/lib/auth/access.test.ts" name="modo de acceso de auditores &gt; usa el código sin API en vivo" time="0.00068075">
-        </testcase>
-        <testcase classname="src/lib/auth/access.test.ts" name="modo de acceso de auditores &gt; devuelve el usuario de la sesión" time="0.009903064">
-        </testcase>
-        <testcase classname="src/lib/auth/access.test.ts" name="modo de acceso de auditores &gt; queda abierto en desarrollo sin configuración" time="0.000647671">
-        </testcase>
-        <testcase classname="src/lib/auth/access.test.ts" name="modo de acceso de auditores &gt; se bloquea en producción sin configuración" time="0.000424348">
-        </testcase>
-        <testcase classname="src/lib/auth/access.test.ts" name="modo de acceso de auditores &gt; exige una cookie válida cuando está protegido" time="0.00374356">
-        </testcase>
-        <testcase classname="src/lib/auth/access.test.ts" name="modo de acceso de auditores &gt; niega siempre el acceso cuando está deshabilitado" time="0.00157268">
+        <testcase classname="src/lib/api/backend.test.ts" name="cliente del backend &gt; pide el explorador completo en una sola llamada y acepta su ausencia" time="0.001259485">
         </testcase>
     </testsuite>
-    <testsuite name="src/lib/auth/session.test.ts" timestamp="2026-11-05T11:51:25.373Z" hostname="vm" tests="13" failures="0" errors="0" skipped="0" time="0.021089003">
-        <testcase classname="src/lib/auth/session.test.ts" name="sesión de auditor &gt; acepta un token recién creado y conserva el usuario" time="0.009959638">
+    <testsuite name="src/lib/api/community.test.ts" timestamp="2026-11-19T02:49:34.987Z" hostname="vm" tests="3" failures="0" errors="0" skipped="0" time="0.023674515">
+        <testcase classname="src/lib/api/community.test.ts" name="chat en línea &gt; envía texto con el token de administración" time="0.020803605">
         </testcase>
-        <testcase classname="src/lib/auth/session.test.ts" name="sesión de auditor &gt; rechaza un token firmado con otro secreto" time="0.00165617">
+        <testcase classname="src/lib/api/community.test.ts" name="chat en línea &gt; envía la ubicación del navegador" time="0.00069938">
         </testcase>
-        <testcase classname="src/lib/auth/session.test.ts" name="sesión de auditor &gt; rechaza un token vencido" time="0.001274707">
-        </testcase>
-        <testcase classname="src/lib/auth/session.test.ts" name="sesión de auditor &gt; rechaza un token cuyo vencimiento fue alterado" time="0.001874415">
-        </testcase>
-        <testcase classname="src/lib/auth/session.test.ts" name="sesión de auditor &gt; rechaza un token cuyo usuario fue alterado" time="0.001283743">
-        </testcase>
-        <testcase classname="src/lib/auth/session.test.ts" name="sesión de auditor &gt; rechaza el token mal formado &quot;&quot;" time="0.000377735">
-        </testcase>
-        <testcase classname="src/lib/auth/session.test.ts" name="sesión de auditor &gt; rechaza el token mal formado &quot;abc&quot;" time="0.000373052">
-        </testcase>
-        <testcase classname="src/lib/auth/session.test.ts" name="sesión de auditor &gt; rechaza el token mal formado &quot;v2.123&quot;" time="0.000153782">
-        </testcase>
-        <testcase classname="src/lib/auth/session.test.ts" name="sesión de auditor &gt; rechaza el token mal formado &quot;v2.abc.61.deadbeef&quot;" time="0.000462173">
-        </testcase>
-        <testcase classname="src/lib/auth/session.test.ts" name="sesión de auditor &gt; rechaza el token mal formado &quot;v1.9999999999.deadbeef&quot;" time="0.000315315">
-        </testcase>
-        <testcase classname="src/lib/auth/session.test.ts" name="sesión de auditor &gt; rechaza el token mal formado &quot;v2.9999999999.61.zz&quot;" time="0.000240106">
-        </testcase>
-        <testcase classname="src/lib/auth/session.test.ts" name="sesión de auditor &gt; rechaza el token mal formado &quot;v2.9999999999.zz.deadbeef&quot;" time="0.000107194">
-        </testcase>
-        <testcase classname="src/lib/auth/session.test.ts" name="sesión de auditor &gt; rechaza el token mal formado &quot;v2.9999999999.61.&quot;" time="0.000076582">
+        <testcase classname="src/lib/api/community.test.ts" name="chat en línea &gt; envía una foto con su leyenda" time="0.00107584">
         </testcase>
     </testsuite>
-    <testsuite name="src/lib/auth/throttle.test.ts" timestamp="2026-11-05T11:51:25.376Z" hostname="vm" tests="7" failures="0" errors="0" skipped="0" time="0.004844299">
-        <testcase classname="src/lib/auth/throttle.test.ts" name="límite de intentos &gt; bloquea después del máximo y libera al vencer" time="0.001766232">
+    <testsuite name="src/lib/api/mock.test.ts" timestamp="2026-11-19T02:49:34.988Z" hostname="vm" tests="9" failures="0" errors="0" skipped="0" time="2.827526612">
+        <testcase classname="src/lib/api/mock.test.ts" name="datos de ejemplo frente al contrato de la API &gt; proyectos, geometrías, series y auditorías cumplen el esquema" time="0.014580231">
         </testcase>
-        <testcase classname="src/lib/auth/throttle.test.ts" name="límite de intentos &gt; reinicia la cuenta tras un acierto" time="0.000338103">
+        <testcase classname="src/lib/api/mock.test.ts" name="datos de ejemplo frente al contrato de la API &gt; la categoría es coherente con el puntaje y los umbrales del índice" time="0.000437037">
         </testcase>
-        <testcase classname="src/lib/auth/throttle.test.ts" name="validación de contraseña nueva &gt; rechaza &quot;Clave2026xx&quot;" time="0.000273679">
+        <testcase classname="src/lib/api/mock.test.ts" name="datos de ejemplo frente al contrato de la API &gt; hay un proyecto con resultado Insuficiente y datos faltantes por nubes" time="0.000331961">
         </testcase>
-        <testcase classname="src/lib/auth/throttle.test.ts" name="validación de contraseña nueva &gt; rechaza &quot;corta1&quot;" time="0.00020259">
+        <testcase classname="src/lib/api/mock.test.ts" name="datos de ejemplo frente al contrato de la API &gt; el puntaje de permanencia coincide con el porcentaje de bosque en pie" time="0.000790107">
         </testcase>
-        <testcase classname="src/lib/auth/throttle.test.ts" name="validación de contraseña nueva &gt; rechaza &quot;soloLetrasAqui&quot;" time="0.0002077">
+        <testcase classname="src/lib/api/mock.test.ts" name="datos de ejemplo frente al contrato de la API &gt; la comparación anual marca como acreditados los años desde T0" time="0.000398605">
         </testcase>
-        <testcase classname="src/lib/auth/throttle.test.ts" name="validación de contraseña nueva &gt; rechaza &quot;12345678901&quot;" time="0.000194075">
+        <testcase classname="src/lib/api/mock.test.ts" name="datos de ejemplo frente al contrato de la API &gt; devuelve null para proyectos que no existen" time="0.000307495">
         </testcase>
-        <testcase classname="src/lib/auth/throttle.test.ts" name="validación de contraseña nueva &gt; acepta una contraseña válida" time="0.000273111">
+        <testcase classname="src/lib/api/mock.test.ts" name="chat y trazas de ejemplo &gt; las respuestas del chat cumplen el esquema" time="2.80640511">
         </testcase>
-    </testsuite>
-    <testsuite name="src/lib/domain.test.ts" timestamp="2026-11-05T11:51:25.377Z" hostname="vm" tests="12" failures="0" errors="0" skipped="0" time="0.007678795">
-        <testcase classname="src/lib/domain.test.ts" name="índice v1 &gt; usa los pesos de v1 cuando el resultado trae la evolución de la pérdida" time="0.002677942">
+        <testcase classname="src/lib/api/mock.test.ts" name="chat y trazas de ejemplo &gt; las trazas cumplen el esquema" time="0.001461285">
         </testcase>
-        <testcase classname="src/lib/domain.test.ts" name="índice v1 &gt; muestra el porcentaje de bosque en pie, no el puntaje de la tasa" time="0.000408187">
-        </testcase>
-        <testcase classname="src/lib/domain.test.ts" name="readComponents &gt; devuelve los tres componentes en orden con su peso" time="0.000329381">
-        </testcase>
-        <testcase classname="src/lib/domain.test.ts" name="readComponents &gt; lee los puntajes y los detalles legibles" time="0.000346631">
-        </testcase>
-        <testcase classname="src/lib/domain.test.ts" name="readComponents &gt; conserva el motivo cuando no hay puntaje" time="0.000233957">
-        </testcase>
-        <testcase classname="src/lib/domain.test.ts" name="readComponents &gt; no falla si el backend omite componentes" time="0.000203992">
-        </testcase>
-        <testcase classname="src/lib/domain.test.ts" name="otras lecturas &gt; lee el rango de sensibilidad y el sensor" time="0.000312586">
-        </testcase>
-        <testcase classname="src/lib/domain.test.ts" name="otras lecturas &gt; devuelve null cuando faltan esos campos" time="0.000160219">
-        </testcase>
-        <testcase classname="src/lib/domain.test.ts" name="otras lecturas &gt; normaliza la etiqueta de confianza" time="0.000521033">
-        </testcase>
-        <testcase classname="src/lib/domain.test.ts" name="otras lecturas &gt; traduce herramientas conocidas y deja legibles las desconocidas" time="0.000339034">
-        </testcase>
-        <testcase classname="src/lib/domain.test.ts" name="resultado parcial &gt; lo reconoce cuando solo hay permanencia" time="0.000242521">
-        </testcase>
-        <testcase classname="src/lib/domain.test.ts" name="resultado parcial &gt; no es parcial si hay puntaje completo ni si no se midió nada" time="0.000125302">
+        <testcase classname="src/lib/api/mock.test.ts" name="chat y trazas de ejemplo &gt; el reporte de ejemplo existe para una corrida y no para una inventada" time="0.000575207">
         </testcase>
     </testsuite>
-    <testsuite name="src/lib/format.test.ts" timestamp="2026-11-05T11:51:25.380Z" hostname="vm" tests="6" failures="0" errors="0" skipped="0" time="0.013278237">
-        <testcase classname="src/lib/format.test.ts" name="formatDateTime &gt; trata las fechas sin zona horaria como UTC (así las envía el backend)" time="0.008449078">
+    <testsuite name="src/lib/auth/access.test.ts" timestamp="2026-11-19T02:49:34.989Z" hostname="vm" tests="16" failures="0" errors="0" skipped="0" time="0.014021519">
+        <testcase classname="src/lib/auth/access.test.ts" name="safeNextPath &gt; acepta rutas internas" time="0.001678343">
         </testcase>
-        <testcase classname="src/lib/format.test.ts" name="formatDateTime &gt; respeta una zona horaria explícita" time="0.000614799">
+        <testcase classname="src/lib/auth/access.test.ts" name="safeNextPath &gt; descarta &quot;https://malo.example&quot; y vuelve al chat" time="0.000277991">
         </testcase>
-        <testcase classname="src/lib/format.test.ts" name="formatDateTime &gt; devuelve el texto original si no es una fecha" time="0.000329167">
+        <testcase classname="src/lib/auth/access.test.ts" name="safeNextPath &gt; descarta &quot;//malo.example&quot; y vuelve al chat" time="0.000160377">
         </testcase>
-        <testcase classname="src/lib/format.test.ts" name="otros formatos &gt; formatea latencias" time="0.00030981">
+        <testcase classname="src/lib/auth/access.test.ts" name="safeNextPath &gt; descarta &quot;/\\malo.example&quot; y vuelve al chat" time="0.000309542">
         </testcase>
-        <testcase classname="src/lib/format.test.ts" name="otros formatos &gt; formatea porcentajes y periodos" time="0.000659423">
+        <testcase classname="src/lib/auth/access.test.ts" name="safeNextPath &gt; descarta &quot;javascript:alert(1)&quot; y vuelve al chat" time="0.000183971">
         </testcase>
-        <testcase classname="src/lib/format.test.ts" name="índice en escala de 0 a 1 &gt; convierte el puntaje de 0 a 100" time="0.000445356">
+        <testcase classname="src/lib/auth/access.test.ts" name="safeNextPath &gt; descarta &quot;&quot; y vuelve al chat" time="0.00009989">
         </testcase>
-    </testsuite>
-    <testsuite name="src/lib/profile.test.ts" timestamp="2026-11-05T11:51:25.381Z" hostname="vm" tests="11" failures="0" errors="0" skipped="0" time="0.021895598">
-        <testcase classname="src/lib/profile.test.ts" name="buildProfile &gt; reúne las declaraciones por nombre" time="0.001979405">
+        <testcase classname="src/lib/auth/access.test.ts" name="safeNextPath &gt; descarta undefined y vuelve al chat" time="0.000152899">
         </testcase>
-        <testcase classname="src/lib/profile.test.ts" name="buildProfile &gt; devuelve null cuando falta un dato" time="0.000403972">
+        <testcase classname="src/lib/auth/access.test.ts" name="safeNextPath &gt; descarta null y vuelve al chat" time="0.000173652">
         </testcase>
-        <testcase classname="src/lib/profile.test.ts" name="projectKind &gt; Deforestación evitada (AD) → AD" time="0.000250437">
+        <testcase classname="src/lib/auth/access.test.ts" name="modo de acceso de auditores &gt; queda protegido cuando hay código y secreto" time="0.000608613">
         </testcase>
-        <testcase classname="src/lib/profile.test.ts" name="projectKind &gt; Reforestación (ARR) → ARR" time="0.000413442">
+        <testcase classname="src/lib/auth/access.test.ts" name="modo de acceso de auditores &gt; usa cuentas de auditor con la API en vivo y basta el secreto" time="0.000282828">
         </testcase>
-        <testcase classname="src/lib/profile.test.ts" name="projectKind &gt; Manejo forestal mejorado (IFM) → IFM" time="0.000121415">
+        <testcase classname="src/lib/auth/access.test.ts" name="modo de acceso de auditores &gt; usa el código sin API en vivo" time="0.000284084">
         </testcase>
-        <testcase classname="src/lib/profile.test.ts" name="projectKind &gt; REDD+ → null" time="0.00015054">
+        <testcase classname="src/lib/auth/access.test.ts" name="modo de acceso de auditores &gt; devuelve el usuario de la sesión" time="0.004192626">
         </testcase>
-        <testcase classname="src/lib/profile.test.ts" name="projectKind &gt; null → null" time="0.000117703">
+        <testcase classname="src/lib/auth/access.test.ts" name="modo de acceso de auditores &gt; queda abierto en desarrollo sin configuración" time="0.00018059">
         </testcase>
-        <testcase classname="src/lib/profile.test.ts" name="registryUrl &gt; arma el enlace de Verra con el número del proyecto" time="0.000382474">
+        <testcase classname="src/lib/auth/access.test.ts" name="modo de acceso de auditores &gt; se bloquea en producción sin configuración" time="0.000119697">
         </testcase>
-        <testcase classname="src/lib/profile.test.ts" name="registryUrl &gt; no inventa enlaces para otros registros" time="0.000539449">
+        <testcase classname="src/lib/auth/access.test.ts" name="modo de acceso de auditores &gt; exige una cookie válida cuando está protegido" time="0.001500514">
         </testcase>
-        <testcase classname="src/lib/profile.test.ts" name="formatDateOnly &gt; formatea sin correrse de día por la zona horaria" time="0.015228681">
-        </testcase>
-        <testcase classname="src/lib/profile.test.ts" name="formatDateOnly &gt; devuelve el texto original si no es una fecha" time="0.000269591">
+        <testcase classname="src/lib/auth/access.test.ts" name="modo de acceso de auditores &gt; niega siempre el acceso cuando está deshabilitado" time="0.001787055">
         </testcase>
     </testsuite>
-    <testsuite name="src/lib/rich-text.test.ts" timestamp="2026-11-05T11:51:25.383Z" hostname="vm" tests="6" failures="0" errors="0" skipped="0" time="0.006546668">
-        <testcase classname="src/lib/rich-text.test.ts" name="parseInline &gt; separa negrita, cursiva y código" time="0.00257269">
+    <testsuite name="src/lib/auth/session.test.ts" timestamp="2026-11-19T02:49:34.992Z" hostname="vm" tests="13" failures="0" errors="0" skipped="0" time="0.01374762">
+        <testcase classname="src/lib/auth/session.test.ts" name="sesión de auditor &gt; acepta un token recién creado y conserva el usuario" time="0.005766696">
         </testcase>
-        <testcase classname="src/lib/rich-text.test.ts" name="parseInline &gt; deja como texto los marcadores sin cerrar" time="0.000396332">
+        <testcase classname="src/lib/auth/session.test.ts" name="sesión de auditor &gt; rechaza un token firmado con otro secreto" time="0.000730335">
         </testcase>
-        <testcase classname="src/lib/rich-text.test.ts" name="parseInline &gt; no interpreta HTML: lo deja como texto literal" time="0.000181777">
+        <testcase classname="src/lib/auth/session.test.ts" name="sesión de auditor &gt; rechaza un token vencido" time="0.001804037">
         </testcase>
-        <testcase classname="src/lib/rich-text.test.ts" name="parseBlocks &gt; agrupa líneas en párrafos y viñetas" time="0.000638987">
+        <testcase classname="src/lib/auth/session.test.ts" name="sesión de auditor &gt; rechaza un token cuyo vencimiento fue alterado" time="0.001278545">
         </testcase>
-        <testcase classname="src/lib/rich-text.test.ts" name="parseBlocks &gt; devuelve una lista vacía para texto vacío" time="0.000180094">
+        <testcase classname="src/lib/auth/session.test.ts" name="sesión de auditor &gt; rechaza un token cuyo usuario fue alterado" time="0.000665741">
         </testcase>
-        <testcase classname="src/lib/rich-text.test.ts" name="parseBlocks &gt; acepta saltos de línea de Windows" time="0.000777937">
+        <testcase classname="src/lib/auth/session.test.ts" name="sesión de auditor &gt; rechaza el token mal formado &quot;&quot;" time="0.000238937">
+        </testcase>
+        <testcase classname="src/lib/auth/session.test.ts" name="sesión de auditor &gt; rechaza el token mal formado &quot;abc&quot;" time="0.000206644">
+        </testcase>
+        <testcase classname="src/lib/auth/session.test.ts" name="sesión de auditor &gt; rechaza el token mal formado &quot;v2.123&quot;" time="0.000124304">
+        </testcase>
+        <testcase classname="src/lib/auth/session.test.ts" name="sesión de auditor &gt; rechaza el token mal formado &quot;v2.abc.61.deadbeef&quot;" time="0.00045581">
+        </testcase>
+        <testcase classname="src/lib/auth/session.test.ts" name="sesión de auditor &gt; rechaza el token mal formado &quot;v1.9999999999.deadbeef&quot;" time="0.000194494">
+        </testcase>
+        <testcase classname="src/lib/auth/session.test.ts" name="sesión de auditor &gt; rechaza el token mal formado &quot;v2.9999999999.61.zz&quot;" time="0.000142339">
+        </testcase>
+        <testcase classname="src/lib/auth/session.test.ts" name="sesión de auditor &gt; rechaza el token mal formado &quot;v2.9999999999.zz.deadbeef&quot;" time="0.000066906">
+        </testcase>
+        <testcase classname="src/lib/auth/session.test.ts" name="sesión de auditor &gt; rechaza el token mal formado &quot;v2.9999999999.61.&quot;" time="0.000049974">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/lib/auth/throttle.test.ts" timestamp="2026-11-19T02:49:34.994Z" hostname="vm" tests="7" failures="0" errors="0" skipped="0" time="0.004720244">
+        <testcase classname="src/lib/auth/throttle.test.ts" name="límite de intentos &gt; bloquea después del máximo y libera al vencer" time="0.001750317">
+        </testcase>
+        <testcase classname="src/lib/auth/throttle.test.ts" name="límite de intentos &gt; reinicia la cuenta tras un acierto" time="0.000292981">
+        </testcase>
+        <testcase classname="src/lib/auth/throttle.test.ts" name="validación de contraseña nueva &gt; rechaza &quot;Clave2026xx&quot;" time="0.000245638">
+        </testcase>
+        <testcase classname="src/lib/auth/throttle.test.ts" name="validación de contraseña nueva &gt; rechaza &quot;corta1&quot;" time="0.000251832">
+        </testcase>
+        <testcase classname="src/lib/auth/throttle.test.ts" name="validación de contraseña nueva &gt; rechaza &quot;soloLetrasAqui&quot;" time="0.000163005">
+        </testcase>
+        <testcase classname="src/lib/auth/throttle.test.ts" name="validación de contraseña nueva &gt; rechaza &quot;12345678901&quot;" time="0.000162703">
+        </testcase>
+        <testcase classname="src/lib/auth/throttle.test.ts" name="validación de contraseña nueva &gt; acepta una contraseña válida" time="0.000219615">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/lib/domain.test.ts" timestamp="2026-11-19T02:49:34.995Z" hostname="vm" tests="12" failures="0" errors="0" skipped="0" time="0.006931627">
+        <testcase classname="src/lib/domain.test.ts" name="índice v1 &gt; usa los pesos de v1 cuando el resultado trae la evolución de la pérdida" time="0.002465958">
+        </testcase>
+        <testcase classname="src/lib/domain.test.ts" name="índice v1 &gt; muestra el porcentaje de bosque en pie, no el puntaje de la tasa" time="0.000329201">
+        </testcase>
+        <testcase classname="src/lib/domain.test.ts" name="readComponents &gt; devuelve los tres componentes en orden con su peso" time="0.000391831">
+        </testcase>
+        <testcase classname="src/lib/domain.test.ts" name="readComponents &gt; lee los puntajes y los detalles legibles" time="0.000284992">
+        </testcase>
+        <testcase classname="src/lib/domain.test.ts" name="readComponents &gt; conserva el motivo cuando no hay puntaje" time="0.000208189">
+        </testcase>
+        <testcase classname="src/lib/domain.test.ts" name="readComponents &gt; no falla si el backend omite componentes" time="0.000222727">
+        </testcase>
+        <testcase classname="src/lib/domain.test.ts" name="otras lecturas &gt; lee el rango de sensibilidad y el sensor" time="0.000254722">
+        </testcase>
+        <testcase classname="src/lib/domain.test.ts" name="otras lecturas &gt; devuelve null cuando faltan esos campos" time="0.000163607">
+        </testcase>
+        <testcase classname="src/lib/domain.test.ts" name="otras lecturas &gt; normaliza la etiqueta de confianza" time="0.000534045">
+        </testcase>
+        <testcase classname="src/lib/domain.test.ts" name="otras lecturas &gt; traduce herramientas conocidas y deja legibles las desconocidas" time="0.000225486">
+        </testcase>
+        <testcase classname="src/lib/domain.test.ts" name="resultado parcial &gt; lo reconoce cuando solo hay permanencia" time="0.000192154">
+        </testcase>
+        <testcase classname="src/lib/domain.test.ts" name="resultado parcial &gt; no es parcial si hay puntaje completo ni si no se midió nada" time="0.000121014">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/lib/format.test.ts" timestamp="2026-11-19T02:49:34.997Z" hostname="vm" tests="6" failures="0" errors="0" skipped="0" time="0.009459386">
+        <testcase classname="src/lib/format.test.ts" name="formatDateTime &gt; trata las fechas sin zona horaria como UTC (así las envía el backend)" time="0.005750269">
+        </testcase>
+        <testcase classname="src/lib/format.test.ts" name="formatDateTime &gt; respeta una zona horaria explícita" time="0.000612842">
+        </testcase>
+        <testcase classname="src/lib/format.test.ts" name="formatDateTime &gt; devuelve el texto original si no es una fecha" time="0.000199274">
+        </testcase>
+        <testcase classname="src/lib/format.test.ts" name="otros formatos &gt; formatea latencias" time="0.000330349">
+        </testcase>
+        <testcase classname="src/lib/format.test.ts" name="otros formatos &gt; formatea porcentajes y periodos" time="0.000569303">
+        </testcase>
+        <testcase classname="src/lib/format.test.ts" name="índice en escala de 0 a 1 &gt; convierte el puntaje de 0 a 100" time="0.000325579">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/lib/media.test.ts" timestamp="2026-11-19T02:49:34.999Z" hostname="vm" tests="2" failures="0" errors="0" skipped="0" time="0.003977833">
+        <testcase classname="src/lib/media.test.ts" name="notas de voz &gt; codifica WAV mono de 16 bits con cabecera válida" time="0.0020532">
+        </testcase>
+        <testcase classname="src/lib/media.test.ts" name="notas de voz &gt; convierte archivos a base64" time="0.000536658">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/lib/profile.test.ts" timestamp="2026-11-19T02:49:34.999Z" hostname="vm" tests="11" failures="0" errors="0" skipped="0" time="0.019372482">
+        <testcase classname="src/lib/profile.test.ts" name="buildProfile &gt; reúne las declaraciones por nombre" time="0.002016709">
+        </testcase>
+        <testcase classname="src/lib/profile.test.ts" name="buildProfile &gt; devuelve null cuando falta un dato" time="0.00033303">
+        </testcase>
+        <testcase classname="src/lib/profile.test.ts" name="projectKind &gt; Deforestación evitada (AD) → AD" time="0.000259341">
+        </testcase>
+        <testcase classname="src/lib/profile.test.ts" name="projectKind &gt; Reforestación (ARR) → ARR" time="0.000374255">
+        </testcase>
+        <testcase classname="src/lib/profile.test.ts" name="projectKind &gt; Manejo forestal mejorado (IFM) → IFM" time="0.000118012">
+        </testcase>
+        <testcase classname="src/lib/profile.test.ts" name="projectKind &gt; REDD+ → null" time="0.000134608">
+        </testcase>
+        <testcase classname="src/lib/profile.test.ts" name="projectKind &gt; null → null" time="0.000134461">
+        </testcase>
+        <testcase classname="src/lib/profile.test.ts" name="registryUrl &gt; arma el enlace de Verra con el número del proyecto" time="0.000374306">
+        </testcase>
+        <testcase classname="src/lib/profile.test.ts" name="registryUrl &gt; no inventa enlaces para otros registros" time="0.000560892">
+        </testcase>
+        <testcase classname="src/lib/profile.test.ts" name="formatDateOnly &gt; formatea sin correrse de día por la zona horaria" time="0.012965925">
+        </testcase>
+        <testcase classname="src/lib/profile.test.ts" name="formatDateOnly &gt; devuelve el texto original si no es una fecha" time="0.000286734">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/lib/rich-text.test.ts" timestamp="2026-11-19T02:49:35.002Z" hostname="vm" tests="6" failures="0" errors="0" skipped="0" time="0.005939366">
+        <testcase classname="src/lib/rich-text.test.ts" name="parseInline &gt; separa negrita, cursiva y código" time="0.002210578">
+        </testcase>
+        <testcase classname="src/lib/rich-text.test.ts" name="parseInline &gt; deja como texto los marcadores sin cerrar" time="0.000396381">
+        </testcase>
+        <testcase classname="src/lib/rich-text.test.ts" name="parseInline &gt; no interpreta HTML: lo deja como texto literal" time="0.000182179">
+        </testcase>
+        <testcase classname="src/lib/rich-text.test.ts" name="parseBlocks &gt; agrupa líneas en párrafos y viñetas" time="0.000570416">
+        </testcase>
+        <testcase classname="src/lib/rich-text.test.ts" name="parseBlocks &gt; devuelve una lista vacía para texto vacío" time="0.000160777">
+        </testcase>
+        <testcase classname="src/lib/rich-text.test.ts" name="parseBlocks &gt; acepta saltos de línea de Windows" time="0.000798999">
         </testcase>
     </testsuite>
 </testsuites>

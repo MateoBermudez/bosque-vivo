@@ -12,7 +12,7 @@ Requisitos del ERS (IEEE 830, revisión 1.1 del 05/11/2026: [`ERS_Bosque_Vivo.do
 | RF04 Declarado vs observado | OE3 | `audit/compare.py`, `audit/components.py` | `test_index.py`, `test_audit_service.py` | CP-13, CP-14 |
 | RF05 Índice de credibilidad | OE3 | `audit/index.py`, `audit/confidence.py`, `audit/config.py` | `test_index.py`, `test_index_v1.py`, `test_golden_projects.py`, `format.test.ts` | CP-15 a CP-18 |
 | RF06 Reporte de auditoría | OE3 | `reports/*`, `web/src/app/informe` | `test_reports.py` | CP-19, CP-20 |
-| RF07 Consultas conversacionales | OE3 | `assistant/*`, `api/routers/community.py`, `web/src/app/asistente` (canal habilitado); `api/routers/whatsapp.py` (ampliación futura, no habilitada) | `test_community_chat.py`, `test_whatsapp_flow.py`, `test_whatsapp_intents.py` (flujo común del asistente), `test_whatsapp_support.py` | CP-21 a CP-26 |
+| RF07 Consultas conversacionales | OE3 | `assistant/*`, `api/routers/community.py`, `web/src/app/asistente`, `web/src/lib/media.ts` (canal habilitado: texto, ubicación, fotos y voz); `api/routers/whatsapp.py` (ampliación futura, no habilitada) | `test_community_chat.py`, `test_whatsapp_flow.py`, `test_whatsapp_intents.py` (flujo común del asistente), `test_whatsapp_support.py` | CP-21 a CP-26 |
 | RF08 Lenguaje sencillo | OE3 | `assistant/community.py`, `assistant/texts.py`, `ai/prompts`, `ai/guardrails` | `test_whatsapp_intents.py`, `test_guardrails.py`, `test_agent.py` | CP-27 a CP-29 |
 | RF09 Recuperación de contraseña | OE3 | `accounts/*` (correo SMTP, verificación en dos pasos, avisos, invitaciones), `api/routers/auth.py`, `web/src/app/acceso/*` | `test_password_recovery.py`, `test_two_factor.py`, `session.test.ts`, `access.test.ts`, `accounts.test.ts`, `throttle.test.ts` | CP-30 a CP-37, CP-53 a CP-57, CP-64 |
 
@@ -35,8 +35,8 @@ Antes se numeraba RF09–RF17; se renombró RA01–RA09 porque el ERS usa RF09 p
 |---|---|---|---|
 | RA01 Agente multi-paso | RF09 | `ai/agent` | `test_agent.py`, `test_agent_tools.py` |
 | RA02 Análisis visual | RF10 | `ai/vision`, herramienta `ver_imagenes` | `test_agent_tools.py` |
-| RA04 Fotos y ubicación del usuario | RF12 | herramienta `analizar_foto_usuario` | `test_agent_tools.py`, `test_whatsapp_flow.py` |
-| RA05 Notas de voz | RF13 | `assistant/voice.py` | `test_whatsapp_flow.py` |
+| RA04 Fotos y ubicación del usuario | RF12 | herramienta `analizar_foto_usuario`, botones Ubicación y Foto del chat en línea | `test_agent_tools.py`, `test_whatsapp_flow.py`, `test_community_chat.py`, E2E CP-67 |
+| RA05 Notas de voz | RF13 | `assistant/voice.py`, botón Nota de voz del chat en línea (`web/src/lib/media.ts`) | `test_whatsapp_flow.py`, `test_community_chat.py`, `media.test.ts`, E2E CP-67 |
 | RA07 Base de conocimiento | RF15 | `ai/knowledge` | `test_knowledge.py` |
 | RA09 Chat del auditor | RF17 | `api/routers/chat.py`, `web/src/app/chat`, `web/src/app/api/chat` | `test_chat_api.py`, `backend.test.ts` |
 

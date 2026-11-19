@@ -34,3 +34,15 @@ OK    CP-63 /privacidad publica «Política de privacidad y tratamiento de datos
 OK    CP-63 /uso-de-datos publica «Uso de datos y fuentes» con versión y fecha
 OK    CP-63 el pie enlaza los tres documentos legales
 OK    CP-63 el chat en línea remite a la política y a los términos
+OK    CP-65 la cuenta de pruebas compartida entra sin código de verificación -> http://localhost:3100/chat
+OK    CP-65 la cuenta de pruebas no recibe correos de aviso
+OK    CP-65 la sesión muestra la cuenta de pruebas
+OK    CP-66 /whatsapp redirige al chat en línea
+OK    CP-66 ninguna página del sitio menciona WhatsApp
+OK    CP-66 el menú lleva al asistente en /asistente
+OK    CP-67 en un celular (390 px) la página no se desborda a lo ancho -> 0 px
+OK    CP-67 compartir la ubicación desde el celular encuentra el proyecto -> 📍 Ubicación compartida | Listo, quedó registrado el proyecto Reserva El Roble. Escriba ESTADO o ALERTAS cuando quiera.
+OK    CP-67 una foto sin permiso aparte pide ACEPTO FOTOS
+OK    CP-67 la foto se envía y el asistente responde -> No puedo responder con seguridad en este momento porque no tengo datos suficientes. El análisis profundo puede no estar disponible ahora. Si quiere, una persona del equipo puede ayudarle. | Puede escribirme: ESTADO (cómo está su bosque), ALERTAS (cambios recientes), PROYECTO y el número (para elegir su proyecto) o enviar su ubicación. También puede preguntar con sus palabras. BORRAR MIS DATOS elimina todo.
+OK    CP-67 la nota de voz se graba, se envía y el asistente responde -> 🎤 Nota de voz · 0:03 | Tuve un problema para responder. Intente de nuevo en unos minutos.
+OK    CP-42 BORRAR MIS DATOS elimina la conversación

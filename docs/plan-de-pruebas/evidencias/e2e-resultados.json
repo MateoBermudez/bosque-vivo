@@ -214,5 +214,77 @@
     "description": "el chat en línea remite a la política y a los términos",
     "ok": true,
     "detail": ""
+  },
+  {
+    "id": "CP-65",
+    "description": "la cuenta de pruebas compartida entra sin código de verificación",
+    "ok": true,
+    "detail": "http://localhost:3100/chat"
+  },
+  {
+    "id": "CP-65",
+    "description": "la cuenta de pruebas no recibe correos de aviso",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "id": "CP-65",
+    "description": "la sesión muestra la cuenta de pruebas",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "id": "CP-66",
+    "description": "/whatsapp redirige al chat en línea",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "id": "CP-66",
+    "description": "ninguna página del sitio menciona WhatsApp",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "id": "CP-66",
+    "description": "el menú lleva al asistente en /asistente",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "id": "CP-67",
+    "description": "en un celular (390 px) la página no se desborda a lo ancho",
+    "ok": true,
+    "detail": "0 px"
+  },
+  {
+    "id": "CP-67",
+    "description": "compartir la ubicación desde el celular encuentra el proyecto",
+    "ok": true,
+    "detail": "📍 Ubicación compartida | Listo, quedó registrado el proyecto Reserva El Roble. Escriba ESTADO o ALERTAS cuando quiera."
+  },
+  {
+    "id": "CP-67",
+    "description": "una foto sin permiso aparte pide ACEPTO FOTOS",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "id": "CP-67",
+    "description": "la foto se envía y el asistente responde",
+    "ok": true,
+    "detail": "No puedo responder con seguridad en este momento porque no tengo datos suficientes. El análisis profundo puede no estar disponible ahora. Si quiere, una persona del equipo puede ayudarle. | Puede escribirme: ESTADO (cómo está su bosque), ALERTAS (cambios recientes), PROYECTO y el número (para elegir su proyecto) o enviar su ubicación. También puede preguntar con sus palabras. BORRAR MIS DATOS elimina todo."
+  },
+  {
+    "id": "CP-67",
+    "description": "la nota de voz se graba, se envía y el asistente responde",
+    "ok": true,
+    "detail": "🎤 Nota de voz · 0:03 | Tuve un problema para responder. Intente de nuevo en unos minutos."
+  },
+  {
+    "id": "CP-42",
+    "description": "BORRAR MIS DATOS elimina la conversación",
+    "ok": true,
+    "detail": ""
   }
 ]

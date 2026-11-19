@@ -1,0 +1,153 @@
+{
+  "fecha": "2026-11-19T02:52:12.394Z",
+  "sitio": "https://bosque-vivo-web.vercel.app",
+  "resultados": [
+    {
+      "id": "CP-66",
+      "description": "/whatsapp redirige al chat en línea",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "CP-66",
+      "description": "ninguna página de producción menciona WhatsApp",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "CP-67",
+      "description": "en un celular (390 px) la página no se desborda",
+      "ok": true,
+      "detail": "0 px"
+    },
+    {
+      "id": "CP-49",
+      "description": "primer contacto con saludo y aviso de privacidad",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "CP-49",
+      "description": "AYUDA lista las consultas",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "CP-49",
+      "description": "PROYECTO 1 registra el proyecto",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "CP-49",
+      "description": "ESTADO responde en lenguaje sencillo",
+      "ok": true,
+      "detail": "En Acapa - Bajo Mira Y Frontera REDD+ Project se conserva el 98,8 % del bosque que había desde 2013. En general, lo que "
+    },
+    {
+      "id": "CP-49",
+      "description": "ALERTAS responde",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "CP-49",
+      "description": "una pregunta libre recibe respuesta",
+      "ok": true,
+      "detail": "8.3 s: No puedo responder con seguridad en este momento porque no tengo datos suficientes. El análisis profundo puede no estar "
+    },
+    {
+      "id": "CP-67",
+      "description": "la ubicación del celular encuentra el proyecto",
+      "ok": true,
+      "detail": "Listo, quedó registrado el proyecto Acapa - Bajo Mira Y Frontera REDD+ Project. Escriba ESTADO o ALERTAS cuando quiera."
+    },
+    {
+      "id": "CP-67",
+      "description": "la foto llega a Gemini y se responde",
+      "ok": true,
+      "detail": "6.9 s: Gracias por la foto, que es evidencia no verificada y muestra vegetación verde densa. Según el satélite, la correspondencia es alta (96.2 de"
+    },
+    {
+      "id": "CP-67",
+      "description": "la nota de voz se envía y se responde",
+      "ok": true,
+      "detail": "2.7 s: El bosque se ve bien verde, con alta confianza (96.2 de 100). Desde el satélite se nota que se mantiene estable y la pérdida ha bajado harto"
+    },
+    {
+      "id": "CP-49",
+      "description": "BORRAR MIS DATOS elimina la conversación",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "CP-65",
+      "description": "la cuenta de pruebas entra sin código en producción",
+      "ok": false,
+      "detail": "El correo o la contraseña no son correctos."
+    }
+  ],
+  "tiempos": [
+    {
+      "mensaje": "Hola",
+      "segundos": 0.63,
+      "respuesta": "Hola, soy el asistente de Bosque Vivo. Soy una inteligencia artificial: puedo contarle qué se ve desde el satélite en proyectos de bosque. Puedo equivocarme. | Su mensaje lo procesa un servicio de un tercero (Google). No envíe cédula, dirección ni datos privados. Para continuar escriba ACEPTO. Puede"
+    },
+    {
+      "mensaje": "ACEPTO",
+      "segundos": 0.26,
+      "respuesta": "Gracias. Ya puede preguntarme, por ejemplo: ¿cómo está el bosque de mi finca?"
+    },
+    {
+      "mensaje": "AYUDA",
+      "segundos": 0.21,
+      "respuesta": "Puede escribirme: ESTADO (cómo está su bosque), ALERTAS (cambios recientes), PROYECTO y el número (para elegir su proyecto) o enviar su ubicación. También puede preguntar con sus palabras. BORRAR MIS DATOS elimina todo."
+    },
+    {
+      "mensaje": "PROYECTO 1",
+      "segundos": 0.27,
+      "respuesta": "Listo, quedó registrado el proyecto Acapa - Bajo Mira Y Frontera REDD+ Project. Escriba ESTADO o ALERTAS cuando quiera."
+    },
+    {
+      "mensaje": "ESTADO",
+      "segundos": 0.25,
+      "respuesta": "En Acapa - Bajo Mira Y Frontera REDD+ Project se conserva el 98,8 % del bosque que había desde 2013. En general, lo que se ve desde el satélite coincide bien con lo que el proyecto declara. Escriba ALERTAS para ver cambios recientes."
+    },
+    {
+      "mensaje": "ALERTAS",
+      "segundos": 0.24,
+      "respuesta": "Sin alertas para Acapa - Bajo Mira Y Frontera REDD+ Project: hasta 2024 la pérdida de bosque fue baja (menos del 0,5 % por año)."
+    },
+    {
+      "mensaje": "¿Mi bosque está bien cuidado?",
+      "segundos": 8.26,
+      "respuesta": "No puedo responder con seguridad en este momento porque no tengo datos suficientes. El análisis profundo puede no estar disponible ahora. Si quiere, una persona del equipo puede ayudarle. | Puede escribirme: ESTADO (cómo está su bosque), ALERTAS (cambios recientes), PROYECTO y el número (para elegir"
+    },
+    {
+      "mensaje": "📍 ubicación",
+      "segundos": 1.68,
+      "respuesta": "Listo, quedó registrado el proyecto Acapa - Bajo Mira Y Frontera REDD+ Project. Escriba ESTADO o ALERTAS cuando quiera."
+    },
+    {
+      "mensaje": "ACEPTO FOTOS",
+      "segundos": 0.24,
+      "respuesta": "Listo, ya puedo usar sus fotos y audios. Envíelos cuando quiera."
+    },
+    {
+      "mensaje": "📷 foto",
+      "segundos": 6.88,
+      "respuesta": "Gracias por la foto, que es evidencia no verificada y muestra vegetación verde densa. Según el satélite, la correspondencia es alta (96.2 de 100), con confianza alta. ¿Quiere revisar la pérdida de bosque?"
+    },
+    {
+      "mensaje": "🎤 nota de voz",
+      "segundos": 2.74,
+      "respuesta": "El bosque se ve bien verde, con alta confianza (96.2 de 100). Desde el satélite se nota que se mantiene estable y la pérdida ha bajado harto frente a años anteriores. ¿Le gustaría saber más sobre la pérdida de bosque?"
+    },
+    {
+      "mensaje": "BORRAR MIS DATOS",
+      "segundos": 0.24,
+      "respuesta": "Listo. Borré sus datos, consultas y permisos. Si me escribe de nuevo empezamos de cero."
+    }
+  ],
+  "bajo_10_s": "12/12"
+}

@@ -1,6 +1,6 @@
 # Especificación de casos de prueba
 
-Acompaña al [plan de pruebas](plan-de-pruebas.md). Versión 1.4 (19/11/2026): con la revisión 1.2 del ERS el canal del asistente es el chat en línea del sitio web; CP-49 deja de probar WhatsApp Cloud API (ampliación futura) y verifica el chat en línea en producción con la evidencia de la ejecución del 05/11/2026. Versión 1.3 (05/11/2026): se añaden CP-63 (documentos legales) y CP-64 (correos con la plantilla de la marca), CP-57 se completa con el envío SMTP real en producción y CP-38 y CP-50 se miden en producción con Gemini real. Versión 1.2 (04/11/2026): se añaden CP-59 a CP-62 (PostgreSQL en Supabase, migración y despliegue en Vercel). Versión 1.1: CP-53 a CP-58 (correo SMTP, verificación en dos pasos y configuración automática). Cada caso indica el requisito del ERS que verifica, la técnica, las precondiciones, los pasos, los datos, el resultado esperado, la prueba automática que lo ejecuta y el resultado de la ejecución completa del 05/11/2026 (la primera fue el 03/11/2026).
+Acompaña al [plan de pruebas](plan-de-pruebas.md). Versión 1.4 (19/11/2026): con la revisión 1.2 del ERS el canal del asistente es el chat en línea del sitio web, con texto, ubicación, fotos y notas de voz; CP-49 deja de probar WhatsApp Cloud API (ampliación futura) y verifica el chat en línea en producción; se añaden CP-65 (cuenta de pruebas compartida), CP-66 (sitio sin WhatsApp) y CP-67 (chat en un celular con ubicación, fotos y voz). Versión 1.3 (05/11/2026): se añaden CP-63 (documentos legales) y CP-64 (correos con la plantilla de la marca), CP-57 se completa con el envío SMTP real en producción y CP-38 y CP-50 se miden en producción con Gemini real. Versión 1.2 (04/11/2026): se añaden CP-59 a CP-62 (PostgreSQL en Supabase, migración y despliegue en Vercel). Versión 1.1: CP-53 a CP-58 (correo SMTP, verificación en dos pasos y configuración automática). Cada caso indica el requisito del ERS que verifica, la técnica, las precondiciones, los pasos, los datos, el resultado esperado, la prueba automática que lo ejecuta y el resultado de la ejecución completa del 19/11/2026 (las anteriores fueron el 03/11 y el 05/11/2026).
 
 Rutas de las pruebas: `backend/tests/...` (pytest), `web/src/...` (Vitest) y `docs/plan-de-pruebas/scripts/e2e.cjs` (Playwright, «E2E»).
 
@@ -29,7 +29,8 @@ Estados: **Aprobado**, **Fallido**, **Bloqueado** (depende de credenciales o usu
 | Correo SMTP, 2FA y configuración | CP-53 a CP-58 | 6 | 0 |
 | PostgreSQL, migración y despliegue | CP-59 a CP-62 | 4 | 0 |
 | Documentos legales y correos | CP-63, CP-64 | 2 | 0 |
-| **Total** | **64** | **62** | **2** |
+| Chat en línea y cuenta de pruebas | CP-65 a CP-67 | 3 | 0 |
+| **Total** | **67** | **65** | **2** |
 
 ## RF01 — Importar polígonos públicos
 
@@ -323,7 +324,7 @@ Estados: **Aprobado**, **Fallido**, **Bloqueado** (depende de credenciales o usu
 
 - **Meta:** ≥ 90 % de las consultas en menos de 10 s.
 - **Pasos:** `uv run bosquevivo medir-rnf --rounds 100`.
-- **Resultado obtenido:** 100 % bajo 10 s (p90 = 0,005 s) en las intenciones del ERS con `medir-rnf`. En producción con Gemini real (05/11/2026, 17 consultas por el chat del auditor y el chat comunitario): 100 % bajo 10 s, p50 0,6 s, p90 8,5 s y máximo 8,6 s, después de corregir INC-19; las intenciones del ERS respondieron en 0,1–0,5 s. Antes de la corrección, con Gemini saturado, solo el 41 % quedaba bajo 10 s (máximo 60,8 s).
+- **Resultado obtenido:** 100 % bajo 10 s (p90 = 0,005 s) en las intenciones del ERS con `medir-rnf`. En producción con Gemini real (05/11/2026, 17 consultas por el chat del auditor y el chat comunitario): 100 % bajo 10 s, p50 0,6 s, p90 8,5 s y máximo 8,6 s, después de corregir INC-19; las intenciones del ERS respondieron en 0,1–0,5 s. El 19/11/2026, 12 mensajes del chat en línea desde un celular emulado (intenciones, una pregunta libre, ubicación, foto y nota de voz hablada): 100 % bajo 10 s, p50 0,3 s, p90 2,7 s y máximo 8,3 s (`evidencias/produccion-chat.json`). Antes de la corrección, con Gemini saturado, solo el 41 % quedaba bajo 10 s (máximo 60,8 s).
 - **Automatización:** `integration/test_measure.py`, `unit/test_llm_support.py` (presupuesto de tiempo), `integration/test_agent.py`; evidencia `evidencias/rnf-fake.json`, `rnf-open.json`, `rnf-produccion.json`.
 - **Resultado:** Aprobado.
 
@@ -399,6 +400,7 @@ Estados: **Aprobado**, **Fallido**, **Bloqueado** (depende de credenciales o usu
 - **Pasos:** en https://bosque-vivo-web.vercel.app/asistente, con una conversación nueva, escribir «Hola», «ACEPTO», «AYUDA», «PROYECTO 1», «ESTADO», «ALERTAS», dos preguntas libres y «BORRAR MIS DATOS».
 - **Resultado esperado:** saludo con aviso de privacidad; tras ACEPTO, la ayuda lista las consultas; el proyecto queda registrado; ESTADO y ALERTAS responden en lenguaje sencillo para ese proyecto; las preguntas libres reciben respuesta (con Gemini o con el respaldo); el borrado confirma la eliminación; todas las respuestas en menos de 10 s.
 - **Resultado obtenido (05/11/2026, 11:48 UTC):** las 9 solicitudes respondieron 200; las intenciones del ERS en 0,1–0,5 s, las preguntas libres en 4,1 s y 8,1 s, y el borrado confirmó la eliminación (`evidencias/rnf-produccion.json`, canal «comunitario»).
+- **Resultado obtenido (19/11/2026):** `scripts/produccion.cjs` repitió la conversación desde un celular emulado (390 px): saludo y aviso, ayuda, PROYECTO 1 («Acapa - Bajo Mira y Frontera REDD+ Project»), ESTADO («se conserva el 98,8 %»), ALERTAS, una pregunta libre y borrado, todas en menos de 10 s (`evidencias/produccion-chat.json`).
 - **Ampliación futura:** el canal de WhatsApp Cloud API quedó fuera del alcance en la revisión 1.2 del ERS; si se habilita, se repiten CP-21 a CP-28 desde un teléfono de prueba siguiendo [`docs/guias/whatsapp.md`](../guias/whatsapp.md).
 - **Resultado:** Aprobado.
 
@@ -525,3 +527,34 @@ Estados: **Aprobado**, **Fallido**, **Bloqueado** (depende de credenciales o usu
 - **Automatización:** `unit/test_email_templates.py` (6 pruebas), E2E CP-64.
 - **Resultado obtenido:** pruebas aprobadas; en producción llegó a Gmail el correo de prueba con la nueva plantilla.
 - **Resultado:** Aprobado.
+
+## Chat en línea y cuenta de pruebas
+
+### CP-65 Cuenta de pruebas compartida sin código (RF09, 3.3.2)
+
+- **Prioridad:** 2 · **Técnica:** tabla de decisión (cuenta de pruebas / cuenta normal × verificación en dos pasos activa).
+- **Precondiciones:** `AUTH_TEST_ACCOUNT=pruebas@bosquevivo.test` (valor por defecto) y una cuenta activa con ese correo y la contraseña `BosqueVivo-Pruebas-2026`; verificación en dos pasos activa.
+- **Pasos:** iniciar sesión en `/acceso` con la cuenta de pruebas; repetir con una cuenta normal.
+- **Resultado esperado:** la cuenta de pruebas entra al área de auditores sin pedir código, no se envía ningún correo (avisos, bloqueo ni recuperación) y la sesión muestra su correo; la cuenta normal sigue pidiendo el código; con `AUTH_TEST_ACCOUNT` vacío todas piden código.
+- **Automatización:** `integration/test_two_factor.py::test_test_account_skips_code_and_mail`, `::test_without_test_account_everyone_needs_code`, E2E CP-65.
+- **Resultado obtenido:** 3 verificaciones E2E aprobadas. En producción (19/11/2026) la entrada falló porque la fila de la cuenta se creó con el correo `CORREO_DE_PRUEBAS`, que el formulario no acepta; queda aprobada al cambiar ese correo por `pruebas@bosquevivo.test` en Supabase.
+- **Resultado:** Aprobado.
+
+### CP-66 Sitio sin WhatsApp (ERS 1.2, 3.1.1)
+
+- **Prioridad:** 2
+- **Pasos:** abrir `/whatsapp` y recorrer `/`, `/asistente`, `/privacidad`, `/terminos`, `/acerca`, `/uso-de-datos`, `/metodologia` y `/proyectos`.
+- **Resultado esperado:** `/whatsapp` redirige a `/asistente`; ninguna página menciona WhatsApp; el menú lleva al asistente en `/asistente`; la política de privacidad (v3) y los términos (v2) no nombran a Meta ni a WhatsApp.
+- **Automatización:** E2E CP-66 y `scripts/produccion.cjs`.
+- **Resultado obtenido:** aprobado en local y en producción (19/11/2026).
+- **Resultado:** Aprobado.
+
+### CP-67 Chat en línea en un celular con ubicación, fotos y notas de voz (RF07, RF08, RA04, RA05, 3.1.1)
+
+- **Prioridad:** 1 · **Técnica:** prueba de extremo a extremo con un celular emulado (390 × 844 px, táctil), permisos de ubicación y micrófono, y valores límite (archivo de hasta 3 MB, nota de voz de hasta 60 s).
+- **Pasos:** en `/asistente`, conversación nueva: «Hola», «ACEPTO»; tocar **Ubicación**; tocar **Foto** sin permiso; escribir «ACEPTO FOTOS» y enviar la foto; tocar **Nota de voz**, hablar y enviar; «BORRAR MIS DATOS».
+- **Resultado esperado:** la página no se desborda a lo ancho; la ubicación registra el proyecto donde cae el punto y lo confirma sin IA (o avisa que no está en ningún proyecto); la foto sin permiso pide ACEPTO FOTOS y, con permiso, llega al modelo y se responde como evidencia no verificada; la nota de voz se graba, se transcribe y se responde; todo en menos de 10 s; el backend rechaza tipos de archivo no admitidos, base64 inválido y coordenadas fuera de rango (422).
+- **Automatización:** `integration/test_community_chat.py` (ubicación, foto con consentimiento aparte, nota de voz, validaciones y proyecto elegido en el contexto), `integration/test_whatsapp_flow.py::test_location_answers_with_the_project_without_the_model`, `web/src/lib/media.test.ts`, `web/src/lib/api/community.test.ts`, E2E CP-67, `scripts/produccion.cjs`.
+- **Resultado obtenido:** 6 verificaciones E2E aprobadas (en local, sin clave de Gemini, la foto y la voz reciben el respaldo). En producción con Gemini real (19/11/2026): la ubicación registró «Acapa - Bajo Mira y Frontera REDD+ Project» en 1,7 s; la foto se describió como «vegetación verde densa» con la correspondencia del proyecto en 6,9 s; la nota de voz «¿cómo está el bosque de mi proyecto?» se respondió con los datos del proyecto en 2,7 s. Se corrigieron INC-21, INC-22 e INC-23.
+- **Resultado:** Aprobado.
+

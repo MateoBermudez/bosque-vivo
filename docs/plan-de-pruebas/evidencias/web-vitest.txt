@@ -1,25 +1,27 @@
 
- RUN  v5.0.5 <repo>/web
+ RUN  v5.0.5 /home/user/bosque-vivo/web
 
- ✓ src/lib/api/accounts.test.ts (5 tests) 38ms
- ✓ src/lib/api/backend.test.ts (10 tests) 62ms
- ✓ src/lib/profile.test.ts (11 tests) 22ms
- ✓ src/lib/auth/access.test.ts (16 tests) 30ms
- ✓ src/lib/format.test.ts (6 tests) 13ms
- ✓ src/lib/auth/session.test.ts (13 tests) 21ms
- ✓ src/lib/domain.test.ts (12 tests) 8ms
- ✓ src/lib/rich-text.test.ts (6 tests) 7ms
+ ✓ src/lib/api/accounts.test.ts (5 tests) 28ms
+ ✓ src/lib/api/backend.test.ts (10 tests) 36ms
+ ✓ src/lib/profile.test.ts (11 tests) 19ms
+ ✓ src/lib/api/community.test.ts (3 tests) 24ms
+ ✓ src/lib/auth/access.test.ts (16 tests) 14ms
+ ✓ src/lib/auth/session.test.ts (13 tests) 14ms
+ ✓ src/lib/format.test.ts (6 tests) 9ms
+ ✓ src/lib/domain.test.ts (12 tests) 7ms
+ ✓ src/lib/rich-text.test.ts (6 tests) 6ms
  ✓ src/lib/auth/throttle.test.ts (7 tests) 5ms
- ✓ src/lib/api/mock.test.ts (9 tests) 2842ms
+ ✓ src/lib/media.test.ts (2 tests) 4ms
+ ✓ src/lib/api/mock.test.ts (9 tests) 2828ms
    ✓ chat y trazas de ejemplo (3)
-     ✓ las respuestas del chat cumplen el esquema 2808ms
+     ✓ las respuestas del chat cumplen el esquema 2806ms
 
- Test Files  10 passed (10)
-      Tests  95 passed (95)
-   Start at  11:51:22
-   Duration  3.11s (tests 85%, import 11%, transform 3%, worker 1%)
+ Test Files  12 passed (12)
+      Tests  100 passed (100)
+   Start at  02:49:31
+   Duration  3.02s (tests 88%, import 9%, transform 2%, worker 1%)
 
-    Isolate  10 workers spawned · ~110ms startup each (spawn + environment, per file)
-             at least ~258ms faster with isolate: false — reuses workers across files instead of one per file
+    Isolate  12 workers spawned · ~84ms startup each (spawn + environment, per file)
+             at least ~251ms faster with isolate: false — reuses workers across files instead of one per file
 
-JUNIT report written to <repo>/docs/plan-de-pruebas/evidencias/web-junit.xml
+JUNIT report written to /home/user/bosque-vivo/docs/plan-de-pruebas/evidencias/web-junit.xml

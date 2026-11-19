@@ -1,8 +1,9 @@
+warning: The `UV_NATIVE_TLS` environment variable is deprecated and will be removed in a future release. Use `UV_SYSTEM_CERTS` instead.
 ........................................................................ [ 20%]
 ........................................................................ [ 40%]
-........................................................................ [ 61%]
-........................................................................ [ 81%]
-.................................................................        [100%]
+........................................................................ [ 60%]
+........................................................................ [ 80%]
+........................................................................ [100%]
 ================================ tests coverage ================================
 _______________ coverage: platform linux, python 3.12.3-final-0 ________________
 
@@ -12,13 +13,13 @@ src/bosquevivo/__init__.py                           1      0   100%
 src/bosquevivo/accounts/__init__.py                  3      0   100%
 src/bosquevivo/accounts/mailer.py                  119      2    98%
 src/bosquevivo/accounts/passwords.py                56      3    95%
-src/bosquevivo/accounts/service.py                 270      3    99%
+src/bosquevivo/accounts/service.py                 276      3    99%
 src/bosquevivo/accounts/templates.py                88      0   100%
 src/bosquevivo/ai/__init__.py                        0      0   100%
 src/bosquevivo/ai/agent/__init__.py                  3      0   100%
 src/bosquevivo/ai/agent/evidence.py                 28      0   100%
 src/bosquevivo/ai/agent/fallback.py                 20      1    95%
-src/bosquevivo/ai/agent/loop.py                    147      3    98%
+src/bosquevivo/ai/agent/loop.py                    150      3    98%
 src/bosquevivo/ai/agent/router.py                    6      0   100%
 src/bosquevivo/ai/agent/tools/__init__.py            6      0   100%
 src/bosquevivo/ai/agent/tools/base.py               63      0   100%
@@ -54,7 +55,7 @@ src/bosquevivo/api/routers/admin.py                 75      4    95%
 src/bosquevivo/api/routers/audits.py                63      7    89%
 src/bosquevivo/api/routers/auth.py                  89      8    91%
 src/bosquevivo/api/routers/chat.py                  44      0   100%
-src/bosquevivo/api/routers/community.py             24      0   100%
+src/bosquevivo/api/routers/community.py             64      2    97%
 src/bosquevivo/api/routers/health.py                 6      0   100%
 src/bosquevivo/api/routers/projects.py              64      2    97%
 src/bosquevivo/api/routers/whatsapp.py              25      0   100%
@@ -65,9 +66,9 @@ src/bosquevivo/assistant/community.py               71      7    90%
 src/bosquevivo/assistant/dialogue.py                52      1    98%
 src/bosquevivo/assistant/messages.py                34      0   100%
 src/bosquevivo/assistant/runtime.py                 25      0   100%
-src/bosquevivo/assistant/service.py                172      9    95%
+src/bosquevivo/assistant/service.py                172      6    97%
 src/bosquevivo/assistant/signature.py                9      0   100%
-src/bosquevivo/assistant/texts.py                   17      0   100%
+src/bosquevivo/assistant/texts.py                   18      0   100%
 src/bosquevivo/assistant/voice.py                    9      1    89%
 src/bosquevivo/audit/__init__.py                     5      0   100%
 src/bosquevivo/audit/compare.py                     24      0   100%
@@ -80,7 +81,7 @@ src/bosquevivo/audit/narrative.py                   19      1    95%
 src/bosquevivo/audit/service.py                     78      5    94%
 src/bosquevivo/cli.py                              468    238    49%
 src/bosquevivo/core/__init__.py                      3      0   100%
-src/bosquevivo/core/config.py                       76      0   100%
+src/bosquevivo/core/config.py                       77      0   100%
 src/bosquevivo/core/errors.py                        8      0   100%
 src/bosquevivo/core/incidents.py                    52      0   100%
 src/bosquevivo/core/logging.py                       8      0   100%
@@ -124,4 +125,5 @@ src/bosquevivo/satellite/providers/opendata.py     116     20    83%
 src/bosquevivo/satellite/service.py                 82      0   100%
 src/bosquevivo/setup.py                             96      1    99%
 --------------------------------------------------------------------
-TOTAL                                             5893    651    89%
+TOTAL                                             5944    650    89%
+360 passed in 39.22s
