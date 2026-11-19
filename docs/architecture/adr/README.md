@@ -17,3 +17,4 @@
 | [0013](0013-nextjs-para-el-frontend.md) | Next.js para el frontend (propuesta) |
 | [0014](0014-postgresql-en-supabase-y-vercel.md) | PostgreSQL en Supabase y despliegue en Vercel |
 | [0015](0015-chat-en-linea-en-lugar-de-whatsapp.md) | Chat en línea en lugar de WhatsApp |
+| [0016](0016-agente-guia-con-rutas-deterministas.md) | Agente guía con identificación de proyecto y rutas deterministas |

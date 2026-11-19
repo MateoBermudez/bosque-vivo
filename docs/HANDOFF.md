@@ -45,6 +45,8 @@ Requisitos implementados: RF01–RF09 del ERS y RA01, RA02, RA04, RA05, RA07 y R
 
 Datos reales: los 55 polígonos de Karnik et al. (2025) para Colombia ya están importados con `bosquevivo import`. El proveedor `open` (MODIS + Hansen) calcula el índice sin cuenta de Earth Engine; hay 33 proyectos de deforestación evitada/IFM calculados. `web/snapshot/` es una copia de solo lectura para publicar el sitio sin servidor.
 
+Asistente: el agente identifica el proyecto desde la base (nombre dentro de una frase, tildes, errores de tipeo, aclaración si hay dos candidatos), consulta sus datos antes de llamar a Gemini y responde sin modelo saludo, estado, alertas, índice y preguntas de portafolio ([ADR 0016](architecture/adr/0016-agente-guia-con-rutas-deterministas.md)). Evaluación con proyectos reales: `uv run bosquevivo eval --cases v2`.
+
 Índice: v0 se conserva; **v1 es una propuesta pendiente de aprobación del docente** (pesos 35/35/15/15). Con v0 todos los proyectos reales salían «Alta», por eso se propuso v1. Los pesos no están calibrados.
 
 ## 5. Cómo ejecutar
