@@ -185,10 +185,11 @@ class AccountService:
                 user.locked_until = now + timedelta(minutes=LOCK_MINUTES)
                 user.failed_logins = 0
                 log.warning("auditor_locked", user_id=user.id)
-                self._notify(
+                self._notify_user(
+                    user,
                     templates.account_locked_email(
                         user.email, user.name, LOCK_MINUTES, site=self._site
-                    )
+                    ),
                 )
             self.session.flush()
             return LoginOutcome(None)
@@ -196,6 +197,12 @@ class AccountService:
         user.locked_until = None
         self.session.flush()
         return LoginOutcome(user)
+
+    def is_test_account(self, user: AuditorUser) -> bool:
+        """La cuenta de pruebas compartida (AUTH_TEST_ACCOUNT) entra sin código y no recibe
+        correos, porque nadie lee su buzón."""
+        test_account = normalize_email(self.settings.auth_test_account)
+        return bool(test_account) and user.email == test_account
 
     def two_factor_enabled(self) -> bool:
         mode = self.settings.auth_two_factor.strip().lower()
@@ -210,7 +217,7 @@ class AccountService:
         if outcome.user is None:
             return LoginStep(locked=outcome.locked)
         user = outcome.user
-        if not self.two_factor_enabled():
+        if self.is_test_account(user) or not self.two_factor_enabled():
             self.complete_login(user, client)
             return LoginStep(user=user)
         raw = new_token()
@@ -283,19 +290,20 @@ class AccountService:
     def complete_login(self, user: AuditorUser, client: str = "") -> None:
         log.info("auditor_signed_in", user_id=user.id)
         if self.settings.auth_login_alerts:
-            self._notify(
+            self._notify_user(
+                user,
                 templates.new_login_email(
                     user.email,
                     user.name,
                     self.clock(),
                     client or "no informado",
                     site=self._site,
-                )
+                ),
             )
 
     def request_reset(self, email: str) -> str:
         user = self.find(email)
-        if user is None or not user.active:
+        if user is None or not user.active or self.is_test_account(user):
             log.info("password_reset_requested", known=False)
             return GENERIC_RESET_MESSAGE
         now = self.clock()
@@ -357,6 +365,10 @@ class AccountService:
         except ExternalServiceError as exc:
             record_incident(self.session, "correo", exc)
             raise
+
+    def _notify_user(self, user: AuditorUser, message: OutgoingEmail) -> None:
+        if not self.is_test_account(user):
+            self._notify(message)
 
     def _notify(self, message: OutgoingEmail) -> None:
         try:

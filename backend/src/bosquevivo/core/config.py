@@ -62,6 +62,8 @@ class Settings(BaseSettings):
     smtp_starttls: bool = True
     smtp_ssl: bool = False
     auth_two_factor: str = "auto"
+    # Cuenta de pruebas compartida: entra sin código y no recibe correos. Vaciar al terminar.
+    auth_test_account: str = "pruebas@bosquevivo.test"
     auth_code_ttl_minutes: int = Field(default=10, ge=2, le=60)
     auth_login_alerts: bool = True
     invitation_ttl_hours: int = Field(default=72, ge=1, le=720)

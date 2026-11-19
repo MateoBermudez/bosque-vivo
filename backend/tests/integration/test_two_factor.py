@@ -141,6 +141,26 @@ def test_two_factor_can_be_disabled(db, mailer, clock):
     assert mailer.sent == []
 
 
+def test_test_account_skips_code_and_mail(db, mailer, clock):
+    accounts = make_service(db, mailer, clock, auth_test_account="Pruebas@BosqueVivo.test")
+    accounts.create_user("pruebas@bosquevivo.test", "Pruebas", PASSWORD)
+    accounts.create_user(EMAIL, "Auditor", PASSWORD)
+    step = accounts.start_login("pruebas@bosquevivo.test", PASSWORD, "Chrome")
+    assert step.user is not None and not step.needs_code
+    accounts.request_reset("pruebas@bosquevivo.test")
+    for _ in range(5):
+        accounts.authenticate("pruebas@bosquevivo.test", "incorrecta-123")
+    assert mailer.sent == []
+    assert accounts.authenticate("pruebas@bosquevivo.test", PASSWORD).locked
+    assert accounts.start_login(EMAIL, PASSWORD).needs_code
+
+
+def test_without_test_account_everyone_needs_code(db, mailer, clock):
+    accounts = make_service(db, mailer, clock, auth_test_account="")
+    accounts.create_user("pruebas@bosquevivo.test", "Pruebas", PASSWORD)
+    assert accounts.start_login("pruebas@bosquevivo.test", PASSWORD).needs_code
+
+
 def test_lock_sends_security_email(service, mailer):
     for _ in range(5):
         service.authenticate(EMAIL, "incorrecta-123")
