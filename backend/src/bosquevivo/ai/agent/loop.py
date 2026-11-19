@@ -48,9 +48,11 @@ PORTFOLIO_QUESTION = re.compile(
     r"(cuantos|que proyectos|todos los proyectos|los proyectos|cual (proyecto|de los proyectos)|"
     r"proyecto con|peor|mejor|mas bajo|mas alto|ranking|cargados)"
 )
+BEST_QUESTION = re.compile(r"(mejor|mas alto|mas alta|mayor)")
 EXPLAIN_QUESTION = re.compile(r"(explic|desglos|componente|peso|sensibilidad)")
 COMPARE_QUESTION = re.compile(r"(compar|entre|frente a|versus|\bvs\b|diferencia)")
 YEARS = re.compile(r"\b((?:19|20)\d{2})\b")
+PORTFOLIO_TOOL = "resumen_portafolio"
 EXTERNAL = "externo"
 VALIDATION = "validacion"
 
@@ -161,14 +163,24 @@ class Agent:
         )
 
     def _prefetch(self, run: AgentRun, ctx: ToolContext, focus: Focus, text: str) -> Prefetched:
-        if focus.project is None or not self._wants_data(focus, text):
-            return Prefetched()
+        if focus.project is not None and self._wants_data(focus, text):
+            plan = self._plan(focus.project[0], text, ctx.role)
+        else:
+            plan = self._portfolio_plan(text)
         known = Prefetched()
-        for position, (name, args) in enumerate(self._plan(focus.project[0], text, ctx.role), 1):
+        for position, (name, args) in enumerate(plan, 1):
             known.results.append(self._run_tool(run, ctx, ToolCall(name, args), position, []))
             known.called.append(name)
             known.calls.append((name, args))
         return known
+
+    @staticmethod
+    def _portfolio_plan(text: str) -> list[tuple[str, dict]]:
+        clean = normalize(text)
+        if not PORTFOLIO_QUESTION.search(clean):
+            return []
+        best = BEST_QUESTION.search(clean) is not None
+        return [(PORTFOLIO_TOOL, {"orden": "indice_desc" if best else "indice_asc"})]
 
     @staticmethod
     def _plan(project_id: int, text: str, role: str) -> list[tuple[str, dict]]:
@@ -239,7 +251,8 @@ class Agent:
                 self.session, "ia", exc, origin="externo", severity="aviso", ended_at=utcnow()
             )
             text, tools_called, passed = None, list(known.called), None
-        project_id = focus.project[0] if focus.project and known.called else None
+        about_project = any(name != PORTFOLIO_TOOL for name in known.called)
+        project_id = focus.project[0] if focus.project and about_project else None
         if text is None or passed is False:
             fallback = fallback_answer(
                 evidence.items,
@@ -288,7 +301,10 @@ class Agent:
         steps = len(known.called)
         while True:
             response = self.llm.generate(
-                system, messages, tools=tools if steps < self.settings.agent_max_steps else None
+                system,
+                messages,
+                tools=tools if steps < self.settings.agent_max_steps else None,
+                light=run.query_class == "rapida",
             )
             if response.blocked:
                 return None, called, None
@@ -339,7 +355,8 @@ class Agent:
                     role="user",
                     text="Corrige tu respuesta: "
                     + "; ".join(result.issues)
-                    + ". Usa solo cifras de las evidencias.",
+                    + ". Usa solo cifras de las evidencias. Vuelve a contestar la pregunta "
+                    + "original de la persona, sin mencionar esta corrección ni pedir disculpas.",
                 )
             )
 

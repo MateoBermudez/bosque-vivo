@@ -33,7 +33,8 @@ def onboard(service):
 def test_detect_intent():
     assert detect_intent("Ayuda") == "ayuda"
     assert detect_intent("menú") == "ayuda"
-    assert detect_intent("¿Hay alertas?") == "alertas"
+    assert detect_intent("ALERTAS") == "alertas"
+    assert detect_intent("¿Hay alertas?") is None
     assert detect_intent("ESTADO") == "estado"
     assert detect_intent("¿Cómo está mi bosque?") == "estado"
     assert detect_intent("proyecto 12") == "registro"

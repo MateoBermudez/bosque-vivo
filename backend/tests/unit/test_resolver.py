@@ -17,6 +17,10 @@ PROJECTS = [
     (12, "Blue Carbon Project Gulf of Morrosquillo Vida Manglar"),
     (13, "Pedeguita Jiguamiandó REDD+"),
     (14, "Riscales REDD+ Project"),
+    (
+        15,
+        "Grouped Project for Commercial Forest Plantations Initiative in the Department of Vichada",
+    ),
 ]
 
 
@@ -94,6 +98,9 @@ def test_un_numero_que_no_existe_no_resuelve_nada(resolver):
         "¿Qué proyectos hay en el Chocó?",
         "proyectos del Pacífico",
         "darién",
+        "¿En qué departamento está?",
+        "¿Dónde queda mi proyecto?",
+        "¿En qué municipio queda?",
         "",
     ],
 )

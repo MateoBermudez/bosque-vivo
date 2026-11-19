@@ -13,7 +13,6 @@ from bosquevivo.assistant.dialogue import (
     detect_intent,
     detect_portfolio,
     detect_topic,
-    refers_to_project,
 )
 from bosquevivo.audit import AuditService
 from bosquevivo.core.errors import ExternalServiceError
@@ -82,6 +81,8 @@ def test_detecta_saludo_gracias_y_quien_eres():
     assert detect_intent("¿Quién eres?") == "quien"
     assert detect_intent("¿Qué puedes hacer?") == "quien"
     assert detect_intent("hola, ¿cómo está el roble?") is None
+    assert detect_intent("¿Hay alertas?") is None
+    assert detect_intent("alertas") == "alertas"
 
 
 def test_detecta_el_tema_de_una_pregunta_corta():
@@ -89,12 +90,30 @@ def test_detecta_el_tema_de_una_pregunta_corta():
     assert detect_topic("explícame el índice") == "indice"
     assert detect_topic("¿cómo va el proyecto?") == "estado"
     assert detect_topic("¿cómo se calcula la permanencia forestal en detalle para todos?") is None
-    assert refers_to_project("¿qué significa el índice de mi proyecto?")
-    assert not refers_to_project("¿qué significa el índice?")
 
 
-def test_saludo_gracias_y_quien_eres_no_usan_el_modelo(db, seeded):
-    service, client, llm = build(db, [])
+def envelope(llm, position=0):
+    return llm.calls[position]["messages"][0].text
+
+
+def test_saludo_gracias_y_quien_eres_los_responde_el_modelo(db, seeded):
+    script = [
+        LLMResponse(text="Hola, cuénteme de qué proyecto quiere saber."),
+        LLMResponse(text="Con mucho gusto."),
+        LLMResponse(text="Soy el asistente de Bosque Vivo, una inteligencia artificial."),
+    ]
+    service, client, llm = build(db, script)
+    onboard(service)
+    client.sent.clear()
+    say(service, "m2", "hola")
+    say(service, "m3", "gracias")
+    say(service, "m4", "¿quién eres?")
+    assert [text for _, text in client.sent] == [r.text for r in script]
+    assert len(llm.calls) == 3 and all(call["light"] for call in llm.calls)
+
+
+def test_si_el_modelo_falla_el_saludo_y_los_agradecimientos_usan_plantilla(db, seeded):
+    service, client, _ = build(db, [])
     onboard(service)
     client.sent.clear()
     say(service, "m2", "hola")
@@ -103,29 +122,27 @@ def test_saludo_gracias_y_quien_eres_no_usan_el_modelo(db, seeded):
     assert "elíjalo" in client.sent[0][1]
     assert "Con gusto" in client.sent[1][1]
     assert "inteligencia artificial" in client.sent[2][1]
-    assert llm.calls == []
 
 
-def test_preguntar_por_el_nombre_responde_el_estado_y_deja_el_proyecto(db, seeded):
-    service, client, llm = build(db, [])
+def test_preguntar_por_el_nombre_lo_responde_el_modelo_con_los_datos_ya_consultados(db, seeded):
+    service, client, llm = build(db, [LLMResponse(text="Reserva El Roble se ve bien.")])
     onboard(service)
     client.sent.clear()
     say(service, "m2", "¿Cómo está el bosque de Reserva El Roble?")
-    reply = client.sent[0][1]
-    assert "Reserva El Roble" in reply and "se conserva el" in reply
-    assert "de 100" in reply and "próximas preguntas" in reply
-    assert llm.calls == []
+    assert client.sent[0][1] == "Reserva El Roble se ve bien."
+    assert len(llm.calls) == 1 and llm.calls[0]["light"]
+    assert "Datos ya consultados" in envelope(llm) and "obtener_auditoria" in envelope(llm)
     assert db.query(WaUser).one().project_id == seeded["1"].id
     assert service.turn_project_id == seeded["1"].id
 
 
 def test_el_nombre_dentro_de_una_frase_con_tema_de_alertas(db, seeded):
-    service, client, llm = build(db, [])
+    service, client, llm = build(db, [LLMResponse(text="No veo alertas por ahora.")])
     onboard(service)
     client.sent.clear()
     say(service, "m2", "¿hay tala en el Roble?")
-    assert "Alerta" in client.sent[0][1] or "Sin alertas" in client.sent[0][1]
-    assert llm.calls == []
+    assert "No veo alertas" in client.sent[0][1]
+    assert "obtener_perdida_anual" in envelope(llm)
 
 
 def test_si_hay_dos_proyectos_parecidos_pregunta_cual(db, seeded):
@@ -136,6 +153,24 @@ def test_si_hay_dos_proyectos_parecidos_pregunta_cual(db, seeded):
     assert "Pazcifico Norte" in client.sent[0][1] and "Pazcifico Sur" in client.sent[0][1]
     assert llm.calls == []
     assert db.query(WaUser).one().project_id is None
+
+
+def test_mencionar_otro_proyecto_cambia_el_proyecto_de_la_conversacion(db, seeded):
+    script = [
+        LLMResponse(text="Primero El Roble."),
+        LLMResponse(text="Ahora Pazcifico Sur."),
+        LLMResponse(text="Sin alertas."),
+    ]
+    service, client, llm = build(db, script)
+    onboard(service)
+    say(service, "m2", "¿Cómo está Reserva El Roble?")
+    assert db.query(WaUser).one().project_id == seeded["1"].id
+    client.sent.clear()
+    say(service, "m3", "¿Y cómo está Reserva Pazcifico Sur?")
+    assert db.query(WaUser).one().project_id == seeded["3"].id
+    assert client.sent[0][1] == "Ahora Pazcifico Sur."
+    say(service, "m4", "¿hay alertas?")
+    assert "Reserva Pazcifico Sur" in envelope(llm, 2)
 
 
 def test_una_pregunta_de_metodologia_no_se_confunde_con_el_estado(db, seeded):
@@ -158,14 +193,14 @@ def test_una_pregunta_ajena_con_proyecto_elegido_va_al_modelo(db, seeded):
     assert len(llm.calls) == 1
 
 
-def test_indice_de_mi_proyecto_se_explica_sin_modelo(db, seeded):
-    service, client, llm = build(db, [])
+def test_el_indice_de_mi_proyecto_lo_explica_el_modelo_con_los_datos_del_proyecto(db, seeded):
+    service, client, llm = build(db, [LLMResponse(text="Es la nota que resume el bosque.")])
     onboard(service)
     say(service, "m2", f"proyecto {seeded['1'].id}")
     client.sent.clear()
     say(service, "m3", "¿qué significa el índice de mi proyecto?")
-    assert "se arma con" in client.sent[0][1]
-    assert llm.calls == []
+    assert "nota que resume" in client.sent[0][1]
+    assert len(llm.calls) == 1 and "obtener_auditoria" in envelope(llm)
 
 
 def test_si_la_ia_falla_responde_con_lo_ya_calculado(db, seeded):
@@ -187,6 +222,18 @@ def test_estado_sin_proyecto_pide_elegirlo(db, seeded):
     client.sent.clear()
     say(service, "m2", "estado")
     assert "Elegir mi proyecto" in client.sent[0][1]
+
+
+def test_los_comandos_estado_y_alertas_no_usan_el_modelo(db, seeded):
+    service, client, llm = build(db, [])
+    onboard(service)
+    say(service, "m2", f"proyecto {seeded['1'].id}")
+    client.sent.clear()
+    say(service, "m3", "ESTADO")
+    say(service, "m4", "ALERTAS")
+    assert "se conserva el" in client.sent[0][1]
+    assert "alertas" in client.sent[1][1].lower()
+    assert llm.calls == []
 
 
 def test_los_mensajes_largos_se_parten_con_el_limite_de_la_web(db, seeded):
@@ -242,16 +289,31 @@ def test_detecta_preguntas_sobre_todos_los_proyectos():
     assert detect_portfolio("¿qué tan mal está mi índice?") is None
 
 
-def test_las_preguntas_de_portafolio_se_responden_sin_modelo_ni_ficha(db, seeded):
-    service, client, llm = build(db, [])
+def test_las_preguntas_de_portafolio_las_responde_el_modelo_con_el_resumen(db, seeded):
+    script = [LLMResponse(text="Hay tres proyectos cargados."), LLMResponse(text="El peor es uno.")]
+    service, client, llm = build(db, script)
     onboard(service)
     say(service, "m2", f"proyecto {seeded['1'].id}")
     client.sent.clear()
     say(service, "m3", "¿Cuántos proyectos hay?")
-    assert "Hay 3 proyectos cargados y 1 tiene índice calculado" in client.sent[0][1]
+    assert "tres proyectos" in client.sent[0][1]
+    assert "resumen_portafolio" in envelope(llm)
     say(service, "m4", "¿Cuál proyecto tiene el peor índice?")
+    assert "resumen_portafolio" in envelope(llm, 1)
+    assert Agent._portfolio_plan("¿cuál tiene el peor índice?")[0][1]["orden"] == "indice_asc"
+    assert Agent._portfolio_plan("¿cuál tiene el mejor índice?")[0][1]["orden"] == "indice_desc"
+    assert Agent._portfolio_plan("¿cómo está el clima?") == []
+
+
+def test_si_el_modelo_falla_el_portafolio_se_responde_con_lo_calculado(db, seeded):
+    service, client, _ = build(db, [])
+    onboard(service)
+    client.sent.clear()
+    say(service, "m2", "¿Cuántos proyectos hay?")
+    assert "Hay 3 proyectos cargados y 1 tiene índice calculado" in client.sent[0][1]
+    say(service, "m3", "¿Cuál proyecto tiene el peor índice?")
     assert "índice más bajo" in client.sent[1][1] and "Reserva El Roble" in client.sent[1][1]
-    assert llm.calls == [] and service.turn_project_id is None
+    assert service.turn_project_id is None
 
 
 def test_elegir_un_proyecto_muestra_su_estado_de_una_vez(db, seeded):
@@ -266,13 +328,12 @@ def test_elegir_un_proyecto_muestra_su_estado_de_una_vez(db, seeded):
 
 def test_la_confianza_se_explica_en_palabras(db, seeded):
     assert "La confianza es" in index_message(db, seeded["1"])
-    service, client, llm = build(db, [])
+    service, client, _ = build(db, [])
     onboard(service)
     say(service, "m2", f"proyecto {seeded['1'].id}")
     client.sent.clear()
     say(service, "m3", "¿Qué tan seguro es ese resultado?")
     assert "La confianza es" in client.sent[0][1]
-    assert llm.calls == []
 
 
 def test_con_dos_proyectos_parecidos_se_ofrecen_como_botones(client, db, seeded):
@@ -291,12 +352,11 @@ def test_con_dos_proyectos_parecidos_se_ofrecen_como_botones(client, db, seeded)
     assert chosen["project"]["name"] == "Reserva Pazcifico Sur"
 
 
-def test_una_pregunta_muy_corta_de_alertas_usa_el_proyecto_elegido(db, seeded):
-    service, client, llm = build(db, [LLMResponse(text="Es un tema general.")])
+def test_una_pregunta_corta_de_tala_con_proyecto_elegido_consulta_las_perdidas(db, seeded):
+    service, client, llm = build(db, [LLMResponse(text="No veo tala reciente.")])
     onboard(service)
     say(service, "m2", f"proyecto {seeded['1'].id}")
     client.sent.clear()
     say(service, "m3", "¿Hay tala?")
-    assert "Reserva El Roble" in client.sent[0][1] and llm.calls == []
-    say(service, "m4", "¿Hay tala ilegal en Colombia hoy?")
-    assert len(llm.calls) == 1
+    assert "No veo tala" in client.sent[0][1]
+    assert "obtener_perdida_anual" in envelope(llm)

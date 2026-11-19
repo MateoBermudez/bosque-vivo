@@ -16,7 +16,8 @@ _FUNCTION_WORDS = (
     "este esto fue ha hace hay hasta la las le les lo los me mi mis mas menos muy ni no nos o "
     "otro para pero por porque que quien quienes se ser si sin sobre son su sus te ti tu tus "
     "u un una uno unos unas va vamos van voy y ya yo cuentame dime quiero quisiera saber favor "
-    "the of and for in on"
+    "the of and for in on departamento department municipio municipality ubicacion ubicado "
+    "ubicada ubicados queda quedan region vereda zona territorio pais country location"
 )
 FUNCTION_WORDS = frozenset(_FUNCTION_WORDS.split())
 

@@ -17,8 +17,6 @@ from bosquevivo.assistant.dialogue import (
     detect_portfolio,
     detect_topic,
     is_authorized,
-    is_short_topic,
-    refers_to_project,
     registered_project_id,
     split_message,
     wants_consent,
@@ -46,7 +44,7 @@ log = get_logger(__name__)
 
 PURPOSE_DATA = "datos"
 PURPOSE_MEDIA = "medios"
-EXACT_TOPICS = {"alertas", "estado"}
+COMMAND_TOPICS = {"alertas", "estado"}
 FIXED_REPLIES = {"ayuda": texts.HELP, "gracias": texts.THANKS, "quien": texts.ABOUT}
 TOPIC_REPLIES = {
     "alertas": alerts_message,
@@ -180,16 +178,13 @@ class AssistantService:
 
     def _intent_reply(self, user: WaUser, text: str | None) -> str | None:
         intent = detect_intent(text)
-        if intent in FIXED_REPLIES:
-            return FIXED_REPLIES[intent]
-        if intent == "saludo":
-            return self._greeting(user)
+        if intent == "ayuda":
+            return texts.HELP
         if intent == "registro":
             return self._register(user, registered_project_id(text) or 0)
-        portfolio = detect_portfolio(text)
-        if portfolio is not None:
-            return portfolio_message(self.session, portfolio)
-        return self._topic_reply(user, text or "", intent)
+        if intent in COMMAND_TOPICS:
+            return self._command_reply(user, text or "", intent)
+        return None
 
     def _greeting(self, user: WaUser) -> str:
         project = self._project_of(user)
@@ -204,31 +199,37 @@ class AssistantService:
         return self.session.get(Project, resolution.best.project_id)
 
     def _adopt(self, user: WaUser, project: Project) -> bool:
-        if user.project_id is not None:
+        if user.project_id == project.id:
             return False
         user.project_id = project.id
         self.session.flush()
         return True
 
-    def _topic_reply(self, user: WaUser, text: str, intent: str | None) -> str | None:
-        topic = intent if intent in EXACT_TOPICS else detect_topic(text)
-        if topic is None:
-            return None
+    def _command_reply(self, user: WaUser, text: str, topic: str) -> str:
         project = self._mentioned(text)
-        adopted = False
+        if project is not None:
+            self._adopt(user, project)
+        project = project or self._project_of(user)
         if project is None:
-            project = self._project_of(user)
-            if project is None:
-                return texts.NEED_PROJECT if intent in EXACT_TOPICS else None
-            if intent not in EXACT_TOPICS and not (
-                refers_to_project(text) or is_short_topic(text, topic)
-            ):
-                return None
-        else:
-            adopted = self._adopt(user, project)
+            return texts.NEED_PROJECT
         self.turn_project_id = project.id
-        reply = TOPIC_REPLIES[topic](self.session, project)
-        return f"{reply} {texts.ADOPTED}" if adopted else reply
+        return TOPIC_REPLIES[topic](self.session, project)
+
+    def _degraded_reply(self, user: WaUser, text: str, project: Project | None) -> str | None:
+        intent = detect_intent(text)
+        if intent == "saludo":
+            return self._greeting(user)
+        if intent in FIXED_REPLIES:
+            return FIXED_REPLIES[intent]
+        portfolio = detect_portfolio(text)
+        if portfolio is not None:
+            return f"{texts.DEGRADED} {portfolio_message(self.session, portfolio)}"
+        project = project or self._project_of(user)
+        if project is None:
+            return None
+        self.turn_project_id = project.id
+        topic = detect_topic(text) or "estado"
+        return f"{texts.DEGRADED} {TOPIC_REPLIES[topic](self.session, project)}"
 
     def _register(self, user: WaUser, project_id: int) -> str:
         project = self.session.get(Project, project_id)
@@ -272,16 +273,15 @@ class AssistantService:
         answer = self.agent.answer(request)
         self.turn_choices = answer.choices
         project = self.session.get(Project, answer.project_id) if answer.project_id else None
-        adopted = False
         if project is not None:
             self.turn_project_id = project.id
-            adopted = self._adopt(user, project)
-        if answer.used_fallback and project is not None:
-            reply = f"{texts.DEGRADED} {status_message(self.session, project)}"
-        else:
-            reply = answer.text
-        self._reply(phone, f"{reply} {texts.ADOPTED}" if adopted else reply)
-        if answer.used_fallback and not answer.evidence_ids:
+            self._adopt(user, project)
+        degraded = None
+        if answer.used_fallback:
+            degraded = self._degraded_reply(user, request.text, project)
+        reply = degraded or answer.text
+        self._reply(phone, reply)
+        if answer.used_fallback and degraded is None and not answer.evidence_ids:
             self._reply(phone, texts.HELP)
 
     def stage(self, phone: str) -> str:

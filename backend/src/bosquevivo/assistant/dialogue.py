@@ -35,10 +35,6 @@ TOPIC_STATUS = re.compile(
     r"\b(como (esta|va|vamos|anda|sigue|se ve)|que tal|estado|cuentame|informacion|resumen|"
     r"que pasa con)\b"
 )
-PROJECT_REFERENCE = re.compile(
-    r"\b(mi (bosque|proyecto|finca|zona|territorio|reserva)|este proyecto|del proyecto|"
-    r"el proyecto|(ese|este|mi) (resultado|indice|puntaje|calificacion))\b"
-)
 PORTFOLIO_COUNT = re.compile(
     r"^(cuantos proyectos (hay|existen|estan cargados|tienen)( cargados| en total| registrados)?|"
     r"que proyectos (hay|existen)( cargados| disponibles| registrados| en total)?|"
@@ -54,7 +50,6 @@ PORTFOLIO_BEST = re.compile(
 )
 MAX_TOPIC_WORDS = 10
 MAX_PORTFOLIO_WORDS = 12
-MAX_SHORT_TOPIC_WORDS = 4
 MAX_THANKS_WORDS = 4
 MAX_ABOUT_WORDS = 8
 
@@ -100,7 +95,7 @@ def detect_intent(text: str | None) -> str | None:
         return None
     if HELP_PATTERN.match(clean):
         return "ayuda"
-    if ALERT_PATTERN.search(clean) and len(clean.split()) <= 6:
+    if ALERT_PATTERN.match(clean):
         return "alertas"
     if STATUS_PATTERN.match(clean):
         return "estado"
@@ -145,15 +140,6 @@ def detect_portfolio(text: str | None) -> str | None:
     if names_projects and PORTFOLIO_BEST.search(clean):
         return "mejor"
     return None
-
-
-def is_short_topic(text: str | None, topic: str | None) -> bool:
-    words = len(normalize(text or "").split())
-    return topic == "alertas" and words <= MAX_SHORT_TOPIC_WORDS
-
-
-def refers_to_project(text: str | None) -> bool:
-    return bool(PROJECT_REFERENCE.search(normalize(text or "")))
 
 
 def registered_project_id(text: str | None) -> int | None:

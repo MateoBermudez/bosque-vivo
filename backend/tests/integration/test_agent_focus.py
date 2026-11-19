@@ -192,8 +192,8 @@ def test_una_pregunta_de_portafolio_no_trae_los_datos_del_proyecto_elegido(db, s
     chosen = (seeded["1"].id, seeded["1"].name)
     agent, llm = make_agent(db, [LLMResponse(text="Hay cuatro proyectos.")])
     answer = agent.answer(AgentRequest(text="¿Cuál proyecto tiene el peor índice?", project=chosen))
-    assert answer.tools_called == [] and answer.project_id is None
-    assert "Datos ya consultados" not in first_envelope(llm)
+    assert answer.tools_called == ["resumen_portafolio"] and answer.project_id is None
+    assert "obtener_auditoria" not in first_envelope(llm)
 
 
 def test_el_agente_devuelve_las_opciones_cuando_pregunta_cual(db, seeded):

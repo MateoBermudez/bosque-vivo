@@ -57,7 +57,6 @@ ABOUT = (
     "pérdida y qué significa su índice. Puedo equivocarme, y no acuso a nadie: describo lo que "
     "se observa."
 )
-ADOPTED = "Lo dejé como su proyecto para las próximas preguntas."
 DEGRADED = (
     "No pude armar una respuesta completa a su pregunta, pero esto es lo que ya está calculado."
 )
