@@ -1,5 +1,6 @@
 # Bosque Vivo · Frontend (`web/`)
 
+
 Sitio web de Bosque Vivo (Next.js). Muestra proyectos de carbono forestal con su índice de credibilidad,
 la serie NDVI, la pérdida de bosque y el reporte, e incluye el chat del auditor y las trazas del agente.
 
