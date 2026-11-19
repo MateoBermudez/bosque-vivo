@@ -9,7 +9,7 @@ Ejecución completa del [plan de pruebas](plan-de-pruebas.md), versión 1.4, sob
 | Casos especificados | 67 |
 | Casos aprobados | 65 (97 %) |
 | Casos fallidos | 0 |
-| Casos bloqueados por dependencias externas | 2 (CP-29 y CP-46, del piloto); de CP-50 queda pendiente solo la evaluación formal de 20 casos |
+| Casos bloqueados por dependencias externas | 2 (CP-29 y CP-46, del piloto) |
 | Requisitos funcionales RF01–RF09 con casos aprobados | 9 de 9 (100 %) |
 | Pruebas automáticas del backend | 360 aprobadas, 0 fallidas, tanto en SQLite como en PostgreSQL 16 |
 | Cobertura de líneas del backend | 89 % (5.944 sentencias) |
@@ -20,7 +20,8 @@ Ejecución completa del [plan de pruebas](plan-de-pruebas.md), versión 1.4, sob
 | Compilación de producción del sitio | Correcta |
 | Asistente en producción con Gemini real | 19/11/2026: 12 mensajes del chat en línea desde un celular (texto, ubicación, foto y nota de voz hablada): 100 % bajo 10 s, p50 0,3 s, p90 2,6 s, máximo 9,0 s. 05/11/2026: 17 consultas, 100 % bajo 10 s |
 | Producción (19/11/2026, Next.js 16.4.6) | 15 de 15 verificaciones de `scripts/produccion.cjs`: sitio sin WhatsApp, chat en línea desde un celular y cuenta de pruebas sin código |
-| Incidencias registradas | 23 (todas cerradas; ver [`incidencias.md`](incidencias.md)) |
+| Evaluación del asistente en producción (CP-50) | 16 de 20 casos; fidelidad, neutralidad, incertidumbre, sin fugas y longitud 100 %; herramientas 80 % (los 15 casos que respondió Gemini, aprobados; 5 con respaldo por la capa gratuita) |
+| Incidencias registradas | 24 (todas cerradas; ver [`incidencias.md`](incidencias.md)) |
 
 ## 2. Resultados por suite
 
@@ -35,6 +36,7 @@ Ejecución completa del [plan de pruebas](plan-de-pruebas.md), versión 1.4, sob
 | Sitio: compilación | `npm run build` | Correcta con Next.js 16.4.6: 21 páginas, sin `/whatsapp` (redirige a `/asistente`) | `evidencias/web-build.txt` |
 | Panel | `uv run pytest` | 5 aprobadas | — |
 | E2E | `docs/plan-de-pruebas/scripts/ejecutar-e2e.sh` | 48 de 48 | `evidencias/e2e-salida.txt`, `e2e-resultados.json`, `evidencias/capturas/` |
+| Evaluación del agente | `bosquevivo eval --remote https://bosque-vivo-api.vercel.app --pausa 30` | 16 de 20 | `evidencias/eval-produccion.json` |
 | Producción | `node docs/plan-de-pruebas/scripts/produccion.cjs` | 15 de 15 | `evidencias/produccion-chat.json`, `capturas/11-chat-produccion.png` |
 
 ### Cobertura de los módulos nuevos o modificados
@@ -113,12 +115,12 @@ Prueba manual adicional (CP-58): `scripts/start.sh` en un clon sin `.env` gener�
 | 2. Cobertura del backend ≥ 80 % | 89 % | Sí |
 | 3. RF01–RF09 con al menos un caso aprobado | 9 de 9 | Sí |
 | 4. Casos de prioridad 1 y 2 ejecutados | Todos, salvo CP-29 (usuarios del piloto) | Sí, con la excepción prevista |
-| 5. 0 incidencias críticas o altas abiertas | 0 abiertas (INC-20 a INC-23 cerradas) | Sí |
+| 5. 0 incidencias críticas o altas abiertas | 0 abiertas (INC-20 a INC-24 cerradas) | Sí |
 | 6. Rendimiento | 100 % < 10 s (también en producción con Gemini real); máximo 62,9 s por polígono | Sí |
 | 7. Determinismo | 3 de 3 | Sí |
 | 8. Compilación de producción | Correcta | Sí |
 
-**Conclusión.** Se cumplen los criterios para dar por completado el plan en esta etapa. Quedan dos casos bloqueados porque dependen del piloto con usuarios reales (CP-29 y CP-46) y el informe formal de `bosquevivo eval` de CP-50; tienen guía de ejecución en [`docs/guias`](../guias) y en este plan, y no afectan los requisitos funcionales comprometidos, que se verificaron sin ellos. La calidad de las respuestas libres depende de la disponibilidad de la capa gratuita de Gemini; cuando está saturada, el sistema responde a tiempo con el respaldo. La base gratuita de Supabase se pausa tras una semana sin uso (INC-20); durante el piloto hay que usar el sitio al menos una vez por semana o reactivar la base desde su panel.
+**Conclusión.** Se cumplen los criterios para dar por completado el plan en esta etapa. Quedan dos casos bloqueados porque dependen del piloto con usuarios reales (CP-29 y CP-46); tienen guía de ejecución en [`docs/guias`](../guias) y en este plan, y no afectan los requisitos funcionales comprometidos, que se verificaron sin ellos. La calidad de las respuestas libres depende de la disponibilidad de la capa gratuita de Gemini; cuando está saturada, el sistema responde a tiempo con el respaldo. La base gratuita de Supabase se pausa tras una semana sin uso (INC-20); durante el piloto hay que usar el sitio al menos una vez por semana o reactivar la base desde su panel.
 
 ## 6. Cómo repetir la ejecución
 

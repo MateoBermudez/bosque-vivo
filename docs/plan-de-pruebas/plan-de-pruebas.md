@@ -32,7 +32,7 @@ Documentos que lo acompañan:
 | 03/11/2026 | 1.1 | Equipo Bosque Vivo | Correo SMTP con verificación en dos pasos, avisos de seguridad e invitaciones; configuración automática; casos CP-53 a CP-58 |
 | 04/11/2026 | 1.2 | Equipo Bosque Vivo | PostgreSQL en Supabase, migración desde SQLite y despliegue en Vercel; casos CP-59 a CP-62 |
 | 05/11/2026 | 1.3 | Equipo Bosque Vivo | Referencia a la revisión 1.1 del ERS (requisitos sin cambios); casos CP-63 (documentos legales) y CP-64 (correos con la plantilla de la marca); Gemini y SMTP verificados en producción (CP-50, CP-57) con medición del asistente en producción; nueva ejecución completa |
-| 19/11/2026 | 1.4 | Equipo Bosque Vivo | Referencia a la revisión 1.2 del ERS: el asistente se ofrece por el chat en línea del sitio web y WhatsApp pasa a ampliación futura (exige un número dedicado y la verificación de la cuenta en Meta). El chat en línea admite texto, ubicación, fotos y notas de voz. CP-49 pasa a verificar el chat en línea en producción; casos CP-65 (cuenta de pruebas compartida sin código), CP-66 (sitio sin WhatsApp) y CP-67 (chat en un celular con ubicación, fotos y voz); nueva ejecución completa, en local y en producción; se ajustan elementos a probar y a no probar, recursos, cronograma y riesgos |
+| 19/11/2026 | 1.4 | Equipo Bosque Vivo | Referencia a la revisión 1.2 del ERS: el asistente se ofrece por el chat en línea del sitio web y WhatsApp pasa a ampliación futura (exige un número dedicado y la verificación de la cuenta en Meta). El chat en línea admite texto, ubicación, fotos y notas de voz. CP-49 pasa a verificar el chat en línea en producción; casos CP-65 (cuenta de pruebas compartida sin código), CP-66 (sitio sin WhatsApp) y CP-67 (chat en un celular con ubicación, fotos y voz); nueva ejecución completa, en local y en producción, incluida la evaluación formal del asistente con Gemini real (CP-50, `bosquevivo eval --remote`); se ajustan elementos a probar y a no probar, recursos, cronograma y riesgos |
 |  |  |  |  |
 
 ## 2. Información del Proyecto
@@ -100,7 +100,6 @@ Aspectos que se revisan en cada regresión: (1) toda la suite automática pasa (
 |---|---|---|
 | Google Earth Engine real (`SATELLITE_PROVIDER=gee`) | Requiere una cuenta y un proyecto de Earth Engine del dueño; no está disponible en el entorno de pruebas | Los tiempos de cálculo con Earth Engine pueden superar los medidos con datos abiertos. Mitigación: el cálculo se probó con el proveedor de datos abiertos real (MODIS + Hansen) y la lógica de Earth Engine se aísla tras `SatelliteProvider`. Queda como CP-39 en ejecución complementaria |
 | Canal de WhatsApp (Cloud API real) | Fuera del alcance desde la revisión 1.2 del ERS: el asistente se ofrece por el chat en línea, porque WhatsApp exige un número de teléfono dedicado y la verificación de la cuenta empresarial en Meta ([guía](../guias/whatsapp.md) para una ampliación futura) | Ninguno para el alcance comprometido. El código del webhook se conserva con sus pruebas automáticas (firma HMAC y cargas de la documentación de Meta) |
-| Evaluación formal del agente con Gemini real (`bosquevivo eval`, 20 casos) | La clave de Gemini solo está configurada en producción (Vercel) y el comando se ejecuta en un equipo local ([guía](../guias/gemini.md)) | Calidad de las respuestas libres sin un informe formal. Mitigación: modelo guionizado y validador de fidelidad en la suite, medición en producción con Gemini real (`evidencias/rnf-produccion.json`) y respuesta de respaldo; las intenciones del ERS funcionan sin IA. Queda como parte de CP-50 |
 | Disponibilidad 95 % y ≤ 2 incidentes críticos al mes | Solo se puede medir durante el piloto, en el horario que se acuerde con el docente | Se entrega el script `scripts/disponibilidad.sh` y el comando `bosquevivo incidents`. Queda como CP-46 |
 | Comprensión con 5 personas no técnicas | Requiere usuarios reales | Mensajes poco claros. Mitigación: textos breves, revisados contra la lista de jerga. Queda como CP-29 |
 | RA03, RA06 y RA08 (modelo propio de visión, alertas en tiempo casi real, extracción de PDD) | Fuera del alcance de esta entrega (sección 2.6 del ERS) | Ninguno para el alcance comprometido |
@@ -157,7 +156,7 @@ Criterios para dar por completado el plan:
 
 Criterios del usuario para aceptar el aplicativo (ERS): el auditor puede consultar el índice, la serie y el reporte de un proyecto; la comunidad recibe respuestas cortas en español sencillo; los datos personales se tratan según la Ley 1581; y el resultado se presenta como análisis metodológico, sin atribuir fraude.
 
-Los casos o partes que dependen de credenciales o usuarios externos (CP-29, CP-46 y la evaluación formal de CP-50) se registran como «Bloqueado» y no impiden cerrar el plan; se ejecutan en el piloto.
+Los casos o partes que dependen de credenciales o usuarios externos (CP-29 y CP-46) se registran como «Bloqueado» y no impiden cerrar el plan; se ejecutan en el piloto.
 
 ### 4.6 Entregables
 
@@ -205,7 +204,7 @@ Datos de prueba: tres proyectos de demostración (`bosquevivo seed-demo`), polí
 | ESLint, TypeScript (`tsc`), `next build` | Calidad y compilación del sitio |
 | `bosquevivo medir-rnf` | Tiempos de respuesta, tiempos de cálculo y determinismo |
 | `bosquevivo incidents` | Bitácora de incidentes (origen, duración, criticidad) |
-| `bosquevivo eval` | Evaluación del agente con Gemini real (20 casos) |
+| `bosquevivo eval` (`--remote` para ejecutarlo en producción) | Evaluación del agente con Gemini real (20 casos) |
 | `scripts/disponibilidad.sh` | Disponibilidad del servicio durante el piloto |
 | `scripts/produccion.cjs` | Chat en línea en producción desde un celular emulado (texto, ubicación, foto y nota de voz) y sitio sin WhatsApp |
 | `espeak-ng` | Pregunta hablada en WAV para probar la transcripción de notas de voz |
@@ -246,7 +245,7 @@ Propuesta de reparto; el equipo puede ajustarla antes de firmar.
 | PostgreSQL en Supabase y despliegue en Vercel | 04/11/2026 |
 | Gemini y correo SMTP en producción, documentos legales y nueva ejecución completa | 05/11/2026 |
 | Chat en línea como canal único del asistente (ERS 1.2), con ubicación, fotos y notas de voz; nueva ejecución completa en local y en producción | 19/11/2026 |
-| Piloto: CP-29, CP-46, CP-50 | Horario acordado con el docente |
+| Piloto: CP-29, CP-46 | Horario acordado con el docente |
 | Cierre y firmas | Entrega final del semestre |
 
 ## 7. Riesgos

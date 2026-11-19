@@ -1,6 +1,6 @@
 # Registro de incidencias
 
-Incidencias encontradas al contrastar el sistema con el ERS (20/10/2026) y al ejecutar el plan de pruebas el 03/11/2026, el 05/11/2026 y el 19/11/2026. Severidad: crítica, alta, media, baja. Todas quedaron cerradas y verificadas con la suite completa (23 incidencias).
+Incidencias encontradas al contrastar el sistema con el ERS (20/10/2026) y al ejecutar el plan de pruebas el 03/11/2026, el 05/11/2026 y el 19/11/2026. Severidad: crítica, alta, media, baja. Todas quedaron cerradas y verificadas con la suite completa (24 incidencias).
 
 | ID | Caso | Requisito | Descripción | Severidad | Causa | Corrección | Estado |
 |---|---|---|---|---|---|---|---|
@@ -27,6 +27,7 @@ Incidencias encontradas al contrastar el sistema con el ERS (20/10/2026) y al ej
 | INC-21 | CP-67 | 3.1.1 | En un celular de 390 px la fila del mensaje del chat en línea, con los botones de ubicación, foto y voz, desbordaba la página y el botón Enviar quedaba fuera de la pantalla | Alta | Cinco botones en la misma fila que el campo de texto | Los adjuntos pasan a su propia fila con texto (Ubicación, Foto, Nota de voz); E2E verifica que no haya desborde | Cerrada |
 | INC-22 | CP-67 | RF07 | Al compartir la ubicación sin Gemini disponible, el asistente no confirmaba el proyecto encontrado y respondía con el texto de respaldo | Media | La ubicación se enviaba al agente de IA en lugar de responderse como una intención del ERS | La ubicación registra el proyecto y lo confirma sin IA, o avisa que el punto no está en ningún proyecto | Cerrada |
 | INC-23 | CP-49 | RF08 | En producción, tras elegir el proyecto, la pregunta «¿Mi bosque está bien cuidado?» recibió como respuesta una solicitud del nombre del proyecto | Media | El agente no recibía el proyecto registrado en la conversación | El mensaje al agente incluye el proyecto elegido; en producción la nota de voz «¿cómo está el bosque de mi proyecto?» se respondió con los datos del proyecto | Cerrada |
+| INC-24 | CP-50 | RF08, 3.3.2 | En la evaluación en producción, «¿Qué pasa con mis datos personales?» se respondió sin consultar la base de conocimiento y con una afirmación inexacta («no guardamos tus datos») | Media | El prompt no exigía la base de conocimiento para preguntas de privacidad y la normativa del corpus aún describía el teléfono de WhatsApp | Regla 9 del prompt (v2) y normativa del corpus actualizada al chat en línea; en la nueva corrida el caso llamó `buscar_conocimiento` y quedó aprobado | Cerrada |
 
 ## Observaciones que no son defectos
 

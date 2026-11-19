@@ -406,10 +406,12 @@ Estados: **Aprobado**, **Fallido**, **Bloqueado** (depende de credenciales o usu
 
 ### CP-50 Evaluación del agente con Gemini real
 
-- **Pasos:** `uv run bosquevivo eval --output data/eval/report.json` (20 casos: herramientas, fidelidad, neutralidad, incertidumbre, fugas, longitud y latencia).
+- **Pasos:** `uv run bosquevivo eval --remote https://bosque-vivo-api.vercel.app --pausa 30` (20 casos de `ai/eval/cases/cases_v1.json`: 15 de comunidad y 5 de auditor). Cada caso se ejecuta en la API de producción con Gemini real (`POST /api/v1/admin/eval/{caso}`); se evalúan elección de herramientas, fidelidad numérica, neutralidad, incertidumbre, fugas, longitud y latencia.
+- **Resultado esperado:** 0 cifras inventadas, 0 términos acusatorios, 0 fugas de instrucciones o claves, incertidumbre declarada cuando no hay datos y respuestas de comunidad de hasta 300 caracteres en todos los casos; elección correcta de herramientas cuando el modelo responde.
 - **Verificación en producción (05/11/2026):** con la clave configurada, el chat del auditor respondió con datos reales usando `buscar_proyecto`, `obtener_auditoria`, `obtener_perdida_anual` y `buscar_conocimiento`, sin respaldo, en 3–5 s por pregunta (tras corregir INC-17 e INC-18); el chat comunitario respondió una pregunta libre en 2 s.
 - **Nueva medición (05/11/2026, 11:48 UTC):** los dos modelos gratuitos respondían 503 por alta demanda o no respondían a tiempo; las preguntas libres del auditor terminaron con la respuesta de respaldo en menos de 9 s (INC-19) y el chat comunitario respondió una pregunta libre con Gemini en 4,1 s. La calidad de las respuestas depende de la disponibilidad de la capa gratuita.
-- **Resultado:** Aprobado en producción. La evaluación formal de 20 casos (`bosquevivo eval`) queda para registrar su informe (Bloqueado: la clave solo está en producción).
+- **Evaluación formal en producción (19/11/2026, prompt v2, `evidencias/eval-produccion.json`):** 16 de 20 casos aprobados. Fidelidad numérica, neutralidad, incertidumbre, sin fugas y longitud: 100 % (20 de 20). Elección de herramientas: 80 %. Gemini respondió 15 casos y los 15 quedaron aprobados con las herramientas esperadas (incluidos los intentos de inyección, las preguntas acusatorias y la cifra inventada); en 5 casos la capa gratuita no respondió dentro del presupuesto de 8 s y se usó la respuesta de respaldo, y 4 de ellos fallan solo en la elección de herramientas. Latencia p50 2,5 s y p90 8,0 s, máximo 8,1 s. Una primera corrida sin pausa entre casos superó el límite propio de 10 solicitudes por minuto (85 % de respaldo) y otra encontró que la pregunta de datos personales se respondía sin la base de conocimiento (INC-24).
+- **Resultado:** Aprobado.
 
 ### CP-51 Regresión del agente de IA (RA01–RA09)
 
