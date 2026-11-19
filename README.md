@@ -5,9 +5,9 @@
 Proyecto Integrador · Ingeniería Informática · ODS 15 (Vida de ecosistemas terrestres)
 Politécnico Colombiano Jaime Isaza Cadavid · Segundo semestre de 2026
 
-Sistema de información que contrasta lo que declaran los proyectos de carbono forestal con lo que se observa desde el satélite, y lo explica en lenguaje sencillo mediante un **asistente con IA** por WhatsApp y un panel web para auditores.
+Sistema de información que contrasta lo que declaran los proyectos de carbono forestal con lo que se observa desde el satélite, y lo explica en lenguaje sencillo mediante un **asistente con IA** en el chat en línea del sitio (texto, ubicación, fotos y notas de voz) y un panel web para auditores.
 
-> **Estado:** ERS IEEE 830 completo (RF01–RF09) y ampliación de IA RA01, RA02, RA04, RA05, RA07 y RA09. Plan de pruebas IEEE 829 ejecutado en [`docs/plan-de-pruebas`](docs/plan-de-pruebas/README.md). Pendiente del dueño: claves de Gemini y WhatsApp, piloto con usuarios reales; RA03, RA06 y RA08 quedan como evolución.
+> **Estado:** ERS IEEE 830 completo (RF01–RF09) y ampliación de IA RA01, RA02, RA04, RA05, RA07 y RA09. Plan de pruebas IEEE 829 ejecutado en [`docs/plan-de-pruebas`](docs/plan-de-pruebas/README.md). Pendiente: piloto con usuarios reales y evaluación formal del asistente; RA03, RA06 y RA08 quedan como evolución.
 
 > **Numeración de requisitos.** RF01–RF09 son los del ERS (IEEE 830); RF09 es la recuperación de contraseña del panel web. La ampliación con IA, antes numerada RF09–RF17, pasa a **RA01–RA09** para no chocar con el ERS (RA01 = antes RF09 … RA09 = antes RF17).
 
@@ -19,7 +19,7 @@ Sistema de información que contrasta lo que declaran los proyectos de carbono f
 | **Docker** | **No se usa.** En Windows corre sobre WSL2/Hyper-V (una VM). |
 | **IA** | **Gemini de Google AI Studio, capa gratuita, por API** (SDK `google-genai`). **No se usa Ollama ni modelos locales.** |
 | **Nivel del proyecto** | **Proyecto universitario, no tesis.** Se prioriza que funcione, se pueda demostrar, esté probado y documentado. |
-| **Código abierto** | Todo el código propio es abierto. Gemini, Google Earth Engine y WhatsApp Cloud API son servicios gratuitos de terceros (el ERS contempla "servicios gratuitos de terceros"). |
+| **Código abierto** | Todo el código propio es abierto. Gemini, Google Earth Engine, Vercel y Supabase son servicios gratuitos de terceros (el ERS contempla "servicios gratuitos de terceros"). |
 | **Base de datos** | PostgreSQL en Supabase en producción; SQLite para desarrollo y pruebas (`DATABASE_URL`). Geometrías con shapely, sin PostGIS. |
 | **Frontend** | Next.js en `web/` ([ADR 0013](docs/architecture/adr/0013-nextjs-para-el-frontend.md), propuesta). El panel Streamlit (`panel/`) queda en desuso hasta que se apruebe. |
 | **Alcance** | ERS (RF01–RF09) + agente de IA que razona, analiza imágenes y concluye con evidencia (RA01–RA09, pendiente de aprobación del docente). |
@@ -39,7 +39,7 @@ Los nombres de modelo y las cuotas de Gemini cambian: verificar en AI Studio y c
 | [`docs/testing`](docs/testing/plan-de-pruebas.md) | Plan de pruebas anterior (reemplazado por `docs/plan-de-pruebas`) |
 | [`docs/privacy`](docs/privacy/aviso-de-privacidad.md) | Aviso de privacidad (Ley 1581) |
 | [`docs/plan-de-pruebas`](docs/plan-de-pruebas/README.md) | **Plan de pruebas IEEE 829**: plan, casos, ejecución, incidencias, evidencias y mediciones |
-| [`docs/guias`](docs/guias) | Guías: [despliegue](docs/guias/despliegue.md), [WhatsApp](docs/guias/whatsapp.md), [Gemini](docs/guias/gemini.md), [correo y 2FA](docs/guias/correo.md) |
+| [`docs/guias`](docs/guias) | Guías: [despliegue](docs/guias/despliegue.md), [Gemini](docs/guias/gemini.md), [correo y 2FA](docs/guias/correo.md) |
 
 ## Ejecución local
 
@@ -49,7 +49,7 @@ Requisitos en cada PC: Python 3.12, [`uv`](https://docs.astral.sh/uv/), Node 22 
 scripts/dev.sh                       # en Windows: scripts\dev.ps1
 ```
 
-La primera vez, `bosquevivo setup` crea `backend/.env` y `web/.env.local` con todos los secretos generados, la base de datos y tres proyectos de demostración, y lista las claves externas que faltan (Gemini, WhatsApp, SMTP). Crear la primera cuenta de auditor:
+La primera vez, `bosquevivo setup` crea `backend/.env` y `web/.env.local` con todos los secretos generados, la base de datos y tres proyectos de demostración, y lista las claves externas que faltan (Gemini, SMTP). Crear la primera cuenta de auditor:
 
 ```
 cd backend && uv run bosquevivo user-invite correo@elpoli.edu.co --name "Nombre"
@@ -61,7 +61,7 @@ cd backend && uv run bosquevivo user-invite correo@elpoli.edu.co --name "Nombre"
 - Modo producción local: `scripts/start.sh` (o `scripts\start.ps1`), con `TUNNEL=1` / `-Tunnel` para publicarlo con HTTPS.
 - Panel Streamlit (en desuso, opcional): `scripts\dev.ps1 -Streamlit` o `STREAMLIT=1 scripts/dev.sh` → http://127.0.0.1:8501
 
-Sin claves externas funciona todo salvo lo que depende de ellas: el asistente (WhatsApp y el chat en línea `/asistente`) responde ESTADO, ALERTAS, AYUDA y PROYECTO <número> sin IA; las preguntas libres, fotos y voz requieren Gemini ([guía](docs/guias/gemini.md)). El área de auditores usa cuentas con correo y contraseña; con SMTP configurado ([guía](docs/guias/correo.md)) se activan la verificación en dos pasos por correo, los avisos de inicio de sesión y el envío real de la recuperación de contraseña (RF09). Más detalle en [`web/README.md`](web/README.md).
+Sin claves externas funciona todo salvo lo que depende de ellas: el asistente (chat en línea `/asistente`) responde ESTADO, ALERTAS, AYUDA y PROYECTO <número> sin IA; las preguntas libres, fotos y voz requieren Gemini ([guía](docs/guias/gemini.md)). El área de auditores usa cuentas con correo y contraseña; con SMTP configurado ([guía](docs/guias/correo.md)) se activan la verificación en dos pasos por correo, los avisos de inicio de sesión y el envío real de la recuperación de contraseña (RF09). Más detalle en [`web/README.md`](web/README.md).
 
 Importar los polígonos reales de Colombia (base de Karnik et al., ver [`docs/fuentes-de-datos/karnik.md`](docs/fuentes-de-datos/karnik.md)) y calcular una auditoría:
 

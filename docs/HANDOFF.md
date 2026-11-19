@@ -4,7 +4,7 @@ Documento para quien continúe el trabajo en otra sesión. Léelo primero; despu
 
 ## 1. Qué es
 
-Bosque Vivo es el Proyecto Integrador de Ingeniería Informática (ODS 15, Politécnico Colombiano Jaime Isaza Cadavid, 2026-2). Contrasta lo que declaran los proyectos de carbono forestal con lo que se observa desde el satélite y lo explica en lenguaje sencillo con un asistente de IA por WhatsApp y un sitio web para auditores.
+Bosque Vivo es el Proyecto Integrador de Ingeniería Informática (ODS 15, Politécnico Colombiano Jaime Isaza Cadavid, 2026-2). Contrasta lo que declaran los proyectos de carbono forestal con lo que se observa desde el satélite y lo explica en lenguaje sencillo con un asistente de IA en el chat en línea del sitio y un área para auditores.
 
 Principio central: **la IA interpreta, el sistema mide.** El agente solo cita cifras presentes en la evidencia, hay un validador de fidelidad, un control de lenguaje neutro (nunca «fraude») y una respuesta de respaldo determinista.
 
@@ -58,7 +58,7 @@ cd .. && scripts/dev.sh
 
 - API: http://127.0.0.1:8000 (`/docs`). Sitio: http://localhost:3000. Panel Streamlit (opcional): http://127.0.0.1:8501.
 - `scripts/dev.sh` crea `web/.env.local` en modo `live` copiando `ADMIN_TOKEN` del backend. En Windows: `scripts\dev.ps1`.
-- Sin credenciales: `SATELLITE_PROVIDER=fake` y los datos de demostración. El chat y WhatsApp necesitan `GEMINI_API_KEY` y `GEMINI_MODEL`; sin ellos la API responde 503 con el motivo.
+- Sin credenciales: `SATELLITE_PROVIDER=fake` y los datos de demostración. Sin `GEMINI_API_KEY` el chat del auditor no responde preguntas libres y el chat en línea responde ESTADO, ALERTAS, AYUDA y PROYECTO sin IA.
 - `SATELLITE_PROVIDER`: `gee` (Earth Engine), `open` (MODIS + Hansen, sin cuenta), `hansen` (solo pérdida), `fake`.
 - Calidad:
 
@@ -67,7 +67,7 @@ cd backend && uv run ruff format --check . && uv run ruff check . && uv run pyri
 cd web && npm run lint && npm run typecheck && npm test && npm run build
 ```
 
-Variables de entorno: ver `.env.example`. Las claves reales no están en git y las entrega el dueño: `GEMINI_API_KEY`, `GEMINI_MODEL`, `GEMINI_MODEL_LIGHT`, `GEE_PROJECT`, `WHATSAPP_*`, `PHONE_HMAC_KEY`, `ADMIN_TOKEN`. El área de auditores del sitio usa `AUDITOR_ACCESS_CODE` y `SESSION_SECRET`.
+Variables de entorno: ver `.env.example`. Las claves reales no están en git y las entrega el dueño: `GEMINI_API_KEY`, `GEMINI_MODEL`, `GEMINI_MODEL_LIGHT`, `GEE_PROJECT`, `PHONE_HMAC_KEY`, `ADMIN_TOKEN`. El área de auditores del sitio usa `AUDITOR_ACCESS_CODE` y `SESSION_SECRET`.
 
 ## 6. Pendiente
 
@@ -77,7 +77,7 @@ Hecho: polígonos completos de Karnik en Supabase, despliegue automático desde 
 
 Falta, con credenciales o decisiones del equipo:
 
-1. **WhatsApp en Vercel** (proyecto `bosque-vivo-api` → Settings → Environment Variables, y luego Redeploy): `WHATSAPP_TOKEN`, `WHATSAPP_PHONE_NUMBER_ID`, `WHATSAPP_APP_SECRET`, y el webhook en Meta. Luego CP-49. Ya activos en producción (05/11/2026): SMTP con Gmail (con verificación en dos pasos) y Gemini (Flash más reciente de la capa gratuita, con cambio automático a Flash-Lite si hay saturación).
+1. **Asistente**: el canal es el chat en línea (`/asistente`), con texto, ubicación, fotos y notas de voz; WhatsApp quedó como ampliación futura ([ADR 0015](architecture/adr/0015-chat-en-linea-en-lugar-de-whatsapp.md)). Cuenta de pruebas compartida `pruebas@bosquevivo.test` (entra sin código; `AUTH_TEST_ACCOUNT`), que conviene vaciar al terminar las pruebas. Ya activos en producción (05/11/2026): SMTP con Gmail (con verificación en dos pasos) y Gemini (Flash más reciente de la capa gratuita, con cambio automático a Flash-Lite si hay saturación).
 2. **Seguridad**: rotar la contraseña de la base y los tokens de Vercel que se compartieron por chat; al rotar la contraseña, actualizar `DATABASE_PASSWORD` en Vercel y hacer Redeploy.
 3. **Revisión del docente**: aprobar RA01–RA09, decidir índice v0/v1 y firmar el plan de pruebas.
 4. **Piloto**: disponibilidad (CP-46) y comprensión con 5 personas (CP-29). RA03, RA06 y RA08 quedan como evolución.

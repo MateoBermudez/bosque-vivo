@@ -17,13 +17,13 @@ Datos en producción: 58 proyectos (55 de Karnik et al. con sus **polígonos com
 | Parte | Dónde corre | Qué hace |
 |---|---|---|
 | Sitio (Next.js, `web/`) | Vercel, proyecto `bosque-vivo-web` | Páginas, chat en línea, área de auditores |
-| API (FastAPI, `backend/`) | Vercel, proyecto `bosque-vivo-api` (función de Python) | Proyectos, índice, reportes, chat, WhatsApp, cuentas y correo |
+| API (FastAPI, `backend/`) | Vercel, proyecto `bosque-vivo-api` (función de Python) | Proyectos, índice, reportes, chat del auditor, chat en línea, cuentas y correo |
 | Base de datos | Supabase (PostgreSQL) | Todos los datos |
 | Cálculo satelital | Un computador del equipo, con la CLI | Importa polígonos y calcula auditorías escribiendo en la misma base de Supabase |
 
 El cálculo satelital no va en Vercel porque sus librerías (GDAL, rasterio, Earth Engine, SciPy) pesan cerca de 900 MB y una función de Python en Vercel admite 500 MB. La API instala solo el núcleo (unos 275 MB); las librerías de cálculo son el extra `procesamiento` que se instala en los computadores (`uv sync --all-extras`, lo hacen `scripts/dev` y `scripts/start`). Si alguien pide un cálculo desde la API desplegada, la tarea queda «failed» con el mensaje de usar la CLI.
 
-En Vercel las tareas (mensajes de WhatsApp, reportes) se procesan dentro de la misma petición (`JOBS_MODE=auto` lo detecta con la variable `VERCEL`), los reportes se generan al vuelo y los archivos temporales van a `/tmp`.
+En Vercel las tareas (reportes) se procesan dentro de la misma petición (`JOBS_MODE=auto` lo detecta con la variable `VERCEL`), los reportes se generan al vuelo y los archivos temporales van a `/tmp`.
 
 ## 1. Supabase
 
@@ -93,7 +93,7 @@ VERCEL_TOKEN=<token> scripts/deploy-vercel.sh
 
 El script (requiere Node para `npx vercel`):
 
-1. crea o enlaza el proyecto `bosque-vivo-api` con la carpeta `backend/`, copia las variables de `backend/.env` (base, secretos, Gemini, WhatsApp, SMTP) y lo despliega;
+1. crea o enlaza el proyecto `bosque-vivo-api` con la carpeta `backend/`, copia las variables de `backend/.env` (base, secretos, Gemini, SMTP) y lo despliega;
 2. crea o enlaza `bosque-vivo-web` con la carpeta `web/`, configura `BV_DATA_SOURCE=live`, `BACKEND_URL`, `ADMIN_TOKEN` y `SESSION_SECRET`, y lo despliega;
 3. pone la URL del sitio en `WEB_BASE_URL` de la API (enlaces de los correos) y vuelve a desplegarla.
 
@@ -107,7 +107,7 @@ El script (requiere Node para `npx vercel`):
   uv run bosquevivo user-invite su-correo@elpoli.edu.co --name "Su nombre"
   ```
 
-- Webhook de WhatsApp en Meta: `https://bosque-vivo-api.vercel.app/webhook/whatsapp` ([guía](whatsapp.md)).
+- Chat en línea: https://bosque-vivo-web.vercel.app/asistente (no necesita configuración adicional).
 - Cálculo de auditorías nuevas: `uv run bosquevivo audit-batch` desde un computador con `DATABASE_URL` de Supabase.
 
 ## Alternativa local (sin Vercel)

@@ -14,7 +14,8 @@ flowchart LR
     TOOLS --> DB
     AG --> GUARD[validador de fidelidad]
     API --> WEB[Sitio Next.js web/]
-    WA[Meta WhatsApp Cloud API] --> TUN[túnel HTTPS] --> API
+    CHAT[Chat en línea /asistente: texto, ubicación, fotos, voz] --> WEB
+    WEB --> API
     API --> JOBS[job worker]
     JOBS --> AG
 ```
@@ -29,7 +30,7 @@ flowchart LR
 | `satellite` | Series, NDVI, pérdida forestal, miniaturas | RF02, RF03 |
 | `audit` | Comparación, índice, confianza, narrativa | RF04, RF05 |
 | `reports` | Reportes HTML y PDF | RF06 |
-| `assistant` | WhatsApp, consentimiento, voz | RF07, RF08, RA04, RA05 |
+| `assistant` | Conversación del chat en línea: intenciones, consentimiento, ubicación, fotos y voz | RF07, RF08, RA04, RA05 |
 | `ai` | Agente, herramientas, guardas, conocimiento, visión, evaluación | RA01, RA02, RA07, RA09 |
 | `jobs` | Cola y trabajador en segundo plano | |
 | `api` | Routers REST y webhook | |

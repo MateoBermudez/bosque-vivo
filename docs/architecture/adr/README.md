@@ -8,7 +8,7 @@
 | [0004](0004-gemini-como-proveedor-de-ia.md) | Gemini como único proveedor de IA |
 | [0005](0005-earth-engine-detras-de-satelliteprovider.md) | Earth Engine detrás de `SatelliteProvider` |
 | [0006](0006-streamlit-para-el-panel.md) | Streamlit para el panel (reemplazada por la 0013) |
-| [0007](0007-whatsapp-cloud-api-con-tunel.md) | WhatsApp Cloud API con túnel |
+| [0007](0007-whatsapp-cloud-api-con-tunel.md) | WhatsApp Cloud API con túnel (reemplazada por la 0015) |
 | [0008](0008-bucle-de-agente-propio.md) | Bucle del agente propio |
 | [0009](0009-la-ia-interpreta-el-sistema-mide.md) | La IA interpreta, el sistema mide |
 | [0010](0010-dos-clases-de-consulta-y-capa-gratuita.md) | Dos clases de consulta y capa gratuita |
@@ -16,3 +16,4 @@
 | [0012](0012-modelo-propio-de-vision-como-evolucion.md) | Modelo propio de visión como evolución |
 | [0013](0013-nextjs-para-el-frontend.md) | Next.js para el frontend (propuesta) |
 | [0014](0014-postgresql-en-supabase-y-vercel.md) | PostgreSQL en Supabase y despliegue en Vercel |
+| [0015](0015-chat-en-linea-en-lugar-de-whatsapp.md) | Chat en línea en lugar de WhatsApp |

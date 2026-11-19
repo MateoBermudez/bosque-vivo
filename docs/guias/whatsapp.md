@@ -1,4 +1,6 @@
-# Guía: conectar el asistente a WhatsApp
+# Guía: conectar el asistente a WhatsApp (ampliación futura)
+
+> **No habilitado.** Desde la revisión 1.2 del ERS el asistente se ofrece por el chat en línea del sitio (`/asistente`), con texto, ubicación, fotos y notas de voz ([ADR 0015](../architecture/adr/0015-chat-en-linea-en-lugar-de-whatsapp.md)). Esta guía queda solo para una ampliación futura: WhatsApp exige un número dedicado y la verificación de la cuenta empresarial en Meta.
 
 El código del asistente ya está terminado y probado (RF07, RF08). Solo falta conectar una cuenta de Meta, algo que debe hacer el dueño del proyecto con sus credenciales.
 
