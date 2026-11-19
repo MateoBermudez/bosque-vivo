@@ -11,6 +11,52 @@ STATUS_PATTERN = re.compile(
     r"como esta (el bosque de )?mi (finca|proyecto|bosque)|mi bosque)$"
 )
 REGISTER_PATTERN = re.compile(r"^(proyecto|registrar|mi proyecto)\s+(\d{1,7})$")
+GREETING_PATTERN = re.compile(
+    r"^(hola|holi|hey|buenas|buenos dias|buen dia|buenas tardes|buenas noches|saludos)"
+    r"( (a todos|equipo|asistente|bosque vivo|amigo|amiga))?$"
+)
+THANKS_PATTERN = re.compile(
+    r"^((muchas|mil) gracias|gracias|ok gracias|listo gracias|perfecto gracias|vale gracias)"
+    r"( .*)?$"
+)
+ABOUT_PATTERN = re.compile(
+    r"\b(quien eres|que eres|eres (un |una )?(robot|bot|persona|humano|humana|ia)|"
+    r"eres una inteligencia artificial|como funcionas|para que sirves|que haces|"
+    r"que sabes hacer|que puedes hacer)\b"
+)
+TOPIC_INDEX = re.compile(
+    r"\b(indice|puntaje|calificacion|credibilidad|confianza|seguro|segura|confiable|fiable|resultado)\b"
+)
+TOPIC_ALERTS = re.compile(
+    r"\b(alerta|alertas|tala|talando|talaron|deforestacion|deforestando|perdida|perdieron|"
+    r"perdio|cambios recientes)\b"
+)
+TOPIC_STATUS = re.compile(
+    r"\b(como (esta|va|vamos|anda|sigue|se ve)|que tal|estado|cuentame|informacion|resumen|"
+    r"que pasa con)\b"
+)
+PROJECT_REFERENCE = re.compile(
+    r"\b(mi (bosque|proyecto|finca|zona|territorio|reserva)|este proyecto|del proyecto|"
+    r"el proyecto|(ese|este|mi) (resultado|indice|puntaje|calificacion))\b"
+)
+PORTFOLIO_COUNT = re.compile(
+    r"^(cuantos proyectos (hay|existen|estan cargados|tienen)( cargados| en total| registrados)?|"
+    r"que proyectos (hay|existen)( cargados| disponibles| registrados| en total)?|"
+    r"lista de proyectos|cuales son los proyectos( cargados)?)$"
+)
+PORTFOLIO_WORST = re.compile(
+    r"\b(peor|mas bajo|menor|mas baja)\b.*\b(indice|puntaje|calificacion|resultado)\b|"
+    r"\b(indice|puntaje|calificacion)\b.*\b(mas bajo|peor|menor)\b"
+)
+PORTFOLIO_BEST = re.compile(
+    r"\b(mejor|mas alto|mayor|mas alta)\b.*\b(indice|puntaje|calificacion|resultado)\b|"
+    r"\b(indice|puntaje|calificacion)\b.*\b(mas alto|mejor|mayor)\b"
+)
+MAX_TOPIC_WORDS = 10
+MAX_PORTFOLIO_WORDS = 12
+MAX_SHORT_TOPIC_WORDS = 4
+MAX_THANKS_WORDS = 4
+MAX_ABOUT_WORDS = 8
 
 
 def normalize(text: str) -> str:
@@ -60,7 +106,54 @@ def detect_intent(text: str | None) -> str | None:
         return "estado"
     if REGISTER_PATTERN.match(clean):
         return "registro"
+    return _social_intent(clean)
+
+
+def _social_intent(clean: str) -> str | None:
+    words = len(clean.split())
+    if GREETING_PATTERN.match(clean):
+        return "saludo"
+    if THANKS_PATTERN.match(clean) and words <= MAX_THANKS_WORDS:
+        return "gracias"
+    if ABOUT_PATTERN.search(clean) and words <= MAX_ABOUT_WORDS:
+        return "quien"
     return None
+
+
+def detect_topic(text: str | None) -> str | None:
+    clean = normalize(text or "")
+    if not clean or len(clean.split()) > MAX_TOPIC_WORDS:
+        return None
+    if TOPIC_INDEX.search(clean):
+        return "indice"
+    if TOPIC_ALERTS.search(clean):
+        return "alertas"
+    if TOPIC_STATUS.search(clean):
+        return "estado"
+    return None
+
+
+def detect_portfolio(text: str | None) -> str | None:
+    clean = normalize(text or "")
+    if not clean or len(clean.split()) > MAX_PORTFOLIO_WORDS:
+        return None
+    if PORTFOLIO_COUNT.match(clean):
+        return "cuantos"
+    names_projects = "proyecto" in clean or "cual" in clean
+    if names_projects and PORTFOLIO_WORST.search(clean):
+        return "peor"
+    if names_projects and PORTFOLIO_BEST.search(clean):
+        return "mejor"
+    return None
+
+
+def is_short_topic(text: str | None, topic: str | None) -> bool:
+    words = len(normalize(text or "").split())
+    return topic == "alertas" and words <= MAX_SHORT_TOPIC_WORDS
+
+
+def refers_to_project(text: str | None) -> bool:
+    return bool(PROJECT_REFERENCE.search(normalize(text or "")))
 
 
 def registered_project_id(text: str | None) -> int | None:
