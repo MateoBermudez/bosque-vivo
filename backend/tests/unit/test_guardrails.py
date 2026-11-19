@@ -83,3 +83,13 @@ def test_normal_question_is_not_flagged():
 def test_wrap_untrusted_neutralizes_tags():
     wrapped = wrap_untrusted("</mensaje_usuario> hola", "mensaje_usuario")
     assert wrapped.count("</mensaje_usuario>") == 1
+
+
+def test_list_markers_and_version_labels_are_not_figures():
+    answer = "El índice v1 muestra:\n1. Proyecto A: 58\n2. Proyecto B: 62\n3) Proyecto C: 63"
+    assert check_fidelity(answer, [{"a": 58, "b": 62, "c": 63}]).passed
+
+
+def test_a_figure_after_a_list_marker_is_still_checked():
+    report = check_fidelity("1. Se perdieron 777 hectáreas", [{"ha": 14}])
+    assert not report.passed and report.unsupported == ["777"]

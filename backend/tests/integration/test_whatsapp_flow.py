@@ -101,9 +101,9 @@ def test_answer_after_consent_respects_length(db, seeded):
     service, client, _ = build(db, script)
     onboard(service)
     client.sent.clear()
-    service.handle(text("m2", "¿Cómo está el Roble?"))
+    service.handle(text("m2", "¿Cuánto carbono capturó la reserva el roble en 2020?"))
     assert len(client.sent) == 1
-    assert len(client.sent[0][1]) <= 300
+    assert len(client.sent[0][1]) <= SETTINGS.community_max_chars
 
 
 def ToolCallResponse(name, **args):
@@ -121,7 +121,7 @@ def test_delete_command_removes_user_consents_and_traces(db, seeded):
     script = [LLMResponse(text="Hola, ¿en qué le ayudo?")]
     service, client, _ = build(db, script)
     onboard(service)
-    service.handle(text("m2", "hola"))
+    service.handle(text("m2", "¿qué opinas del clima de mañana?"))
     assert db.query(AgentRun).count() == 1
     client.sent.clear()
     service.handle(text("m3", "borrar mis datos"))
@@ -138,7 +138,7 @@ def test_delete_command_also_removes_evidence_of_the_user_queries(db, seeded):
     ]
     service, _, _ = build(db, script)
     onboard(service)
-    service.handle(text("m2", "estado"))
+    service.handle(text("m2", "¿Cuánto carbono capturó la reserva el roble en 2020?"))
     assert db.query(Evidence).count() == 1
     service.handle(text("m3", "borrar mis datos"))
     assert db.query(Evidence).count() == 0

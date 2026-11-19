@@ -1,6 +1,7 @@
 import base64
 import binascii
 import uuid
+from dataclasses import asdict
 from typing import Literal
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -16,7 +17,9 @@ from bosquevivo.api.deps import (
 )
 from bosquevivo.assistant import IncomingMessage
 from bosquevivo.assistant.client import RecordingClient
+from bosquevivo.assistant.community import project_card
 from bosquevivo.assistant.runtime import build_assistant
+from bosquevivo.assistant.suggestions import suggestions_for
 from bosquevivo.core.config import Settings, get_settings
 from bosquevivo.satellite.provider import SatelliteProvider
 
@@ -65,8 +68,27 @@ class CommunityIn(BaseModel):
         return data if 0 < len(data) <= MAX_MEDIA_BYTES else None
 
 
+class SuggestionOut(BaseModel):
+    label: str
+    message: str | None = None
+    action: str | None = None
+
+
+class ProjectCardOut(BaseModel):
+    project_id: int
+    name: str
+    country: str | None = None
+    area_ha: float | None = None
+    score: float | None = None
+    category: str | None = None
+    confidence_label: str | None = None
+    forest_standing_pct: float | None = None
+
+
 class CommunityOut(BaseModel):
     replies: list[str]
+    project: ProjectCardOut | None = None
+    suggestions: list[SuggestionOut] = Field(default_factory=list)
 
 
 @router.post("/messages", response_model=CommunityOut)
@@ -88,10 +110,11 @@ def send_message(
     client = RecordingClient(stored)
     web_settings = settings.model_copy(update={"whatsapp_allowed_phones": ""})
     assistant = build_assistant(session, web_settings, llm, client, provider)
+    phone = f"web-{body.session_ref}"
     assistant.handle(
         IncomingMessage(
             message_id=f"web-{uuid.uuid4().hex}",
-            phone=f"web-{body.session_ref}",
+            phone=phone,
             kind=body.kind,
             text=(body.message or "").strip() or None,
             latitude=body.latitude,
@@ -100,4 +123,12 @@ def send_message(
             mime_type=body.mime_type,
         )
     )
-    return CommunityOut(replies=[text for _, text in client.sent])
+    focus = assistant.turn_project()
+    return CommunityOut(
+        replies=[text for _, text in client.sent],
+        project=ProjectCardOut(**asdict(project_card(session, focus))) if focus else None,
+        suggestions=[
+            SuggestionOut(**asdict(s))
+            for s in suggestions_for(assistant.stage(phone), assistant.turn_choices)
+        ],
+    )

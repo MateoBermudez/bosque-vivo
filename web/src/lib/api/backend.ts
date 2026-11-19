@@ -6,12 +6,14 @@ import {
   auditRunSchema,
   explorerSchema,
   chatAnswerSchema,
+  communityReplySchema,
   declarationSchema,
   geometrySchema,
   projectSchema,
   seriesSchema,
   traceSchema,
 } from "./schema";
+import type { CommunityReply } from "./schema";
 import type { BosqueVivoApi, ReportFile } from "./types";
 
 export class BackendError extends Error {
@@ -241,21 +243,17 @@ export const accountsApi = {
     ).detail,
 };
 
-const communitySchema = z.object({ replies: z.array(z.string()) });
-
 /** Lo que puede enviar una persona en el chat en línea, además del texto. */
 export type CommunityAttachment =
   | { kind: "location"; latitude: number; longitude: number }
   | { kind: "image" | "audio"; media_base64: string; mime_type: string };
 
 export const communityApi = {
-  send: async (sessionRef: string, message: string, attachment?: CommunityAttachment): Promise<string[]> =>
-    (
-      await requireJson(`${API_PREFIX}/community/messages`, communitySchema, {
-        admin: true,
-        method: "POST",
-        body: { session_ref: sessionRef, message: message || null, kind: "text", ...attachment },
-        timeoutMs: 90_000,
-      })
-    ).replies,
+  send: (sessionRef: string, message: string, attachment?: CommunityAttachment): Promise<CommunityReply> =>
+    requireJson(`${API_PREFIX}/community/messages`, communityReplySchema, {
+      admin: true,
+      method: "POST",
+      body: { session_ref: sessionRef, message: message || null, kind: "text", ...attachment },
+      timeoutMs: 90_000,
+    }),
 };

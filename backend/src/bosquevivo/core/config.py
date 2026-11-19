@@ -45,8 +45,9 @@ class Settings(BaseSettings):
     phone_hmac_key: str = Field(default="dev-only-change-me")
     admin_token: str = ""
     agent_max_steps: int = 5
-    agent_time_budget_seconds: float = Field(default=8.0, ge=0, le=120)
+    agent_time_budget_seconds: float = Field(default=25.0, ge=0, le=120)
     agent_daily_limit_per_user: int = 30
+    community_max_chars: int = Field(default=700, ge=140, le=2000)
     whatsapp_allowed_phones: str = ""
     whatsapp_api_url: str = "https://graph.facebook.com"
     whatsapp_api_version: str = "v25.0"

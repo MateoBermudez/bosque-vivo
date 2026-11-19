@@ -126,3 +126,29 @@ export const explorerSchema = z.array(
     audit: auditRunSchema.nullable(),
   }),
 );
+
+export const communitySuggestionSchema = z.object({
+  label: z.string(),
+  message: z.string().nullish(),
+  action: z.string().nullish(),
+});
+export type CommunitySuggestion = z.infer<typeof communitySuggestionSchema>;
+
+export const communityProjectSchema = z.object({
+  project_id: z.number().int(),
+  name: z.string(),
+  country: z.string().nullish(),
+  area_ha: z.number().nullish(),
+  score: z.number().nullish(),
+  category: z.string().nullish(),
+  confidence_label: z.string().nullish(),
+  forest_standing_pct: z.number().nullish(),
+});
+export type CommunityProject = z.infer<typeof communityProjectSchema>;
+
+export const communityReplySchema = z.object({
+  replies: z.array(z.string()),
+  project: communityProjectSchema.nullish(),
+  suggestions: z.array(communitySuggestionSchema).default([]),
+});
+export type CommunityReply = z.infer<typeof communityReplySchema>;

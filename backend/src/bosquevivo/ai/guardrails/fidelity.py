@@ -4,6 +4,8 @@ from datetime import date, datetime
 from typing import Any
 
 NUMBER = re.compile(r"(?<![\w.,])\d{1,3}(?:[.\s]\d{3})+(?:,\d+)?|\d+(?:[.,]\d+)?")
+LIST_MARKER = re.compile(r"^[ \t]*[-*]?[ \t]*\d{1,2}[.)][ \t]+", re.MULTILINE)
+VERSION_LABEL = re.compile(r"\bv\d{1,2}\b", re.IGNORECASE)
 
 
 def parse_number(token: str) -> float | None:
@@ -74,7 +76,8 @@ def check_fidelity(
     for text in allowed_context or []:
         evidence |= collect_numbers(text)
     unsupported: list[str] = []
-    for token in NUMBER.findall(answer):
+    visible = VERSION_LABEL.sub("", LIST_MARKER.sub("", answer))
+    for token in NUMBER.findall(visible):
         number = parse_number(token)
         if number is None:
             continue

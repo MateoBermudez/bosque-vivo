@@ -2,12 +2,20 @@ from sqlalchemy import delete, select
 from sqlalchemy.orm import Session
 
 from bosquevivo.ai.agent import Agent, AgentRequest
+from bosquevivo.ai.agent.resolver import ProjectResolver
 from bosquevivo.ai.llm import LLMProvider, MediaPart
 from bosquevivo.assistant import texts
 from bosquevivo.assistant.client import WhatsAppClient
-from bosquevivo.assistant.community import alerts_message, status_message
+from bosquevivo.assistant.community import (
+    alerts_message,
+    index_message,
+    portfolio_message,
+    status_message,
+)
 from bosquevivo.assistant.dialogue import (
     detect_intent,
+    detect_portfolio,
+    detect_topic,
     is_authorized,
     registered_project_id,
     split_message,
@@ -16,6 +24,7 @@ from bosquevivo.assistant.dialogue import (
     wants_media_consent,
 )
 from bosquevivo.assistant.messages import IncomingMessage
+from bosquevivo.assistant.suggestions import CONSENT, NO_PROJECT, START, WITH_PROJECT
 from bosquevivo.assistant.voice import transcribe_audio
 from bosquevivo.core.config import Settings
 from bosquevivo.core.errors import ExternalServiceError
@@ -35,6 +44,13 @@ log = get_logger(__name__)
 
 PURPOSE_DATA = "datos"
 PURPOSE_MEDIA = "medios"
+COMMAND_TOPICS = {"alertas", "estado"}
+FIXED_REPLIES = {"ayuda": texts.HELP, "gracias": texts.THANKS, "quien": texts.ABOUT}
+TOPIC_REPLIES = {
+    "alertas": alerts_message,
+    "estado": status_message,
+    "indice": index_message,
+}
 
 
 class AssistantService:
@@ -51,6 +67,8 @@ class AssistantService:
         self.client = client
         self.llm = llm
         self.settings = settings
+        self.turn_project_id: int | None = None
+        self.turn_choices: tuple[tuple[int, str], ...] = ()
 
     def already_processed(self, message_id: str) -> bool:
         return self.session.get(ProcessedMessage, message_id) is not None
@@ -63,7 +81,7 @@ class AssistantService:
         return True
 
     def _reply(self, phone: str, text: str) -> None:
-        for chunk in split_message(text):
+        for chunk in split_message(text, self.settings.community_max_chars):
             self.client.send_text(phone, chunk)
 
     def _granted(self, user: WaUser, purpose: str) -> bool:
@@ -106,6 +124,8 @@ class AssistantService:
         self.session.flush()
 
     def handle(self, message: IncomingMessage) -> None:
+        self.turn_project_id = None
+        self.turn_choices = ()
         if not self.mark_processed(message.message_id):
             return
         user = self._admit(message)
@@ -162,30 +182,75 @@ class AssistantService:
             return texts.HELP
         if intent == "registro":
             return self._register(user, registered_project_id(text) or 0)
-        if intent not in {"alertas", "estado"}:
-            return None
+        if intent in COMMAND_TOPICS:
+            return self._command_reply(user, text or "", intent)
+        return None
+
+    def _greeting(self, user: WaUser) -> str:
         project = self._project_of(user)
         if project is None:
-            return texts.NEED_PROJECT if intent == "alertas" else None
-        if intent == "alertas":
-            return alerts_message(self.session, project)
-        return status_message(self.session, project)
+            return texts.GREETING_NO_PROJECT
+        return texts.greeting_with_project(project.name)
+
+    def _mentioned(self, text: str) -> Project | None:
+        resolution = ProjectResolver.from_session(self.session).resolve(text)
+        if not resolution.confident or resolution.best is None:
+            return None
+        return self.session.get(Project, resolution.best.project_id)
+
+    def _adopt(self, user: WaUser, project: Project) -> bool:
+        if user.project_id == project.id:
+            return False
+        user.project_id = project.id
+        self.session.flush()
+        return True
+
+    def _command_reply(self, user: WaUser, text: str, topic: str) -> str:
+        project = self._mentioned(text)
+        if project is not None:
+            self._adopt(user, project)
+        project = project or self._project_of(user)
+        if project is None:
+            return texts.NEED_PROJECT
+        self.turn_project_id = project.id
+        return TOPIC_REPLIES[topic](self.session, project)
+
+    def _degraded_reply(self, user: WaUser, text: str, project: Project | None) -> str | None:
+        intent = detect_intent(text)
+        if intent == "saludo":
+            return self._greeting(user)
+        if intent in FIXED_REPLIES:
+            return FIXED_REPLIES[intent]
+        portfolio = detect_portfolio(text)
+        if portfolio is not None:
+            return f"{texts.DEGRADED} {portfolio_message(self.session, portfolio)}"
+        project = project or self._project_of(user)
+        if project is None:
+            return None
+        self.turn_project_id = project.id
+        topic = detect_topic(text) or "estado"
+        return f"{texts.DEGRADED} {TOPIC_REPLIES[topic](self.session, project)}"
 
     def _register(self, user: WaUser, project_id: int) -> str:
         project = self.session.get(Project, project_id)
         if project is None:
             return texts.PROJECT_NOT_FOUND
         user.project_id = project.id
+        self.turn_project_id = project.id
         self.session.flush()
-        return texts.project_registered(project.name)
+        return self._registered_reply(project)
+
+    def _registered_reply(self, project: Project) -> str:
+        return f"{texts.project_registered(project.name)} {status_message(self.session, project)}"
 
     def _register_by_location(self, user: WaUser, latitude: float, longitude: float) -> str:
         project = ProjectRepository(self.session).locate(float(latitude), float(longitude))
         if project is None:
             return texts.LOCATION_OUTSIDE
         user.project_id = project.id
+        self.turn_project_id = project.id
         self.session.flush()
-        return texts.project_registered(project.name)
+        return self._registered_reply(project)
 
     def _respond(self, user: WaUser, message: IncomingMessage) -> None:
         phone = message.phone
@@ -206,9 +271,30 @@ class AssistantService:
             self._reply(phone, texts.AUDIO_UNCLEAR)
             return
         answer = self.agent.answer(request)
-        self._reply(phone, answer.text)
-        if answer.used_fallback and not answer.evidence_ids:
+        self.turn_choices = answer.choices
+        project = self.session.get(Project, answer.project_id) if answer.project_id else None
+        if project is not None:
+            self.turn_project_id = project.id
+            self._adopt(user, project)
+        degraded = None
+        if answer.used_fallback:
+            degraded = self._degraded_reply(user, request.text, project)
+        reply = degraded or answer.text
+        self._reply(phone, reply)
+        if answer.used_fallback and degraded is None and not answer.evidence_ids:
             self._reply(phone, texts.HELP)
+
+    def stage(self, phone: str) -> str:
+        digest = phone_hmac(phone, self.settings.phone_hmac_key)
+        user = self.session.scalars(select(WaUser).where(WaUser.phone_hmac == digest)).first()
+        if user is None:
+            return START
+        if not self._granted(user, PURPOSE_DATA):
+            return CONSENT
+        return WITH_PROJECT if user.project_id else NO_PROJECT
+
+    def turn_project(self) -> Project | None:
+        return self.session.get(Project, self.turn_project_id) if self.turn_project_id else None
 
     def _build_request(
         self, user: WaUser, message: IncomingMessage, media_ok: bool

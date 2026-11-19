@@ -8,10 +8,11 @@ from bosquevivo.ai.agent.tools.base import (
 )
 from bosquevivo.ai.agent.tools.data import DATA_TOOLS
 from bosquevivo.ai.agent.tools.extra import EXTRA_TOOLS
+from bosquevivo.ai.agent.tools.portfolio import PORTFOLIO_TOOLS
 
 
 def default_registry() -> ToolRegistry:
-    return ToolRegistry([*DATA_TOOLS, *EXTRA_TOOLS])
+    return ToolRegistry([*DATA_TOOLS, *EXTRA_TOOLS, *PORTFOLIO_TOOLS])
 
 
 __all__ = [

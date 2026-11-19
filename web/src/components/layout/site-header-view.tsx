@@ -31,14 +31,9 @@ const AUDITOR_NAV = [
 /** Páginas que solo existen para auditores. */
 const AUDITOR_PATHS = ["/chat", "/trazas"] as const;
 
-export interface AuditorInfo {
-  /** Correo con el que inició sesión, o «auditor» si entró con código. */
-  who: string;
-}
-
 interface Props {
-  /** Sesión de auditor activa (null si es una visita pública). */
-  auditor: AuditorInfo | null;
+  /** Hay una sesión de auditor activa (false en una visita pública). */
+  auditor: boolean;
   /** Desarrollo sin SESSION_SECRET: el área de auditores está abierta y no hay sesión. */
   openMode: boolean;
 }
@@ -65,8 +60,7 @@ export function SiteHeaderView({ auditor, openMode }: Props) {
 
   // Sin sesión real (desarrollo abierto) se considera «modo auditor» mientras se esté en sus páginas,
   // para poder ver esta interfaz y salir de ella.
-  const inAuditorMode =
-    auditor !== null || (openMode && AUDITOR_PATHS.some((path) => isActive(pathname, path)));
+  const inAuditorMode = auditor || (openMode && AUDITOR_PATHS.some((path) => isActive(pathname, path)));
 
   if (inAuditorMode) {
     return (
@@ -96,11 +90,6 @@ export function SiteHeaderView({ auditor, openMode }: Props) {
             <span className="flex items-center gap-1.5 rounded-full bg-lime px-3 py-1 text-xs font-semibold text-lime-foreground">
               <ShieldCheck className="h-3.5 w-3.5" aria-hidden /> Modo auditor
             </span>
-            {auditor && auditor.who !== "auditor" && (
-              <span className="max-w-[14rem] truncate text-sm text-forest-muted" title={auditor.who}>
-                {auditor.who}
-              </span>
-            )}
             <LogoutButton className="flex items-center gap-1.5 rounded-full border border-forest-muted/50 px-3 py-2 text-sm font-semibold hover:bg-forest-2" />
           </div>
 
@@ -120,7 +109,6 @@ export function SiteHeaderView({ auditor, openMode }: Props) {
           <nav id="menu-movil" className="border-t border-forest-2 px-5 pb-5 lg:hidden" aria-label="Móvil">
             <p className="flex items-center gap-1.5 py-3 text-xs font-semibold text-lime">
               <ShieldCheck className="h-3.5 w-3.5" aria-hidden /> Modo auditor
-              {auditor && auditor.who !== "auditor" ? ` · ${auditor.who}` : ""}
             </p>
             {AUDITOR_NAV.map((item) => (
               <Link

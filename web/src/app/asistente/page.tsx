@@ -17,20 +17,20 @@ export const metadata: Metadata = {
 
 const STEPS = [
   {
-    title: "Escribe «Hola»",
+    title: "Pulsa «Empezar»",
     text: "El asistente se presenta y te recuerda que es una inteligencia artificial y que puede equivocarse.",
   },
   {
-    title: "Lee el aviso y escribe ACEPTO",
+    title: "Lee el aviso y pulsa «Acepto»",
     text: "Sin tu autorización no puede ayudarte. El aviso explica qué datos se usan y quién los procesa.",
   },
   {
     title: "Elige tu proyecto",
-    text: "Escribe PROYECTO y el número (por ejemplo, PROYECTO 7) o comparte tu ubicación para que encuentre el proyecto.",
+    text: "Escribe su nombre (por ejemplo, «¿Cómo está Concosta?»), búscalo con el botón «Elegir mi proyecto» o comparte tu ubicación.",
   },
   {
     title: "Pregunta con tus palabras",
-    text: "Por ejemplo: «¿cómo está el bosque de mi finca?», o escribe ESTADO o ALERTAS.",
+    text: "Por ejemplo: «¿Hay alertas en mi proyecto?» o «¿Qué significa el índice?». Si dos proyectos se parecen, te pregunta cuál es.",
   },
   {
     title: "Para enviar fotos o audios, escribe ACEPTO FOTOS",

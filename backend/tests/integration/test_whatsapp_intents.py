@@ -33,7 +33,8 @@ def onboard(service):
 def test_detect_intent():
     assert detect_intent("Ayuda") == "ayuda"
     assert detect_intent("menú") == "ayuda"
-    assert detect_intent("¿Hay alertas?") == "alertas"
+    assert detect_intent("ALERTAS") == "alertas"
+    assert detect_intent("¿Hay alertas?") is None
     assert detect_intent("ESTADO") == "estado"
     assert detect_intent("¿Cómo está mi bosque?") == "estado"
     assert detect_intent("proyecto 12") == "registro"
@@ -78,7 +79,7 @@ def test_register_then_status_and_alerts(db, seeded):
     say(service, "m5", "alertas")
     assert "Reserva El Roble" in client.sent[-1][1]
     assert llm.calls == []
-    assert all(len(message) <= 300 for _, message in client.sent)
+    assert all(len(message) <= SETTINGS.community_max_chars for _, message in client.sent)
 
 
 def test_location_registers_project(db, seeded):

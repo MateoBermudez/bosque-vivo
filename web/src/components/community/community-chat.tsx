@@ -1,12 +1,22 @@
 "use client";
 
-import { Camera, MapPin, Mic, SendHorizontal, Square, X } from "lucide-react";
+import { Camera, ChevronRight, MapPin, Mic, Search, SendHorizontal, Square, X } from "lucide-react";
 import { useEffect, useId, useRef, useState } from "react";
 
+import { communityReplySchema, type CommunityProject, type CommunitySuggestion } from "@/lib/api/schema";
 import { MAX_RECORDING_SECONDS, VoiceRecorder, currentPosition, encodePhoto } from "@/lib/media";
+import { filterProjects, type PickerProject } from "@/lib/project-search";
 import { cn } from "@/lib/utils";
 
-type Bubble = { id: number; from: "persona" | "asistente" | "error"; text: string; imageUrl?: string };
+import { ProjectCard } from "./project-card";
+
+type Bubble = {
+  id: number;
+  from: "persona" | "asistente" | "error";
+  text: string;
+  imageUrl?: string;
+  project?: CommunityProject;
+};
 
 type Payload =
   | { kind: "text"; message: string }
@@ -14,7 +24,10 @@ type Payload =
   | { kind: "image" | "audio"; media_base64: string; mime_type: string; message?: string };
 
 const STORAGE_KEY = "bv_chat_comunitario";
-const QUICK = ["Hola", "ACEPTO", "AYUDA", "ESTADO", "ALERTAS", "ACEPTO FOTOS"];
+const START: CommunitySuggestion[] = [{ label: "Empezar", message: "Hola" }];
+const HELP: CommunitySuggestion = { label: "Ayuda", message: "AYUDA" };
+const PICK_PROJECT = "elegir_proyecto";
+const SHARE_LOCATION = "ubicacion";
 
 function storedRef(): string {
   try {
@@ -38,9 +51,15 @@ export function CommunityChat() {
   const [input, setInput] = useState("");
   const [pending, setPending] = useState(false);
   const [recording, setRecording] = useState(false);
+  const [suggestions, setSuggestions] = useState<CommunitySuggestion[]>(START);
+  const [picking, setPicking] = useState(false);
+  const [query, setQuery] = useState("");
+  const [projects, setProjects] = useState<PickerProject[] | null>(null);
+  const [pickerError, setPickerError] = useState<string | null>(null);
   const [elapsed, setElapsed] = useState(0);
   const sessionRef = useRef("");
   const nextId = useRef(1);
+  const shownProject = useRef<number | null>(null);
   const endRef = useRef<HTMLDivElement>(null);
   const photoRef = useRef<HTMLInputElement>(null);
   const recorderRef = useRef<VoiceRecorder | null>(null);
@@ -70,8 +89,8 @@ export function CommunityChat() {
     [],
   );
 
-  function add(from: Bubble["from"], text: string, imageUrl?: string) {
-    setBubbles((current) => [...current, { id: nextId.current++, from, text, imageUrl }]);
+  function add(from: Bubble["from"], text: string, imageUrl?: string, project?: CommunityProject) {
+    setBubbles((current) => [...current, { id: nextId.current++, from, text, imageUrl, project }]);
   }
 
   async function deliver(payload: Payload) {
@@ -83,11 +102,19 @@ export function CommunityChat() {
         body: JSON.stringify({ session_ref: sessionRef.current || storedRef(), ...payload }),
       });
       const body: unknown = await response.json().catch(() => null);
-      const record = body && typeof body === "object" ? (body as Record<string, unknown>) : {};
-      if (!response.ok || !Array.isArray(record.replies)) {
+      const parsed = communityReplySchema.safeParse(body);
+      if (!response.ok || !parsed.success) {
+        const record = body && typeof body === "object" ? (body as Record<string, unknown>) : {};
         throw new Error(typeof record.error === "string" ? record.error : "El asistente no respondió.");
       }
-      for (const reply of record.replies) if (typeof reply === "string") add("asistente", reply);
+      const { replies, project, suggestions: next } = parsed.data;
+      const isNewProject = project != null && project.project_id !== shownProject.current;
+      if (project) shownProject.current = project.project_id;
+      replies.forEach((reply, index) => {
+        const card = index === replies.length - 1 && isNewProject ? project : undefined;
+        add("asistente", reply, undefined, card ?? undefined);
+      });
+      setSuggestions(next.length > 0 ? next : START);
     } catch (error) {
       add("error", error instanceof Error ? error.message : "El asistente no respondió.");
     } finally {
@@ -95,12 +122,38 @@ export function CommunityChat() {
     }
   }
 
-  async function send(raw: string) {
+  async function send(raw: string, shown?: string) {
     const text = raw.trim();
     if (!text || pending) return;
-    add("persona", text);
+    add("persona", shown ?? text);
     setInput("");
+    setPicking(false);
     await deliver({ kind: "text", message: text });
+  }
+
+  async function openPicker() {
+    setPicking(true);
+    setQuery("");
+    if (projects !== null) return;
+    setPickerError(null);
+    try {
+      const response = await fetch("/api/asistente/proyectos");
+      const body = (await response.json()) as { projects?: PickerProject[] };
+      if (!response.ok || !Array.isArray(body.projects)) throw new Error("sin lista");
+      setProjects(body.projects);
+    } catch {
+      setPickerError("No pudimos cargar la lista. Escribe el nombre de tu proyecto en el mensaje.");
+    }
+  }
+
+  function chooseProject(project: PickerProject) {
+    void send(`PROYECTO ${project.id}`, `Quiero consultar: ${project.name}`);
+  }
+
+  function pickSuggestion(suggestion: CommunitySuggestion) {
+    if (suggestion.action === PICK_PROJECT) void openPicker();
+    else if (suggestion.action === SHARE_LOCATION) void shareLocation();
+    else if (suggestion.message) void send(suggestion.message, suggestion.label);
   }
 
   async function shareLocation() {
@@ -177,32 +230,35 @@ export function CommunityChat() {
   }
 
   const busy = pending || recording;
+  const matches = projects ? filterProjects(projects, query) : [];
 
   return (
     <div className="card-soft flex min-h-[28rem] flex-col p-4 md:p-6">
       <div className="flex-1 space-y-3" role="log" aria-live="polite" aria-label="Conversación con el asistente">
         {bubbles.length === 0 && (
           <p className="text-sm text-muted-foreground">
-            Escribe <strong>Hola</strong> para empezar. También puedes compartir tu ubicación, enviar una foto o una
-            nota de voz.
+            Soy el asistente de Bosque Vivo. Pulsa <strong>Empezar</strong> o escribe el nombre de un proyecto, por
+            ejemplo «¿Cómo está Concosta?». También puedes compartir tu ubicación, enviar una foto o una nota de voz.
           </p>
         )}
         {bubbles.map((bubble) => (
-          <div
-            key={bubble.id}
-            data-from={bubble.from}
-            className={cn(
-              "w-fit max-w-[85%] whitespace-pre-line rounded-2xl px-4 py-2 text-sm",
-              bubble.from === "persona" && "ml-auto bg-forest text-forest-foreground",
-              bubble.from === "asistente" && "bg-secondary text-secondary-foreground",
-              bubble.from === "error" && "bg-destructive/10 text-destructive",
-            )}
-          >
-            {bubble.imageUrl && (
-              // eslint-disable-next-line @next/next/no-img-element -- vista previa local de la foto elegida
-              <img src={bubble.imageUrl} alt="Foto enviada" className="mb-2 max-h-48 rounded-xl object-cover" />
-            )}
-            {bubble.text}
+          <div key={bubble.id} className="space-y-2">
+            <div
+              data-from={bubble.from}
+              className={cn(
+                "w-fit max-w-[85%] whitespace-pre-line rounded-2xl px-4 py-2 text-sm",
+                bubble.from === "persona" && "ml-auto bg-forest text-forest-foreground",
+                bubble.from === "asistente" && "bg-secondary text-secondary-foreground",
+                bubble.from === "error" && "bg-destructive/10 text-destructive",
+              )}
+            >
+              {bubble.imageUrl && (
+                // eslint-disable-next-line @next/next/no-img-element -- vista previa local de la foto elegida
+                <img src={bubble.imageUrl} alt="Foto enviada" className="mb-2 max-h-48 rounded-xl object-cover" />
+              )}
+              {bubble.text}
+            </div>
+            {bubble.project && <ProjectCard project={bubble.project} />}
           </div>
         ))}
         {pending && (
@@ -212,20 +268,68 @@ export function CommunityChat() {
         )}
         <div ref={endRef} />
       </div>
-      <ul className="mt-4 flex flex-wrap gap-2" aria-label="Respuestas rápidas">
-        {QUICK.map((quick) => (
-          <li key={quick}>
-            <button
-              type="button"
-              onClick={() => send(quick)}
-              disabled={busy}
-              className="rounded-full border border-border bg-background px-3 py-1 text-xs hover:bg-muted"
-            >
-              {quick}
+      {picking && (
+        <div className="mt-4 rounded-2xl border border-border bg-background p-3" role="region" aria-label="Elegir proyecto">
+          <div className="flex items-center gap-2">
+            <Search className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden />
+            <label htmlFor={`${inputId}-buscar`} className="sr-only">
+              Buscar proyecto por nombre
+            </label>
+            <input
+              id={`${inputId}-buscar`}
+              value={query}
+              autoFocus
+              onChange={(event) => setQuery(event.target.value)}
+              placeholder="Escribe parte del nombre de tu proyecto"
+              className="h-9 min-w-0 flex-1 bg-transparent text-sm outline-none"
+            />
+            <button type="button" className="btn-cream" onClick={() => setPicking(false)} aria-label="Cerrar la búsqueda">
+              <X className="h-4 w-4" aria-hidden />
             </button>
-          </li>
-        ))}
-      </ul>
+          </div>
+          {pickerError && <p className="mt-2 text-xs text-destructive">{pickerError}</p>}
+          {projects === null && !pickerError && <p className="mt-2 text-xs text-muted-foreground">Cargando proyectos…</p>}
+          {projects !== null && (
+            <ul className="mt-2 max-h-56 space-y-1 overflow-y-auto" aria-label="Proyectos">
+              {matches.map((project) => (
+                <li key={project.id}>
+                  <button
+                    type="button"
+                    onClick={() => chooseProject(project)}
+                    disabled={busy}
+                    className="w-full rounded-xl px-3 py-2 text-left text-sm hover:bg-muted disabled:opacity-50"
+                  >
+                    {project.name}
+                  </button>
+                </li>
+              ))}
+              {matches.length === 0 && (
+                <li className="px-3 py-2 text-xs text-muted-foreground">No hay proyectos con ese nombre.</li>
+              )}
+            </ul>
+          )}
+        </div>
+      )}
+      <div className="mt-4">
+        <p className="mb-2 text-xs font-medium text-muted-foreground">
+          Toque una opción o escriba su pregunta abajo:
+        </p>
+        <ul className="flex flex-wrap gap-2" aria-label="Opciones para tocar">
+          {[...suggestions, ...(suggestions.length > 1 ? [HELP] : [])].map((suggestion) => (
+            <li key={suggestion.label}>
+              <button
+                type="button"
+                onClick={() => pickSuggestion(suggestion)}
+                disabled={busy}
+                className="flex items-center gap-1 rounded-full border border-emerald-600 bg-emerald-50 px-3.5 py-1.5 text-xs font-semibold text-emerald-800 shadow-sm transition hover:bg-emerald-600 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600 disabled:opacity-50 dark:border-emerald-500 dark:bg-emerald-950 dark:text-emerald-200 dark:hover:bg-emerald-500 dark:hover:text-emerald-950"
+              >
+                {suggestion.label}
+                <ChevronRight className="h-3.5 w-3.5" aria-hidden />
+              </button>
+            </li>
+          ))}
+        </ul>
+      </div>
       {recording ? (
         <div className="mt-3 flex items-center gap-2" role="status" aria-live="polite">
           <span className="flex h-11 min-w-0 flex-1 items-center gap-2 rounded-full border border-destructive/40 bg-destructive/5 px-4 text-sm">
@@ -304,7 +408,7 @@ export function CommunityChat() {
               value={input}
               maxLength={1000}
               onChange={(event) => setInput(event.target.value)}
-              placeholder="Escribe tu mensaje"
+              placeholder="Escribe el nombre de un proyecto o tu pregunta"
               className="h-11 min-w-0 flex-1 rounded-full border border-input bg-background px-4 text-sm"
             />
             <button type="submit" className="btn-dark shrink-0" disabled={busy || !input.trim()} aria-label="Enviar">

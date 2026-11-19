@@ -57,14 +57,13 @@ def call(name, **args):
 def test_happy_path_uses_tools_and_passes_validation(db, seeded):
     script = [
         call("buscar_proyecto", texto="Roble"),
-        call("obtener_auditoria", proyecto_id=seeded.id),
         LLMResponse(text="La Reserva El Roble tiene correspondencia alta, con confianza alta."),
     ]
     agent, _ = make_agent(db, script)
     answer = agent.answer(AgentRequest(text="¿Cómo está el Roble?", user_ref="u1"))
     assert not answer.used_fallback
     assert answer.validator_passed
-    assert answer.tools_called == ["buscar_proyecto", "obtener_auditoria"]
+    assert answer.tools_called == ["obtener_auditoria", "buscar_proyecto"]
     assert len(answer.evidence_ids) == 2
 
 
@@ -119,7 +118,7 @@ def test_accusatory_language_is_blocked(db, seeded):
 
 
 def test_community_answer_longer_than_limit_falls_back(db, seeded):
-    long_text = "Todo está bien. " * 40
+    long_text = "Todo está bien. " * 60
     script = [LLMResponse(text=long_text), LLMResponse(text=long_text)]
     agent, _ = make_agent(db, script)
     assert agent.answer(AgentRequest(text="hola")).used_fallback

@@ -59,7 +59,7 @@ export async function POST(request: NextRequest) {
   }
   const data = parsed.data;
   try {
-    const replies =
+    const reply =
       data.kind === "text"
         ? await communityApi.send(data.session_ref, data.message)
         : data.kind === "location"
@@ -73,7 +73,7 @@ export async function POST(request: NextRequest) {
               media_base64: data.media_base64,
               mime_type: data.mime_type,
             });
-    return NextResponse.json({ replies }, { headers: { "Cache-Control": "no-store" } });
+    return NextResponse.json(reply, { headers: { "Cache-Control": "no-store" } });
   } catch (error) {
     const message = error instanceof BackendError ? error.message : "El asistente no respondió. Intenta de nuevo.";
     return NextResponse.json({ error: message }, { status: 502 });
