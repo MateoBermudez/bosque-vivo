@@ -21,7 +21,10 @@ afterEach(() => {
 describe("chat en línea", () => {
   it("envía texto con el token de administración", async () => {
     fetchMock.mockResolvedValue(json({ replies: ["Hola"] }));
-    expect(await communityApi.send("a1b2c3d4", "hola")).toEqual(["Hola"]);
+    expect(await communityApi.send("a1b2c3d4", "hola")).toEqual({
+      replies: ["Hola"],
+      suggestions: [],
+    });
     const [url, init] = fetchMock.mock.calls[0]!;
     expect(String(url)).toBe("http://backend.test/api/v1/community/messages");
     expect((init!.headers as Record<string, string>)["X-Admin-Token"]).toBe("token-secreto");
@@ -45,5 +48,23 @@ describe("chat en línea", () => {
     await communityApi.send("a1b2c3d4", "mi finca", { kind: "image", media_base64: "eA==", mime_type: "image/jpeg" });
     const body = JSON.parse(String(fetchMock.mock.calls[0]![1]!.body));
     expect(body).toMatchObject({ kind: "image", message: "mi finca", media_base64: "eA==", mime_type: "image/jpeg" });
+  });
+
+  it("devuelve la ficha del proyecto y las sugerencias del asistente", async () => {
+    fetchMock.mockResolvedValue(
+      json({
+        replies: ["Concosta conserva su bosque."],
+        project: { project_id: 4, name: "Concosta REDD+ Project", score: 99.1, category: "Alta" },
+        suggestions: [{ label: "¿Hay alertas?", message: "ALERTAS" }, { label: "Elegir otro", action: "elegir_proyecto" }],
+      }),
+    );
+    const reply = await communityApi.send("a1b2c3d4", "como va concosta");
+    expect(reply.project?.name).toBe("Concosta REDD+ Project");
+    expect(reply.suggestions.map((s) => s.label)).toEqual(["¿Hay alertas?", "Elegir otro"]);
+  });
+
+  it("rechaza una respuesta con un formato inesperado", async () => {
+    fetchMock.mockResolvedValue(json({ replies: "no es una lista" }));
+    await expect(communityApi.send("a1b2c3d4", "hola")).rejects.toThrow(/formato esperado/);
   });
 });
