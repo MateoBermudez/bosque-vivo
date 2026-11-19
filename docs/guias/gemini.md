@@ -26,6 +26,12 @@ El agente de IA (RA01–RA09) usa la API de Gemini de Google AI Studio. La capa 
    uv run bosquevivo eval --output data/eval/report.json
    ```
 
+   O directamente contra producción, sin copiar la clave: cada caso se ejecuta en la API desplegada (`POST /api/v1/admin/eval/{caso}`, con `ADMIN_TOKEN`) y el informe se arma en el computador. La pausa entre casos respeta el límite de 10 solicitudes por minuto:
+
+   ```
+   ADMIN_TOKEN=... uv run bosquevivo eval --remote https://bosque-vivo-api.vercel.app --pausa 25 --output data/eval/report.json
+   ```
+
 ## Límites y privacidad
 
 - Los límites de la capa gratuita (solicitudes por minuto y por día) se consultan en [aistudio.google.com/rate-limit](https://aistudio.google.com/rate-limit). El backend además limita a 10 solicitudes por minuto, 400 por día y `AGENT_DAILY_LIMIT_PER_USER` por usuario.

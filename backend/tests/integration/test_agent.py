@@ -7,6 +7,7 @@ from bosquevivo.ai.agent import Agent, AgentRequest, default_registry
 from bosquevivo.ai.llm import LLMResponse, ScriptedLLM, ToolCall
 from bosquevivo.ai.llm.budget import TimeBudgetExceededError, remaining_seconds
 from bosquevivo.ai.llm.errors import QuotaExceededError
+from bosquevivo.ai.prompts import PROMPT_VERSION
 from bosquevivo.audit import AuditService
 from bosquevivo.core.config import Settings
 from bosquevivo.db.models import AgentRun, AgentStep, Project
@@ -75,7 +76,7 @@ def test_trace_is_persisted(db, seeded):
     agent, _ = make_agent(db, script)
     answer = agent.answer(AgentRequest(text="estado", user_ref="u1"))
     run = db.get(AgentRun, answer.run_id)
-    assert run is not None and run.prompt_version == "v1" and run.latency_ms is not None
+    assert run is not None and run.prompt_version == PROMPT_VERSION and run.latency_ms is not None
     steps = db.query(AgentStep).filter_by(run_id=run.id).all()
     assert [s.tool for s in steps] == ["obtener_auditoria"]
     assert steps[0].evidence_ids

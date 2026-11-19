@@ -13,4 +13,4 @@ Reglamenta el impuesto nacional al carbono y el mecanismo de no causación media
 Impulsa el desarrollo bajo en carbono del país mediante metas y medidas mínimas en materia de carbono neutralidad y resiliencia climática.
 
 ## Ley 1581 de 2012
-Régimen general de protección de datos personales. Exige finalidad definida, autorización previa del titular y permite solicitar la supresión de los datos. Bosque Vivo guarda el teléfono solo como huella cifrada y permite borrar los datos con la orden "borrar mis datos".
+Régimen general de protección de datos personales. Exige finalidad definida, autorización previa del titular y permite solicitar la supresión de los datos. En el chat en línea, Bosque Vivo identifica cada conversación con un código anónimo que solo guarda como huella cifrada, no pide nombre, teléfono ni correo, guarda las preguntas, las respuestas, el proyecto elegido y la autorización dada para atender a la persona y revisar la calidad, y procesa las fotos y notas de voz sin guardar los archivos. La persona puede borrar todo cuando quiera con la orden "BORRAR MIS DATOS". El detalle está en la política de privacidad del sitio (/privacidad).
