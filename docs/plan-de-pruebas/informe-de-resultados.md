@@ -1,15 +1,15 @@
 # Informe de resultados de pruebas
 
-Ejecución completa del [plan de pruebas](plan-de-pruebas.md), versión 1.3, sobre la rama `main` el 05/11/2026 (la primera ejecución fue el 03/11/2026). Entorno: Linux, Python 3.12, Node 22, Chromium con Playwright; base SQLite en memoria y PostgreSQL 16 (pruebas automáticas), bases temporales (E2E y mediciones) y producción en Vercel con Supabase (mediciones con Gemini real y correo SMTP).
+Ejecución completa del [plan de pruebas](plan-de-pruebas.md) sobre la rama `main` el 05/11/2026 (la primera ejecución fue el 03/11/2026). La versión 1.4 del plan (19/11/2026) adopta el chat en línea como canal del asistente y evalúa CP-49 con la evidencia de esta ejecución en producción. Entorno: Linux, Python 3.12, Node 22, Chromium con Playwright; base SQLite en memoria y PostgreSQL 16 (pruebas automáticas), bases temporales (E2E y mediciones) y producción en Vercel con Supabase (mediciones con Gemini real y correo SMTP).
 
 ## 1. Resumen
 
 | Indicador | Resultado |
 |---|---|
 | Casos especificados | 64 |
-| Casos aprobados | 61 (95 %) |
+| Casos aprobados | 62 (97 %) |
 | Casos fallidos | 0 |
-| Casos bloqueados por dependencias externas | 3 (CP-29 y CP-46 del piloto, CP-49 de WhatsApp); de CP-50 queda pendiente solo la evaluación formal de 20 casos |
+| Casos bloqueados por dependencias externas | 2 (CP-29 y CP-46, del piloto); de CP-50 queda pendiente solo la evaluación formal de 20 casos |
 | Requisitos funcionales RF01–RF09 con casos aprobados | 9 de 9 (100 %) |
 | Pruebas automáticas del backend | 353 aprobadas, 0 fallidas, tanto en SQLite como en PostgreSQL 16 |
 | Cobertura de líneas del backend | 89 % (5.893 sentencias) |
@@ -113,7 +113,7 @@ Prueba manual adicional (CP-58): `scripts/start.sh` en un clon sin `.env` gener�
 | 7. Determinismo | 3 de 3 | Sí |
 | 8. Compilación de producción | Correcta | Sí |
 
-**Conclusión.** Se cumplen los criterios para dar por completado el plan en esta etapa. Quedan tres casos bloqueados por dependencias externas (credenciales de Meta para WhatsApp y usuarios del piloto) y el informe formal de `bosquevivo eval` de CP-50; tienen guía de ejecución en [`docs/guias`](../guias) y en este plan, y no afectan los requisitos funcionales comprometidos, que se verificaron sin ellos. La calidad de las respuestas libres depende de la disponibilidad de la capa gratuita de Gemini; cuando está saturada, el sistema responde a tiempo con el respaldo.
+**Conclusión.** Se cumplen los criterios para dar por completado el plan en esta etapa. Quedan dos casos bloqueados porque dependen del piloto con usuarios reales (CP-29 y CP-46) y el informe formal de `bosquevivo eval` de CP-50; tienen guía de ejecución en [`docs/guias`](../guias) y en este plan, y no afectan los requisitos funcionales comprometidos, que se verificaron sin ellos. La calidad de las respuestas libres depende de la disponibilidad de la capa gratuita de Gemini; cuando está saturada, el sistema responde a tiempo con el respaldo.
 
 ## 6. Cómo repetir la ejecución
 

@@ -1,6 +1,6 @@
 # Plan de pruebas (IEEE 829)
 
-Objetivo específico 4 del proyecto: probar Bosque Vivo con un plan que verifique el cumplimiento de los requisitos del ERS (IEEE 830, revisión 1.1 del 05/11/2026, en [`docs/ers`](../ers)). Sigue la plantilla «Formato_ieee829» del Politécnico.
+Objetivo específico 4 del proyecto: probar Bosque Vivo con un plan que verifique el cumplimiento de los requisitos del ERS (IEEE 830, revisión 1.2 del 19/11/2026, en [`docs/ers`](../ers)). Sigue la plantilla «Formato_ieee829» del Politécnico.
 
 | Documento | Contenido |
 |---|---|
@@ -12,7 +12,7 @@ Objetivo específico 4 del proyecto: probar Bosque Vivo con un plan que verifiqu
 | [`evidencias/`](evidencias) | Reportes JUnit (SQLite y PostgreSQL), salidas de las herramientas, mediciones (`rnf-*.json`, incluida `rnf-produccion.json` con Gemini real), resultado E2E y capturas |
 | [`scripts/`](scripts) | `ejecutar-e2e.sh` y `e2e.cjs` (Playwright), `disponibilidad.sh` (piloto), `generar-documento.sh` y `generar_documento.py` (Word y PDF sobre la plantilla) |
 
-Resultado al 05/11/2026 (versión 1.3, ejecución completa): 61 de 64 casos aprobados, 0 fallidos y 3 bloqueados por el piloto o por WhatsApp (CP-29, CP-46 y CP-49); de CP-50 queda pendiente solo la evaluación formal de 20 casos. El sistema está desplegado en https://bosque-vivo-web.vercel.app con correo SMTP y Gemini activos, y publica términos y condiciones, política de privacidad y uso de datos.
+Resultado de la ejecución completa del 05/11/2026 (plan versión 1.4 del 19/11/2026): 62 de 64 casos aprobados, 0 fallidos y 2 bloqueados por el piloto (CP-29 y CP-46); de CP-50 queda pendiente solo la evaluación formal de 20 casos. El sistema está desplegado en https://bosque-vivo-web.vercel.app con correo SMTP y Gemini activos, ofrece el asistente por el chat en línea (`/asistente`), y publica términos y condiciones, política de privacidad y uso de datos.
 
 Regenerar el `.docx` y el `.pdf` después de editar los Markdown (requiere pandoc, LibreOffice y uv). El documento se arma sobre la plantilla «Formato_ieee829» del Drive (`plantilla/Formato_ieee829.docx`): portada, tabla de contenido, encabezado y pie del Politécnico, títulos y tablas con su formato; los casos de prueba, el informe de resultados y las incidencias van como anexos A, B y C:
 

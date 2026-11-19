@@ -12,7 +12,7 @@ Requisitos del ERS (IEEE 830, revisión 1.1 del 05/11/2026: [`ERS_Bosque_Vivo.do
 | RF04 Declarado vs observado | OE3 | `audit/compare.py`, `audit/components.py` | `test_index.py`, `test_audit_service.py` | CP-13, CP-14 |
 | RF05 Índice de credibilidad | OE3 | `audit/index.py`, `audit/confidence.py`, `audit/config.py` | `test_index.py`, `test_index_v1.py`, `test_golden_projects.py`, `format.test.ts` | CP-15 a CP-18 |
 | RF06 Reporte de auditoría | OE3 | `reports/*`, `web/src/app/informe` | `test_reports.py` | CP-19, CP-20 |
-| RF07 Consultas conversacionales | OE3 | `assistant/*`, `api/routers/whatsapp.py`, `api/routers/community.py` | `test_whatsapp_flow.py`, `test_whatsapp_support.py`, `test_whatsapp_intents.py`, `test_community_chat.py` | CP-21 a CP-26 |
+| RF07 Consultas conversacionales | OE3 | `assistant/*`, `api/routers/community.py`, `web/src/app/asistente` (canal habilitado); `api/routers/whatsapp.py` (ampliación futura, no habilitada) | `test_community_chat.py`, `test_whatsapp_flow.py`, `test_whatsapp_intents.py` (flujo común del asistente), `test_whatsapp_support.py` | CP-21 a CP-26 |
 | RF08 Lenguaje sencillo | OE3 | `assistant/community.py`, `assistant/texts.py`, `ai/prompts`, `ai/guardrails` | `test_whatsapp_intents.py`, `test_guardrails.py`, `test_agent.py` | CP-27 a CP-29 |
 | RF09 Recuperación de contraseña | OE3 | `accounts/*` (correo SMTP, verificación en dos pasos, avisos, invitaciones), `api/routers/auth.py`, `web/src/app/acceso/*` | `test_password_recovery.py`, `test_two_factor.py`, `session.test.ts`, `access.test.ts`, `accounts.test.ts`, `throttle.test.ts` | CP-30 a CP-37, CP-53 a CP-57, CP-64 |
 

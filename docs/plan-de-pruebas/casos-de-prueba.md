@@ -1,6 +1,6 @@
 # Especificación de casos de prueba
 
-Acompaña al [plan de pruebas](plan-de-pruebas.md). Versión 1.3 (05/11/2026): se añaden CP-63 (documentos legales) y CP-64 (correos con la plantilla de la marca), CP-57 se completa con el envío SMTP real en producción y CP-38 y CP-50 se miden en producción con Gemini real. Versión 1.2 (04/11/2026): se añaden CP-59 a CP-62 (PostgreSQL en Supabase, migración y despliegue en Vercel). Versión 1.1: CP-53 a CP-58 (correo SMTP, verificación en dos pasos y configuración automática). Cada caso indica el requisito del ERS que verifica, la técnica, las precondiciones, los pasos, los datos, el resultado esperado, la prueba automática que lo ejecuta y el resultado de la ejecución completa del 05/11/2026 (la primera fue el 03/11/2026).
+Acompaña al [plan de pruebas](plan-de-pruebas.md). Versión 1.4 (19/11/2026): con la revisión 1.2 del ERS el canal del asistente es el chat en línea del sitio web; CP-49 deja de probar WhatsApp Cloud API (ampliación futura) y verifica el chat en línea en producción con la evidencia de la ejecución del 05/11/2026. Versión 1.3 (05/11/2026): se añaden CP-63 (documentos legales) y CP-64 (correos con la plantilla de la marca), CP-57 se completa con el envío SMTP real en producción y CP-38 y CP-50 se miden en producción con Gemini real. Versión 1.2 (04/11/2026): se añaden CP-59 a CP-62 (PostgreSQL en Supabase, migración y despliegue en Vercel). Versión 1.1: CP-53 a CP-58 (correo SMTP, verificación en dos pasos y configuración automática). Cada caso indica el requisito del ERS que verifica, la técnica, las precondiciones, los pasos, los datos, el resultado esperado, la prueba automática que lo ejecuta y el resultado de la ejecución completa del 05/11/2026 (la primera fue el 03/11/2026).
 
 Rutas de las pruebas: `backend/tests/...` (pytest), `web/src/...` (Vitest) y `docs/plan-de-pruebas/scripts/e2e.cjs` (Playwright, «E2E»).
 
@@ -25,11 +25,11 @@ Estados: **Aprobado**, **Fallido**, **Bloqueado** (depende de credenciales o usu
 | 3.3.4 Disponibilidad | CP-46 | 0 | 1 |
 | 3.3.5 Mantenibilidad | CP-47 | 1 | 0 |
 | 3.3.6 Portabilidad | CP-48 | 1 | 0 |
-| Interfaces externas y regresión | CP-49 a CP-52 | 3 | 1 |
+| Interfaces externas y regresión | CP-49 a CP-52 | 4 | 0 |
 | Correo SMTP, 2FA y configuración | CP-53 a CP-58 | 6 | 0 |
 | PostgreSQL, migración y despliegue | CP-59 a CP-62 | 4 | 0 |
 | Documentos legales y correos | CP-63, CP-64 | 2 | 0 |
-| **Total** | **64** | **61** | **3** |
+| **Total** | **64** | **62** | **2** |
 
 ## RF01 — Importar polígonos públicos
 
@@ -195,7 +195,7 @@ Estados: **Aprobado**, **Fallido**, **Bloqueado** (depende de credenciales o usu
 ### CP-21 Primer contacto
 
 - **Prioridad:** 2
-- **Pasos:** escribir «Hola» por WhatsApp o en el chat en línea.
+- **Pasos:** escribir «Hola» en el chat en línea (`/asistente`).
 - **Resultado esperado:** saludo que aclara que es una IA y aviso de privacidad que pide ACEPTO; no se llama al modelo.
 - **Automatización:** `integration/test_whatsapp_flow.py::test_first_contact_sends_welcome_and_notice_without_calling_model`, `integration/test_community_chat.py::test_web_chat_follows_consent_and_intents`, E2E CP-21
 - **Resultado:** Aprobado.
@@ -340,9 +340,9 @@ Estados: **Aprobado**, **Fallido**, **Bloqueado** (depende de credenciales o usu
 - **Automatización:** `integration/test_whatsapp_flow.py::test_webhook_rejects_bad_signature`, `::test_webhook_verification_handshake`, `unit/test_whatsapp_support.py::test_tampered_body_or_missing_header_is_rejected`, `integration/test_password_recovery.py::test_auth_endpoints_require_admin_token`, `integration/test_community_chat.py::test_requires_admin_token`, `integration/test_api.py::test_request_audit_requires_admin_token`
 - **Resultado:** Aprobado.
 
-### CP-41 Teléfono como HMAC y números autorizados (3.3.2, RF07)
+### CP-41 Identificador de la conversación como HMAC y números autorizados (3.3.2, RF07)
 
-- **Resultado esperado:** el número nunca se guarda en claro; con `WHATSAPP_ALLOWED_PHONES` solo se atiende a los números listados y no se crea registro de los demás.
+- **Resultado esperado:** el identificador del usuario (el código anónimo del chat en línea o, en la ampliación de WhatsApp, el número de teléfono) nunca se guarda en claro, solo su HMAC; en la ampliación, con `WHATSAPP_ALLOWED_PHONES` solo se atiende a los números listados y no se crea registro de los demás.
 - **Automatización:** `integration/test_whatsapp_flow.py::test_phone_is_stored_only_as_hmac`, `unit/test_privacy.py`, `integration/test_whatsapp_intents.py::test_allowlist`, `::test_unauthorized_phone_is_not_stored`
 - **Resultado:** Aprobado.
 
@@ -391,10 +391,16 @@ Estados: **Aprobado**, **Fallido**, **Bloqueado** (depende de credenciales o usu
 
 ## Interfaces externas y regresión
 
-### CP-49 WhatsApp Cloud API real
+### CP-49 Chat en línea en producción (RF07, RF08, 3.3.1)
 
-- **Pasos:** seguir [`docs/guias/whatsapp.md`](../guias/whatsapp.md) y repetir CP-21 a CP-28 desde un teléfono de prueba.
-- **Resultado:** Bloqueado (requiere credenciales de Meta del dueño).
+- **Prioridad:** 1
+- **Técnica:** prueba de extremo a extremo sobre el despliegue real (Vercel + Supabase).
+- **Precondiciones:** sitio y API de producción en línea; proyecto 1 importado en la base de producción.
+- **Pasos:** en https://bosque-vivo-web.vercel.app/asistente, con una conversación nueva, escribir «Hola», «ACEPTO», «AYUDA», «PROYECTO 1», «ESTADO», «ALERTAS», dos preguntas libres y «BORRAR MIS DATOS».
+- **Resultado esperado:** saludo con aviso de privacidad; tras ACEPTO, la ayuda lista las consultas; el proyecto queda registrado; ESTADO y ALERTAS responden en lenguaje sencillo para ese proyecto; las preguntas libres reciben respuesta (con Gemini o con el respaldo); el borrado confirma la eliminación; todas las respuestas en menos de 10 s.
+- **Resultado obtenido (05/11/2026, 11:48 UTC):** las 9 solicitudes respondieron 200; las intenciones del ERS en 0,1–0,5 s, las preguntas libres en 4,1 s y 8,1 s, y el borrado confirmó la eliminación (`evidencias/rnf-produccion.json`, canal «comunitario»).
+- **Ampliación futura:** el canal de WhatsApp Cloud API quedó fuera del alcance en la revisión 1.2 del ERS; si se habilita, se repiten CP-21 a CP-28 desde un teléfono de prueba siguiendo [`docs/guias/whatsapp.md`](../guias/whatsapp.md).
+- **Resultado:** Aprobado.
 
 ### CP-50 Evaluación del agente con Gemini real
 
