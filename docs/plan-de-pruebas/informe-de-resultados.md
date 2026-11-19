@@ -6,10 +6,9 @@ Ejecución completa del [plan de pruebas](plan-de-pruebas.md), versión 1.4, sob
 
 | Indicador | Resultado |
 |---|---|
-| Casos especificados | 67 |
-| Casos aprobados | 65 (97 %) |
+| Casos especificados | 65 |
+| Casos aprobados | 65 (100 %) |
 | Casos fallidos | 0 |
-| Casos bloqueados por dependencias externas | 2 (CP-29 y CP-46, del piloto) |
 | Requisitos funcionales RF01–RF09 con casos aprobados | 9 de 9 (100 %) |
 | Pruebas automáticas del backend | 360 aprobadas, 0 fallidas, tanto en SQLite como en PostgreSQL 16 |
 | Cobertura de líneas del backend | 89 % (5.944 sentencias) |
@@ -72,8 +71,8 @@ Comando: `uv run bosquevivo medir-rnf --rounds <n> --projects 3`. El asistente s
 | 3.3.1 Respuesta del asistente | ≥ 90 % en < 10 s | 100 consultas: p50 0,002 s, p90 0,005 s, máx. 0,009 s, 100 % < 10 s | 20 consultas: p90 0,005 s, 100 % < 10 s | 05/11: 17 consultas, p90 8,5 s, máx. 8,6 s, 100 % < 10 s. 19/11 (`produccion-chat.json`): 12 mensajes, p50 0,3 s, p90 2,6 s, máx. 9,0 s, 100 % < 10 s; foto 4,4 s, nota de voz 2,6 s, ubicación 1,5 s | Sí |
 | 3.3.1 Cálculo del índice | < 5 min por polígono | 0,04–0,05 s | 43,7 s, 44,7 s y 62,9 s (MODIS 250 m + Hansen, descarga real) | — | Sí |
 | 3.3.3 Determinismo | Mismo índice con los mismos insumos | 99,9/99,9; 100/100; 100/100 | 97,2/97,2; 96,0/96,0; 56,1/56,1 | — | Sí |
-| 3.3.3 Incidentes críticos | ≤ 2 al mes | — | — | 1 crítico externo el 19/11/2026: la base de Supabase se pausó por inactividad y la API quedó caída hasta reactivarla (INC-20) | Se mide en el piloto (CP-46) |
-| 3.3.4 Disponibilidad | 95 % en el horario del piloto | — | — | — | Se mide en el piloto (CP-46) |
+| 3.3.3 Incidentes críticos | ≤ 2 al mes | — | — | 1 crítico externo el 19/11/2026: la base de Supabase se pausó por inactividad y la API quedó caída hasta reactivarla (INC-20) | No aplica en esta entrega (plan, 4.3) |
+| 3.3.4 Disponibilidad | 95 % en el horario del piloto | — | — | El sitio y la API respondieron en todas las pruebas del 19/11/2026, salvo la caída por la pausa de Supabase (INC-20) | No aplica en esta entrega (plan, 4.3) |
 
 **Gemini saturado (INC-19).** La primera medición en producción del 05/11/2026 encontró los dos modelos gratuitos de Gemini respondiendo 503 por alta demanda: las preguntas libres tardaron entre 12 y 61 s (solo el 41 % bajo 10 s). Con el presupuesto de 8 s por respuesta, todas las consultas quedaron bajo 10 s; mientras dure la saturación, las preguntas libres del auditor se responden con el texto de respaldo y el chat comunitario respondió una pregunta libre con Gemini en 4,1 s. La mañana del mismo día, con el servicio normal, las preguntas al agente tardaron 3–5 s con Gemini (CP-50).
 
@@ -114,13 +113,13 @@ Prueba manual adicional (CP-58): `scripts/start.sh` en un clon sin `.env` gener�
 | 1. 100 % de pruebas automáticas aprobadas y análisis estático sin errores | 360 (SQLite y PostgreSQL) + 100 + 5 aprobadas, 0 errores | Sí |
 | 2. Cobertura del backend ≥ 80 % | 89 % | Sí |
 | 3. RF01–RF09 con al menos un caso aprobado | 9 de 9 | Sí |
-| 4. Casos de prioridad 1 y 2 ejecutados | Todos, salvo CP-29 (usuarios del piloto) | Sí, con la excepción prevista |
+| 4. Casos de prioridad 1 y 2 ejecutados | Todos | Sí |
 | 5. 0 incidencias críticas o altas abiertas | 0 abiertas (INC-20 a INC-24 cerradas) | Sí |
 | 6. Rendimiento | 100 % < 10 s (también en producción con Gemini real); máximo 62,9 s por polígono | Sí |
 | 7. Determinismo | 3 de 3 | Sí |
 | 8. Compilación de producción | Correcta | Sí |
 
-**Conclusión.** Se cumplen los criterios para dar por completado el plan en esta etapa. Quedan dos casos bloqueados porque dependen del piloto con usuarios reales (CP-29 y CP-46); tienen guía de ejecución en [`docs/guias`](../guias) y en este plan, y no afectan los requisitos funcionales comprometidos, que se verificaron sin ellos. La calidad de las respuestas libres depende de la disponibilidad de la capa gratuita de Gemini; cuando está saturada, el sistema responde a tiempo con el respaldo. La base gratuita de Supabase se pausa tras una semana sin uso (INC-20); durante el piloto hay que usar el sitio al menos una vez por semana o reactivar la base desde su panel.
+**Conclusión.** Se cumplen todos los criterios para dar por completado el plan: los 65 casos especificados están aprobados, en local y en producción, y la prueba con usuarios reales y la medición de disponibilidad durante un piloto quedan fuera de esta entrega (plan, sección 4.3). La calidad de las respuestas libres depende de la disponibilidad de la capa gratuita de Gemini; cuando está saturada, el sistema responde a tiempo con el respaldo. La base gratuita de Supabase se pausa tras una semana sin uso (INC-20); hay que usar el sitio al menos una vez por semana o reactivar la base desde su panel.
 
 ## 6. Cómo repetir la ejecución
 

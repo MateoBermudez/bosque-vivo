@@ -17,7 +17,7 @@ Documentos que lo acompañan:
 
 | Documento | Contenido |
 |---|---|
-| [`casos-de-prueba.md`](casos-de-prueba.md) | Especificación de los 67 casos de prueba (CP-01 a CP-67) |
+| [`casos-de-prueba.md`](casos-de-prueba.md) | Especificación de los 65 casos de prueba (CP-01 a CP-67; CP-29 y CP-46 se retiraron) |
 | [`informe-de-resultados.md`](informe-de-resultados.md) | Ejecución, métricas, mediciones de requisitos no funcionales y evaluación de los criterios de aceptación |
 | [`incidencias.md`](incidencias.md) | Registro de incidencias encontradas durante la ejecución |
 | [`evidencias/`](evidencias) | Salidas de las herramientas, reportes JUnit, cobertura, mediciones y capturas |
@@ -32,7 +32,7 @@ Documentos que lo acompañan:
 | 03/11/2026 | 1.1 | Equipo Bosque Vivo | Correo SMTP con verificación en dos pasos, avisos de seguridad e invitaciones; configuración automática; casos CP-53 a CP-58 |
 | 04/11/2026 | 1.2 | Equipo Bosque Vivo | PostgreSQL en Supabase, migración desde SQLite y despliegue en Vercel; casos CP-59 a CP-62 |
 | 05/11/2026 | 1.3 | Equipo Bosque Vivo | Referencia a la revisión 1.1 del ERS (requisitos sin cambios); casos CP-63 (documentos legales) y CP-64 (correos con la plantilla de la marca); Gemini y SMTP verificados en producción (CP-50, CP-57) con medición del asistente en producción; nueva ejecución completa |
-| 19/11/2026 | 1.4 | Equipo Bosque Vivo | Referencia a la revisión 1.2 del ERS: el asistente se ofrece por el chat en línea del sitio web y WhatsApp pasa a ampliación futura (exige un número dedicado y la verificación de la cuenta en Meta). El chat en línea admite texto, ubicación, fotos y notas de voz. CP-49 pasa a verificar el chat en línea en producción; casos CP-65 (cuenta de pruebas compartida sin código), CP-66 (sitio sin WhatsApp) y CP-67 (chat en un celular con ubicación, fotos y voz); nueva ejecución completa, en local y en producción, incluida la evaluación formal del asistente con Gemini real (CP-50, `bosquevivo eval --remote`); se ajustan elementos a probar y a no probar, recursos, cronograma y riesgos |
+| 19/11/2026 | 1.4 | Equipo Bosque Vivo | Referencia a la revisión 1.2 del ERS: el asistente se ofrece por el chat en línea del sitio web y WhatsApp pasa a ampliación futura (exige un número dedicado y la verificación de la cuenta en Meta). El chat en línea admite texto, ubicación, fotos y notas de voz. CP-49 pasa a verificar el chat en línea en producción; casos CP-65 (cuenta de pruebas compartida sin código), CP-66 (sitio sin WhatsApp) y CP-67 (chat en un celular con ubicación, fotos y voz); nueva ejecución completa, en local y en producción, incluida la evaluación formal del asistente con Gemini real (CP-50, `bosquevivo eval --remote`); CP-29 y CP-46 se retiran y pasan a elementos a no probar; se ajustan elementos a probar y a no probar, recursos, cronograma y riesgos |
 |  |  |  |  |
 
 ## 2. Información del Proyecto
@@ -100,8 +100,8 @@ Aspectos que se revisan en cada regresión: (1) toda la suite automática pasa (
 |---|---|---|
 | Google Earth Engine real (`SATELLITE_PROVIDER=gee`) | Requiere una cuenta y un proyecto de Earth Engine del dueño; no está disponible en el entorno de pruebas | Los tiempos de cálculo con Earth Engine pueden superar los medidos con datos abiertos. Mitigación: el cálculo se probó con el proveedor de datos abiertos real (MODIS + Hansen) y la lógica de Earth Engine se aísla tras `SatelliteProvider`. Queda como CP-39 en ejecución complementaria |
 | Canal de WhatsApp (Cloud API real) | Fuera del alcance desde la revisión 1.2 del ERS: el asistente se ofrece por el chat en línea, porque WhatsApp exige un número de teléfono dedicado y la verificación de la cuenta empresarial en Meta ([guía](../guias/whatsapp.md) para una ampliación futura) | Ninguno para el alcance comprometido. El código del webhook se conserva con sus pruebas automáticas (firma HMAC y cargas de la documentación de Meta) |
-| Disponibilidad 95 % y ≤ 2 incidentes críticos al mes | Solo se puede medir durante el piloto, en el horario que se acuerde con el docente | Se entrega el script `scripts/disponibilidad.sh` y el comando `bosquevivo incidents`. Queda como CP-46 |
-| Comprensión con 5 personas no técnicas | Requiere usuarios reales | Mensajes poco claros. Mitigación: textos breves, revisados contra la lista de jerga. Queda como CP-29 |
+| Disponibilidad 95 % y ≤ 2 incidentes críticos al mes | Solo se puede medir durante el piloto, en el horario que se acuerde con el docente | Fuera de esta entrega. Para un piloto quedan el script `scripts/disponibilidad.sh` y el comando `bosquevivo incidents`; en producción el sitio y la API respondieron en todas las pruebas del 19/11/2026, salvo la caída por la pausa de Supabase (INC-20) |
+| Comprensión con 5 personas no técnicas | Requiere usuarios reales | Mensajes poco claros. Mitigación: textos breves, sin jerga ni acusaciones y de hasta 300 caracteres, verificados en CP-27, CP-28 y CP-50 |
 | RA03, RA06 y RA08 (modelo propio de visión, alertas en tiempo casi real, extracción de PDD) | Fuera del alcance de esta entrega (sección 2.6 del ERS) | Ninguno para el alcance comprometido |
 | Rendimiento con miles de usuarios concurrentes | El ERS define un prototipo académico sobre la capa gratuita de los servicios, no un servicio a gran escala | No aplica |
 
@@ -114,7 +114,7 @@ Aspectos que se revisan en cada regresión: (1) toda la suite automática pasa (
 - No funcionales: rendimiento (comando `bosquevivo medir-rnf`), seguridad (firmas, HMAC, scrypt, tokens, secretos), fiabilidad (determinismo, incidentes), mantenibilidad (configuración), portabilidad (ejecución local y CI en Linux).
 - De extremo a extremo: navegador Chromium con Playwright sobre la API y el sitio reales (`scripts/ejecutar-e2e.sh`).
 - De regresión: suite completa automática en cada cambio.
-- De aceptación con usuarios: piloto (pendiente).
+- De aceptación con usuarios: fuera de esta entrega (sección 4.3).
 
 **Cuadrantes de pruebas ágiles (Marick, Crispin y Gregory).**
 
@@ -122,7 +122,7 @@ Aspectos que se revisan en cada regresión: (1) toda la suite automática pasa (
 |---|---|---|
 | Q1 — tecnología, apoyo al equipo | Pruebas unitarias y de componentes, automatizadas | 124 pruebas unitarias (NDVI, índice, guardas, contraseñas, firma, privacidad, plantillas de correo, presupuesto de tiempo de la IA) y 100 pruebas del sitio (incluido el WAV de las notas de voz) |
 | Q2 — negocio, apoyo al equipo | Pruebas funcionales y de ejemplos, automatizadas | 236 pruebas de integración y de regresión por requisito (incluidos 5 casos «golden» con categoría esperada y 4 del arnés de evaluación), 48 verificaciones E2E y 15 en producción |
-| Q3 — negocio, crítica al producto | Exploratorias, usabilidad, aceptación | Revisión visual de pantallas (capturas), prueba de comprensión y piloto (pendientes con usuarios) |
+| Q3 — negocio, crítica al producto | Exploratorias, usabilidad, aceptación | Revisión visual de pantallas (capturas), evaluación del asistente con Gemini real (CP-50); la prueba con usuarios queda fuera de esta entrega |
 | Q4 — tecnología, crítica al producto | Rendimiento, seguridad, fiabilidad | `medir-rnf`, determinismo, incidentes, análisis estático (`ruff`, `pyright`, `eslint`) |
 
 **Pirámide de automatización.** La base son las pruebas unitarias (rápidas, sin red), luego las de integración con SQLite en memoria y proveedores simulados (satélite `fake`, modelo guionizado, correo en memoria), y en la punta unas pocas pruebas E2E en navegador. Las dependencias externas (Earth Engine, Gemini, Meta, SMTP) están detrás de interfaces (`SatelliteProvider`, `LLMProvider`, `WhatsAppClient`, `Mailer`) para poder sustituirlas en las pruebas.
@@ -136,7 +136,7 @@ Aspectos que se revisan en cada regresión: (1) toda la suite automática pasa (
 | 1 | RF05 índice, RF04 comparación, RF03 NDVI | Núcleo de la pregunta de investigación; un error invalida las conclusiones |
 | 2 | RF07, RF08 asistente; RF09 cuentas, verificación en dos pasos y avisos; seguridad y Ley 1581 | Datos personales y canal principal de la comunidad |
 | 3 | RF01 importación, RF02 series, RF06 reporte | Entrada y salida del flujo de auditoría |
-| 4 | Rendimiento, fiabilidad, portabilidad | Metas a validar durante el piloto |
+| 4 | Rendimiento, fiabilidad, portabilidad | Metas del ERS medidas en local y en producción |
 | 5 | Ampliación de IA (RA) | Pendiente de aprobación del docente |
 
 ### 4.5 Criterios de Aceptación
@@ -156,7 +156,7 @@ Criterios para dar por completado el plan:
 
 Criterios del usuario para aceptar el aplicativo (ERS): el auditor puede consultar el índice, la serie y el reporte de un proyecto; la comunidad recibe respuestas cortas en español sencillo; los datos personales se tratan según la Ley 1581; y el resultado se presenta como análisis metodológico, sin atribuir fraude.
 
-Los casos o partes que dependen de credenciales o usuarios externos (CP-29 y CP-46) se registran como «Bloqueado» y no impiden cerrar el plan; se ejecutan en el piloto.
+Todos los casos especificados se ejecutaron. Lo que requiere usuarios reales o un periodo de piloto se registra en la sección 4.3 como elemento a no probar.
 
 ### 4.6 Entregables
 
@@ -233,7 +233,7 @@ Propuesta de reparto; el equipo puede ajustarla antes de firmar.
 | Emmanuel Arango Velásquez | Sitio web: pruebas de Vitest, revisión visual de pantallas, accesibilidad, chat en línea y descarga de reportes (RF06 en el sitio) |
 | Miguel Ángel Calle Parra | Datos geoespaciales: RF01 (importación), RF02 (series) y RF03 (NDVI); ejecución con Earth Engine real (CP-39) |
 | Miguel Ángel Agudelo Tamayo | Analítica: RF04 (comparación), RF05 (índice y casos golden), RF06 (reportes); determinismo (CP-44) |
-| Juan David Andrade Vanegas | Asistente: RF07 y RF08, prueba de comprensión con usuarios (CP-29), mediciones de rendimiento y disponibilidad en el piloto (CP-38, CP-46) |
+| Juan David Andrade Vanegas | Asistente: RF07 y RF08, mediciones de rendimiento (CP-38) y evaluación del asistente con Gemini real (CP-50) |
 
 ### 6.2 Cronograma
 
@@ -245,7 +245,6 @@ Propuesta de reparto; el equipo puede ajustarla antes de firmar.
 | PostgreSQL en Supabase y despliegue en Vercel | 04/11/2026 |
 | Gemini y correo SMTP en producción, documentos legales y nueva ejecución completa | 05/11/2026 |
 | Chat en línea como canal único del asistente (ERS 1.2), con ubicación, fotos y notas de voz; nueva ejecución completa en local y en producción | 19/11/2026 |
-| Piloto: CP-29, CP-46 | Horario acordado con el docente |
 | Cierre y firmas | Entrega final del semestre |
 
 ## 7. Riesgos
@@ -257,7 +256,6 @@ Propuesta de reparto; el equipo puede ajustarla antes de firmar.
 | Sin acceso a Earth Engine | Media | Medio | Proveedor de datos abiertos (MODIS + Hansen) probado con datos reales |
 | La base gratuita de Supabase se pausa tras una semana sin uso y la API deja de responder (INC-20) | Alta | Alto | Usar el sitio al menos una vez por semana durante el piloto; si se pausa, reactivarla desde el panel de Supabase (**Restore project**) |
 | Nubosidad persistente que deja proyectos sin escenas | Alta | Medio | Se registra la incidencia y el índice sale «Insuficiente» con confianza baja, en lugar de un valor |
-| Casos que dependen del piloto (usuarios reales y horario acordado) | Alta | Bajo | Casos marcados «Bloqueado» con guía paso a paso para ejecutarlos |
 | Disponibilidad del equipo (semestre académico) | Media | Medio | Suite automatizada en CI; reparto por módulos |
 | Restricciones de tiempo | Media | Medio | Priorización por riesgo (sección 4.4) |
 | Premisa falsa: el polígono publicado no es el área de los créditos | Baja | Alto | Se usa el área de contabilidad de Karnik et al. cuando existe y se documenta |
@@ -290,7 +288,6 @@ Propuesta de reparto; el equipo puede ajustarla antes de firmar.
 | Cobertura | Porcentaje de líneas del código ejecutadas por las pruebas |
 | Incidencia | Diferencia entre el resultado obtenido y el esperado, registrada para su corrección |
 | Severidad | Impacto de una incidencia: crítica, alta, media o baja |
-| Bloqueado | Caso que no puede ejecutarse por una dependencia externa |
 | Partición de equivalencia / valores límite | Técnicas para elegir datos de prueba representativos y en los bordes de los rangos |
 | NDVI | Índice de Vegetación de Diferencia Normalizada |
 | T0 | Fecha de inicio o certificación del proyecto, a partir de la cual se compara |

@@ -13,7 +13,7 @@ Requisitos del ERS (IEEE 830, revisión 1.2 del 19/11/2026: [`Formato_ieee830.do
 | RF05 Índice de credibilidad | OE3 | `audit/index.py`, `audit/confidence.py`, `audit/config.py` | `test_index.py`, `test_index_v1.py`, `test_golden_projects.py`, `format.test.ts` | CP-15 a CP-18 |
 | RF06 Reporte de auditoría | OE3 | `reports/*`, `web/src/app/informe` | `test_reports.py` | CP-19, CP-20 |
 | RF07 Consultas conversacionales | OE3 | `assistant/*`, `api/routers/community.py`, `web/src/app/asistente`, `web/src/lib/media.ts` (canal habilitado: texto, ubicación, fotos y voz); `api/routers/whatsapp.py` (ampliación futura, no habilitada) | `test_community_chat.py`, `test_whatsapp_flow.py`, `test_whatsapp_intents.py` (flujo común del asistente), `test_whatsapp_support.py` | CP-21 a CP-26 |
-| RF08 Lenguaje sencillo | OE3 | `assistant/community.py`, `assistant/texts.py`, `ai/prompts`, `ai/guardrails` | `test_whatsapp_intents.py`, `test_guardrails.py`, `test_agent.py` | CP-27 a CP-29 |
+| RF08 Lenguaje sencillo | OE3 | `assistant/community.py`, `assistant/texts.py`, `ai/prompts`, `ai/guardrails` | `test_whatsapp_intents.py`, `test_guardrails.py`, `test_agent.py` | CP-27, CP-28, CP-50 |
 | RF09 Recuperación de contraseña | OE3 | `accounts/*` (correo SMTP, verificación en dos pasos, avisos, invitaciones), `api/routers/auth.py`, `web/src/app/acceso/*` | `test_password_recovery.py`, `test_two_factor.py`, `session.test.ts`, `access.test.ts`, `accounts.test.ts`, `throttle.test.ts` | CP-30 a CP-37, CP-53 a CP-57, CP-64 |
 
 ## Requisitos no funcionales del ERS
@@ -23,7 +23,7 @@ Requisitos del ERS (IEEE 830, revisión 1.2 del 19/11/2026: [`Formato_ieee830.do
 | 3.3.1 Rendimiento | `AgentRun.latency_ms`, `AuditRun.duration_seconds`, presupuesto de 8 s por respuesta de la IA (`AGENT_TIME_BUDGET_SECONDS`) | `bosquevivo medir-rnf` y medición en producción (CP-38, CP-39) |
 | 3.3.2 Seguridad | HMAC del teléfono, firma del webhook, scrypt, tokens SHA-256, verificación en dos pasos por correo, avisos de seguridad, secretos en `.env` generados por `bosquevivo setup` | CP-40 a CP-43, CP-53 a CP-55, CP-63 |
 | 3.3.3 Fiabilidad | Registro de incidentes (`core/incidents.py`, `bosquevivo incidents`), cálculos deterministas | CP-44, CP-45 |
-| 3.3.4 Disponibilidad | Medición en el horario del piloto | CP-46 (pendiente del piloto) |
+| 3.3.4 Disponibilidad | Fuera de esta entrega (plan de pruebas, 4.3); `scripts/disponibilidad.sh` para un piloto | — |
 | 3.3.5 Mantenibilidad | Parámetros en configuración, origen externo/interno en los registros, configuración automática | CP-47, CP-58 |
 | 3.3.6 Portabilidad | Código abierto, ejecución local en Windows/Linux (`scripts/dev`, `scripts/start`) | CP-48, CP-58 |
 

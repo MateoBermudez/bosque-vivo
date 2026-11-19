@@ -1,36 +1,35 @@
 # Especificación de casos de prueba
 
-Acompaña al [plan de pruebas](plan-de-pruebas.md). Versión 1.4 (19/11/2026): con la revisión 1.2 del ERS el canal del asistente es el chat en línea del sitio web, con texto, ubicación, fotos y notas de voz; CP-49 deja de probar WhatsApp Cloud API (ampliación futura) y verifica el chat en línea en producción; se añaden CP-65 (cuenta de pruebas compartida), CP-66 (sitio sin WhatsApp) y CP-67 (chat en un celular con ubicación, fotos y voz). Versión 1.3 (05/11/2026): se añaden CP-63 (documentos legales) y CP-64 (correos con la plantilla de la marca), CP-57 se completa con el envío SMTP real en producción y CP-38 y CP-50 se miden en producción con Gemini real. Versión 1.2 (04/11/2026): se añaden CP-59 a CP-62 (PostgreSQL en Supabase, migración y despliegue en Vercel). Versión 1.1: CP-53 a CP-58 (correo SMTP, verificación en dos pasos y configuración automática). Cada caso indica el requisito del ERS que verifica, la técnica, las precondiciones, los pasos, los datos, el resultado esperado, la prueba automática que lo ejecuta y el resultado de la ejecución completa del 19/11/2026 (las anteriores fueron el 03/11 y el 05/11/2026).
+Acompaña al [plan de pruebas](plan-de-pruebas.md). Versión 1.4 (19/11/2026): con la revisión 1.2 del ERS el canal del asistente es el chat en línea del sitio web, con texto, ubicación, fotos y notas de voz; CP-49 deja de probar WhatsApp Cloud API (ampliación futura) y verifica el chat en línea en producción; se añaden CP-65 (cuenta de pruebas compartida), CP-66 (sitio sin WhatsApp) y CP-67 (chat en un celular con ubicación, fotos y voz); CP-50 se evalúa en producción, y CP-29 (comprensión con usuarios) y CP-46 (disponibilidad durante un piloto) se retiran porque requieren usuarios reales y un periodo de piloto, y pasan a elementos a no probar (sección 4.3 del plan); sus números no se reasignan. Versión 1.3 (05/11/2026): se añaden CP-63 (documentos legales) y CP-64 (correos con la plantilla de la marca), CP-57 se completa con el envío SMTP real en producción y CP-38 y CP-50 se miden en producción con Gemini real. Versión 1.2 (04/11/2026): se añaden CP-59 a CP-62 (PostgreSQL en Supabase, migración y despliegue en Vercel). Versión 1.1: CP-53 a CP-58 (correo SMTP, verificación en dos pasos y configuración automática). Cada caso indica el requisito del ERS que verifica, la técnica, las precondiciones, los pasos, los datos, el resultado esperado, la prueba automática que lo ejecuta y el resultado de la ejecución completa del 19/11/2026 (las anteriores fueron el 03/11 y el 05/11/2026).
 
 Rutas de las pruebas: `backend/tests/...` (pytest), `web/src/...` (Vitest) y `docs/plan-de-pruebas/scripts/e2e.cjs` (Playwright, «E2E»).
 
-Estados: **Aprobado**, **Fallido**, **Bloqueado** (depende de credenciales o usuarios externos).
+Estados: **Aprobado**, **Fallido**.
 
 ## Resumen
 
-| Requisito | Casos | Aprobados | Bloqueados |
-|---|---|---|---|
-| RF01 Importar polígonos | CP-01 a CP-06 | 6 | 0 |
-| RF02 Series satelitales | CP-07 a CP-09 | 3 | 0 |
-| RF03 NDVI | CP-10 a CP-12 | 3 | 0 |
-| RF04 Declarado vs observado | CP-13, CP-14 | 2 | 0 |
-| RF05 Índice de credibilidad | CP-15 a CP-18 | 4 | 0 |
-| RF06 Reporte | CP-19, CP-20 | 2 | 0 |
-| RF07 Consultas conversacionales | CP-21 a CP-26 | 6 | 0 |
-| RF08 Lenguaje sencillo | CP-27 a CP-29 | 2 | 1 |
-| RF09 Recuperación de contraseña | CP-30 a CP-37 | 8 | 0 |
-| 3.3.1 Rendimiento | CP-38, CP-39 | 2 | 0 |
-| 3.3.2 Seguridad | CP-40 a CP-43 | 4 | 0 |
-| 3.3.3 Fiabilidad | CP-44, CP-45 | 2 | 0 |
-| 3.3.4 Disponibilidad | CP-46 | 0 | 1 |
-| 3.3.5 Mantenibilidad | CP-47 | 1 | 0 |
-| 3.3.6 Portabilidad | CP-48 | 1 | 0 |
-| Interfaces externas y regresión | CP-49 a CP-52 | 4 | 0 |
-| Correo SMTP, 2FA y configuración | CP-53 a CP-58 | 6 | 0 |
-| PostgreSQL, migración y despliegue | CP-59 a CP-62 | 4 | 0 |
-| Documentos legales y correos | CP-63, CP-64 | 2 | 0 |
-| Chat en línea y cuenta de pruebas | CP-65 a CP-67 | 3 | 0 |
-| **Total** | **67** | **65** | **2** |
+| Requisito | Casos | Aprobados |
+|---|---|---|
+| RF01 Importar polígonos | CP-01 a CP-06 | 6 |
+| RF02 Series satelitales | CP-07 a CP-09 | 3 |
+| RF03 NDVI | CP-10 a CP-12 | 3 |
+| RF04 Declarado vs observado | CP-13, CP-14 | 2 |
+| RF05 Índice de credibilidad | CP-15 a CP-18 | 4 |
+| RF06 Reporte | CP-19, CP-20 | 2 |
+| RF07 Consultas conversacionales | CP-21 a CP-26 | 6 |
+| RF08 Lenguaje sencillo | CP-27, CP-28 | 2 |
+| RF09 Recuperación de contraseña | CP-30 a CP-37 | 8 |
+| 3.3.1 Rendimiento | CP-38, CP-39 | 2 |
+| 3.3.2 Seguridad | CP-40 a CP-43 | 4 |
+| 3.3.3 Fiabilidad | CP-44, CP-45 | 2 |
+| 3.3.5 Mantenibilidad | CP-47 | 1 |
+| 3.3.6 Portabilidad | CP-48 | 1 |
+| Interfaces externas y regresión | CP-49 a CP-52 | 4 |
+| Correo SMTP, 2FA y configuración | CP-53 a CP-58 | 6 |
+| PostgreSQL, migración y despliegue | CP-59 a CP-62 | 4 |
+| Documentos legales y correos | CP-63, CP-64 | 2 |
+| Chat en línea y cuenta de pruebas | CP-65 a CP-67 | 3 |
+| **Total** | **65** | **65** |
 
 ## RF01 — Importar polígonos públicos
 
@@ -252,13 +251,6 @@ Estados: **Aprobado**, **Fallido**, **Bloqueado** (depende de credenciales o usu
 - **Automatización:** `integration/test_whatsapp_intents.py::test_register_then_status_and_alerts`, `integration/test_whatsapp_flow.py::test_answer_after_consent_respects_length`, `unit/test_guardrails.py::test_accusatory_terms_are_detected`, `integration/test_agent.py::test_accusatory_language_is_blocked`, `::test_community_answer_longer_than_limit_falls_back`, E2E CP-28
 - **Resultado:** Aprobado.
 
-### CP-29 Comprensión con usuarios no técnicos
-
-- **Prioridad:** 2 · **Técnica:** prueba de usabilidad
-- **Pasos:** 5 personas sin formación técnica usan el asistente con un guion de 5 tareas (saludo, aceptar, registrar proyecto, estado, alertas) y explican con sus palabras lo que entendieron.
-- **Resultado esperado:** al menos 4 de 5 personas interpretan correctamente el estado y las alertas.
-- **Resultado:** Bloqueado (requiere el piloto con usuarios).
-
 ## RF09 — Recuperación de contraseña
 
 ### CP-30 Acceso restringido
@@ -371,12 +363,6 @@ Estados: **Aprobado**, **Fallido**, **Bloqueado** (depende de credenciales o usu
 - **Resultado esperado:** cada incidente guarda componente, origen (externo/interno), severidad, inicio, fin y duración; más de 60 min se marca crítico; los fallos de tareas, del modelo y del correo se registran; `bosquevivo incidents` los resume.
 - **Automatización:** `integration/test_incidents.py` (5 pruebas), `integration/test_password_recovery.py::test_mail_failure_is_recorded_as_external_incident`
 - **Resultado:** Aprobado.
-
-### CP-46 Disponibilidad del 95 % en el horario del piloto (3.3.4)
-
-- **Pasos:** durante el horario acordado, `scripts/disponibilidad.sh http://127.0.0.1:8000/health <minutos>`; al final `bosquevivo incidents`.
-- **Resultado esperado:** ≥ 95 % de minutos con `/health` en 200 y ≤ 2 incidentes críticos al mes.
-- **Resultado:** Bloqueado (se mide en el piloto).
 
 ### CP-47 Parámetros como configuración (3.3.5)
 
