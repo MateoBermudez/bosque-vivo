@@ -76,7 +76,17 @@ def test_cases_run_on_the_server_and_report_locally(client, db, tmp_path):
     assert client.post("/api/v1/admin/eval/no-existe", headers=headers).status_code == 404
     cases = [c for c in load_cases() if c.id in {"estado-roble", "fuera-de-alcance"}]
     seen = []
-    report = run_remote("http://testserver", "secreto", cases, client=client, progress=seen.append)
+    pauses = []
+    report = run_remote(
+        "http://testserver",
+        "secreto",
+        cases,
+        client=client,
+        progress=seen.append,
+        pause_seconds=5,
+        sleep=pauses.append,
+    )
+    assert pauses == [5]
     assert [r.case_id for r in report.results] == ["estado-roble", "fuera-de-alcance"]
     assert len(seen) == 2
     summary = report.summary()

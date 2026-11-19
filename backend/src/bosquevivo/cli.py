@@ -261,6 +261,7 @@ def cmd_eval(args: argparse.Namespace) -> int:
             token,
             load_cases(),
             progress=lambda r: print(f"{'OK   ' if r.passed else 'FALLA'} {r.case_id}"),
+            pause_seconds=args.pausa,
         )
         output = Path(args.output)
         output.parent.mkdir(parents=True, exist_ok=True)
@@ -692,6 +693,12 @@ def build_parser() -> argparse.ArgumentParser:
         "--remote",
         metavar="URL_API",
         help="Ejecuta los casos en un despliegue (p. ej. la API de producción) con su modelo",
+    )
+    evaluate.add_argument(
+        "--pausa",
+        type=float,
+        default=25.0,
+        help="Segundos entre casos con --remote, para respetar el límite por minuto del modelo",
     )
     evaluate.set_defaults(func=cmd_eval)
     return parser
