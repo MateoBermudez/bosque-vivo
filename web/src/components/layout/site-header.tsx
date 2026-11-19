@@ -10,8 +10,5 @@ import { SiteHeaderView } from "./site-header-view";
  */
 export async function SiteHeader() {
   const session = await auditorSession((await cookies()).get(SESSION_COOKIE)?.value);
-  const auditor = session
-    ? { who: session.subject.includes("@") ? session.subject : "auditor" }
-    : null;
-  return <SiteHeaderView auditor={auditor} openMode={auditorAccessMode() === "open"} />;
+  return <SiteHeaderView auditor={session !== null} openMode={auditorAccessMode() === "open"} />;
 }
