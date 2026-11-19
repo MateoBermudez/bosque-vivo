@@ -29,7 +29,7 @@ data/
 *.sqlite3
 .ipynb_checkpoints/
 
-Formato_ieee830.pdf
+/Formato_ieee830.pdf
 /*.pdf
 !docs/**/*.pdf
 

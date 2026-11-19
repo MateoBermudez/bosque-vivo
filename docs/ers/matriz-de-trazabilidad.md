@@ -1,6 +1,6 @@
 # Matriz de trazabilidad
 
-Requisitos del ERS (IEEE 830, revisión 1.1 del 05/11/2026: [`ERS_Bosque_Vivo.docx`](ERS_Bosque_Vivo.docx) y [`.pdf`](ERS_Bosque_Vivo.pdf)) y de la ampliación con IA. Los casos de prueba (CP-xx) están en [`docs/plan-de-pruebas/casos-de-prueba.md`](../plan-de-pruebas/casos-de-prueba.md).
+Requisitos del ERS (IEEE 830, revisión 1.2 del 19/11/2026: [`Formato_ieee830.docx`](Formato_ieee830.docx) y [`.pdf`](Formato_ieee830.pdf)) y de la ampliación con IA. Los casos de prueba (CP-xx) están en [`docs/plan-de-pruebas/casos-de-prueba.md`](../plan-de-pruebas/casos-de-prueba.md).
 
 ## Requisitos funcionales del ERS
 

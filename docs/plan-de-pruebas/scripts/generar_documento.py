@@ -657,14 +657,14 @@ def find_pages(builder: Builder, pages: list[str]) -> list[int]:
 
 
 def main() -> None:
-    out_docx = ROOT / "Plan_de_Pruebas_Bosque_Vivo.docx"
+    out_docx = ROOT / "Formato_ieee829.docx"
     work = Path(sys.argv[1])
     date = sys.argv[2]
     builder = build(date)
     builder.doc.core_properties.title = "Plan de Pruebas de Software — Bosque Vivo"
     builder.doc.core_properties.author = "Equipo Bosque Vivo"
     builder.doc.core_properties.last_modified_by = "Mateo Bermúdez Cuartas"
-    draft = work / "Plan_de_Pruebas_Bosque_Vivo.docx"
+    draft = work / "Formato_ieee829.docx"
     builder.doc.save(str(draft))
     pages = find_pages(builder, pdf_pages(render(draft, work)))
     builder.set_toc_pages(pages)
@@ -675,7 +675,7 @@ def main() -> None:
         builder.set_toc_pages(check)
         builder.doc.save(str(out_docx))
         final = render(out_docx, work)
-    final.replace(ROOT / "Plan_de_Pruebas_Bosque_Vivo.pdf")
+    final.replace(ROOT / "Formato_ieee829.pdf")
 
 
 if __name__ == "__main__":

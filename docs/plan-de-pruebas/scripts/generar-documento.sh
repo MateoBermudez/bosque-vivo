@@ -7,4 +7,4 @@ trap 'rm -rf "$work"' EXIT
 fecha="${1:-$(date +%d/%m/%Y)}"
 
 uv run --no-project --with python-docx==1.2.0 python "$dir/scripts/generar_documento.py" "$work" "$fecha"
-echo "Generados Plan_de_Pruebas_Bosque_Vivo.docx y Plan_de_Pruebas_Bosque_Vivo.pdf con la plantilla plantilla/Formato_ieee829.docx"
+echo "Generados Formato_ieee829.docx y Formato_ieee829.pdf con la plantilla plantilla/Formato_ieee829.docx"

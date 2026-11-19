@@ -122,7 +122,7 @@ Aspectos que se revisan en cada regresión: (1) toda la suite automática pasa (
 | Cuadrante | Propósito | En Bosque Vivo |
 |---|---|---|
 | Q1 — tecnología, apoyo al equipo | Pruebas unitarias y de componentes, automatizadas | 124 pruebas unitarias (NDVI, índice, guardas, contraseñas, firma, privacidad, plantillas de correo, presupuesto de tiempo de la IA) y 100 pruebas del sitio (incluido el WAV de las notas de voz) |
-| Q2 — negocio, apoyo al equipo | Pruebas funcionales y de ejemplos, automatizadas | 236 pruebas de integración y de regresión por requisito (incluidos 5 casos «golden» con categoría esperada y 4 del arnés de evaluación), 48 verificaciones E2E y 14 en producción |
+| Q2 — negocio, apoyo al equipo | Pruebas funcionales y de ejemplos, automatizadas | 236 pruebas de integración y de regresión por requisito (incluidos 5 casos «golden» con categoría esperada y 4 del arnés de evaluación), 48 verificaciones E2E y 15 en producción |
 | Q3 — negocio, crítica al producto | Exploratorias, usabilidad, aceptación | Revisión visual de pantallas (capturas), prueba de comprensión y piloto (pendientes con usuarios) |
 | Q4 — tecnología, crítica al producto | Rendimiento, seguridad, fiabilidad | `medir-rnf`, determinismo, incidentes, análisis estático (`ruff`, `pyright`, `eslint`) |
 
@@ -269,7 +269,7 @@ Propuesta de reparto; el equipo puede ajustarla antes de firmar.
 | Referencia | Documento |
 |---|---|
 | Plan de Proyecto | `docs/planning/PLAN_IMPLEMENTACION.md`, `docs/planning/PLAN_AGENTE_IA.md` |
-| Especificación de Requerimientos | ERS «Formato_ieee830», revisión 1.2 del 19/11/2026 (`docs/ers/ERS_Bosque_Vivo.docx` y `.pdf`); `docs/ers/matriz-de-trazabilidad.md` |
+| Especificación de Requerimientos | ERS «Formato_ieee830», revisión 1.2 del 19/11/2026 (`docs/ers/Formato_ieee830.docx` y `.pdf`); `docs/ers/matriz-de-trazabilidad.md` |
 | Diseño General | `docs/architecture/arquitectura.md` |
 | Diseño Detallado | `docs/architecture/adr/0001` a `0013`; `docs/methodology/indice-v0.md` e `indice-v1.md` |
 | Procedimientos y estándares de Desarrollo | `README.md` (reglas del repositorio), `.pre-commit-config.yaml`, `.github/workflows/ci.yml` |

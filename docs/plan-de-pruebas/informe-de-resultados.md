@@ -18,8 +18,8 @@ Ejecución completa del [plan de pruebas](plan-de-pruebas.md), versión 1.4, sob
 | Verificaciones E2E en navegador | 48 de 48 aprobadas (incluye el chat en un celular de 390 px con ubicación, foto y nota de voz) |
 | Análisis estático | `ruff` y `pyright`: 0 errores; `eslint` y `tsc`: 0 errores |
 | Compilación de producción del sitio | Correcta |
-| Asistente en producción con Gemini real | 19/11/2026: 12 mensajes del chat en línea desde un celular (texto, ubicación, foto y nota de voz hablada): 100 % bajo 10 s, p50 0,3 s, p90 2,7 s, máximo 8,3 s. 05/11/2026: 17 consultas, 100 % bajo 10 s |
-| Producción (19/11/2026) | 13 de 14 verificaciones de `scripts/produccion.cjs`; la que falta es la entrada de la cuenta de pruebas, porque su fila en Supabase quedó con un correo que el formulario no acepta (ver CP-65) |
+| Asistente en producción con Gemini real | 19/11/2026: 12 mensajes del chat en línea desde un celular (texto, ubicación, foto y nota de voz hablada): 100 % bajo 10 s, p50 0,3 s, p90 2,6 s, máximo 9,0 s. 05/11/2026: 17 consultas, 100 % bajo 10 s |
+| Producción (19/11/2026, Next.js 16.4.6) | 15 de 15 verificaciones de `scripts/produccion.cjs`: sitio sin WhatsApp, chat en línea desde un celular y cuenta de pruebas sin código |
 | Incidencias registradas | 23 (todas cerradas; ver [`incidencias.md`](incidencias.md)) |
 
 ## 2. Resultados por suite
@@ -32,10 +32,10 @@ Ejecución completa del [plan de pruebas](plan-de-pruebas.md), versión 1.4, sob
 | Backend en PostgreSQL 16 | `TEST_DATABASE_URL=postgresql://… uv run pytest` | 360 aprobadas | `evidencias/backend-postgres-junit.xml` |
 | Sitio: estilo | `npm run lint` | Sin errores | `evidencias/web-lint.txt` |
 | Sitio: pruebas | `npx vitest run` | 100 aprobadas (incluye el WAV de las notas de voz y el envío de adjuntos) | `evidencias/web-vitest.txt`, `web-junit.xml` |
-| Sitio: compilación | `npm run build` | Correcta: 21 páginas, sin `/whatsapp` (redirige a `/asistente`) | `evidencias/web-build.txt` |
+| Sitio: compilación | `npm run build` | Correcta con Next.js 16.4.6: 21 páginas, sin `/whatsapp` (redirige a `/asistente`) | `evidencias/web-build.txt` |
 | Panel | `uv run pytest` | 5 aprobadas | — |
 | E2E | `docs/plan-de-pruebas/scripts/ejecutar-e2e.sh` | 48 de 48 | `evidencias/e2e-salida.txt`, `e2e-resultados.json`, `evidencias/capturas/` |
-| Producción | `node docs/plan-de-pruebas/scripts/produccion.cjs` | 13 de 14 | `evidencias/produccion-chat.json`, `capturas/11-chat-produccion.png` |
+| Producción | `node docs/plan-de-pruebas/scripts/produccion.cjs` | 15 de 15 | `evidencias/produccion-chat.json`, `capturas/11-chat-produccion.png` |
 
 ### Cobertura de los módulos nuevos o modificados
 
@@ -67,7 +67,7 @@ Comando: `uv run bosquevivo medir-rnf --rounds <n> --projects 3`. El asistente s
 
 | Requisito | Meta | Datos simulados (`rnf-fake.json`) | Datos abiertos reales (`rnf-open.json`) | Producción con Gemini real (`rnf-produccion.json`) | Cumple |
 |---|---|---|---|---|---|
-| 3.3.1 Respuesta del asistente | ≥ 90 % en < 10 s | 100 consultas: p50 0,002 s, p90 0,005 s, máx. 0,009 s, 100 % < 10 s | 20 consultas: p90 0,005 s, 100 % < 10 s | 05/11: 17 consultas, p90 8,5 s, máx. 8,6 s, 100 % < 10 s. 19/11 (`produccion-chat.json`): 12 mensajes, p50 0,3 s, p90 2,7 s, máx. 8,3 s, 100 % < 10 s; foto 6,9 s, nota de voz 2,7 s, ubicación 1,7 s | Sí |
+| 3.3.1 Respuesta del asistente | ≥ 90 % en < 10 s | 100 consultas: p50 0,002 s, p90 0,005 s, máx. 0,009 s, 100 % < 10 s | 20 consultas: p90 0,005 s, 100 % < 10 s | 05/11: 17 consultas, p90 8,5 s, máx. 8,6 s, 100 % < 10 s. 19/11 (`produccion-chat.json`): 12 mensajes, p50 0,3 s, p90 2,6 s, máx. 9,0 s, 100 % < 10 s; foto 4,4 s, nota de voz 2,6 s, ubicación 1,5 s | Sí |
 | 3.3.1 Cálculo del índice | < 5 min por polígono | 0,04–0,05 s | 43,7 s, 44,7 s y 62,9 s (MODIS 250 m + Hansen, descarga real) | — | Sí |
 | 3.3.3 Determinismo | Mismo índice con los mismos insumos | 99,9/99,9; 100/100; 100/100 | 97,2/97,2; 96,0/96,0; 56,1/56,1 | — | Sí |
 | 3.3.3 Incidentes críticos | ≤ 2 al mes | — | — | 1 crítico externo el 19/11/2026: la base de Supabase se pausó por inactividad y la API quedó caída hasta reactivarla (INC-20) | Se mide en el piloto (CP-46) |

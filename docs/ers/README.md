@@ -2,7 +2,7 @@
 
 | Documento | Contenido |
 |---|---|
-| [`ERS_Bosque_Vivo.docx`](ERS_Bosque_Vivo.docx) · [`.pdf`](ERS_Bosque_Vivo.pdf) | ERS según la plantilla «Formato_ieee830» del Politécnico, revisión 1.2 |
+| [`Formato_ieee830.docx`](Formato_ieee830.docx) · [`.pdf`](Formato_ieee830.pdf) | ERS según la plantilla «Formato_ieee830» del Politécnico, revisión 1.2 |
 | [`matriz-de-trazabilidad.md`](matriz-de-trazabilidad.md) | Requisito → código → pruebas → casos del plan de pruebas |
 
 ## Revisiones

@@ -8,7 +8,7 @@ Objetivo específico 4 del proyecto: probar Bosque Vivo con un plan que verifiqu
 | [`casos-de-prueba.md`](casos-de-prueba.md) | 67 casos de prueba (CP-01 a CP-67) con requisito, pasos, resultado esperado, prueba automática y resultado |
 | [`informe-de-resultados.md`](informe-de-resultados.md) | Resultados de la ejecución, cobertura, mediciones de rendimiento y determinismo, E2E y evaluación de los criterios de aceptación |
 | [`incidencias.md`](incidencias.md) | Incidencias encontradas y su corrección |
-| [`Plan_de_Pruebas_Bosque_Vivo.docx`](Plan_de_Pruebas_Bosque_Vivo.docx) · [`.pdf`](Plan_de_Pruebas_Bosque_Vivo.pdf) | Documento para entregar (Word y PDF) con el formato «Formato_ieee829» del Drive: el plan y, como anexos, los casos de prueba, el informe de resultados y las incidencias |
+| [`Formato_ieee829.docx`](Formato_ieee829.docx) · [`.pdf`](Formato_ieee829.pdf) | Documento para entregar (Word y PDF) con el formato «Formato_ieee829» del Drive: el plan y, como anexos, los casos de prueba, el informe de resultados y las incidencias |
 | [`evidencias/`](evidencias) | Reportes JUnit (SQLite y PostgreSQL), salidas de las herramientas, mediciones (`rnf-*.json`, incluidas `rnf-produccion.json` y `produccion-chat.json` con Gemini real), resultado E2E y capturas |
 | [`scripts/`](scripts) | `ejecutar-e2e.sh` y `e2e.cjs` (Playwright), `produccion.cjs` (chat en línea en producción), `disponibilidad.sh` (piloto), `generar-documento.sh` y `generar_documento.py` (Word y PDF sobre la plantilla) |
 
