@@ -4,8 +4,6 @@ from bosquevivo.ai.agent.evidence import EvidenceStore
 from bosquevivo.ai.guardrails import check_fidelity, find_accusatory_terms
 from bosquevivo.core.config import Settings
 
-MAX_COMMUNITY_CHARS = 300
-
 
 @dataclass
 class ValidationResult:
@@ -25,8 +23,8 @@ def validate_answer(
     accusatory = find_accusatory_terms(text)
     if accusatory:
         issues.append("usa lenguaje acusatorio: " + ", ".join(accusatory))
-    if role == "comunidad" and len(text) > MAX_COMMUNITY_CHARS:
-        issues.append(f"supera {MAX_COMMUNITY_CHARS} caracteres")
+    if role == "comunidad" and len(text) > settings.community_max_chars:
+        issues.append(f"supera {settings.community_max_chars} caracteres")
     secrets = [
         v
         for v in (

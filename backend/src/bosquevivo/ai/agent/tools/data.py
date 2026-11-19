@@ -2,16 +2,13 @@ from collections import defaultdict
 from datetime import date, timedelta
 
 from pydantic import BaseModel, Field
-from rapidfuzz import fuzz, process
 from sqlalchemy import select
 
+from bosquevivo.ai.agent.resolver import ProjectResolver
 from bosquevivo.ai.agent.tools.base import Tool, ToolContext, ToolError, ToolOutput
 from bosquevivo.audit.service import AuditService
 from bosquevivo.db.models import ForestBaselineRecord, ForestLoss, NdviObservation, Project
 from bosquevivo.registry.repository import ProjectRepository
-
-MAX_CANDIDATES = 3
-NAME_CUTOFF = 60
 
 
 class BuscarProyectoArgs(BaseModel):
@@ -75,20 +72,18 @@ def buscar_proyecto(ctx: ToolContext, args: BuscarProyectoArgs) -> ToolOutput:
             item = ctx.evidence.add("proyecto", f"project:{project.id}", payload)
             return ToolOutput(payload | {"evidencia_id": item.id}, evidence_ids=[item.id])
     if args.texto:
-        projects = repo.all()
-        by_id = {p.id: p for p in projects}
-        names = {p.id: p.name for p in projects}
-        matches = process.extract(
-            args.texto,
-            names,
-            scorer=fuzz.WRatio,
-            limit=MAX_CANDIDATES,
-            score_cutoff=NAME_CUTOFF,
-        )
+        resolution = ProjectResolver.from_session(ctx.session).resolve(args.texto)
+        by_id = {p.id: p for p in repo.all()}
         candidates = [
-            {**_summary(by_id[pid]), "similitud": round(score)} for _, score, pid in matches
+            {**_summary(by_id[c.project_id]), "similitud": round(c.coverage * 100)}
+            for c in resolution.candidates
+            if c.project_id in by_id
         ]
-        payload = {"candidatos": candidates}
+        payload: dict = {"candidatos": candidates, "coincidencia_segura": resolution.confident}
+        if not candidates:
+            payload["nota"] = (
+                "Ningún proyecto cargado coincide con ese nombre; usa resumen_portafolio."
+            )
         item = ctx.evidence.add("proyecto", f"search:{args.texto}", payload)
         return ToolOutput(payload | {"evidencia_id": item.id}, evidence_ids=[item.id])
     raise ToolError("se necesita un nombre o una ubicación")
@@ -213,7 +208,10 @@ def window(start: date, days: int = 60) -> tuple[date, date]:
 DATA_TOOLS = [
     Tool(
         "buscar_proyecto",
-        "Encuentra el proyecto por nombre aproximado o por coordenadas dentro de su polígono.",
+        (
+            "Encuentra el proyecto por su nombre (aunque venga dentro de una frase, con o sin "
+            "tildes) o por coordenadas dentro de su polígono. Devuelve candidatos con su id."
+        ),
         BuscarProyectoArgs,
         buscar_proyecto,
     ),

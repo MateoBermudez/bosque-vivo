@@ -20,3 +20,9 @@ Los resultados se calculan cuando se solicita un análisis y se muestra siempre 
 
 ## ¿Qué es Verra y qué es Gold Standard?
 Son dos organizaciones que certifican proyectos de créditos de carbono y publican registros públicos de esos proyectos.
+
+## ¿Cómo pregunto por mi proyecto?
+Escriba el nombre del proyecto, por ejemplo «¿Cómo está Concosta?», o use el botón «Elegir mi proyecto» o comparta su ubicación. Si hay dos proyectos con nombres parecidos, el asistente le pregunta cuál es.
+
+## ¿Qué puedo preguntar?
+Cómo está el bosque de un proyecto, si hay alertas de pérdida de bosque, qué significa su índice y su confianza, cómo funciona Bosque Vivo y qué pasa con sus datos. Para otros temas el asistente no puede ayudar.
