@@ -6,7 +6,7 @@ import { ContactLine, LegalDocument, type LegalSection } from "@/components/lega
 export const metadata: Metadata = {
   title: "Términos y condiciones",
   description:
-    "Condiciones de uso del sitio, el chat en línea, el asistente de WhatsApp y el área de auditores de Bosque Vivo.",
+    "Condiciones de uso del sitio, el chat en línea del asistente y el área de auditores de Bosque Vivo.",
 };
 
 const SECTIONS: LegalSection[] = [
@@ -15,7 +15,7 @@ const SECTIONS: LegalSection[] = [
     title: "Aceptación",
     body: (
       <p>
-        Al usar el sitio de Bosque Vivo, el chat en línea, el asistente de WhatsApp o el área de auditores aceptas estos
+        Al usar el sitio de Bosque Vivo, el chat en línea o el área de auditores aceptas estos
         términos y la{" "}
         <Link href="/privacidad" className="underline underline-offset-4">
           política de privacidad
@@ -73,7 +73,7 @@ const SECTIONS: LegalSection[] = [
     title: "Asistente de inteligencia artificial",
     body: (
       <ul>
-        <li>El chat en línea y el de WhatsApp los atiende una inteligencia artificial que puede equivocarse.</li>
+        <li>El chat en línea lo atiende una inteligencia artificial que puede equivocarse.</li>
         <li>
           Antes de responder pide tu autorización (<strong>ACEPTO</strong>). Puedes borrar tus datos cuando quieras con{" "}
           <strong>BORRAR MIS DATOS</strong>.
@@ -150,7 +150,7 @@ const SECTIONS: LegalSection[] = [
       <>
         <p>
           El servicio se ofrece «tal cual», sin garantía de disponibilidad continua ni de exactitud. Depende de
-          servicios externos (imágenes satelitales, inteligencia artificial, alojamiento, correo y WhatsApp) que pueden
+          servicios externos (imágenes satelitales, inteligencia artificial, alojamiento y correo) que pueden
           fallar o cambiar.
         </p>
         <p>
@@ -182,7 +182,7 @@ export default function TermsPage() {
     <LegalDocument
       eyebrow="Condiciones de uso"
       title="Términos y condiciones"
-      version="v1"
+      version="v2"
       current="/terminos"
       intro={<p>Las reglas para usar el sitio, el asistente y el área de auditores de Bosque Vivo.</p>}
       sections={SECTIONS}

@@ -35,7 +35,7 @@ if ($Tunnel) {
     $processes += Start-Process -PassThru -NoNewWindow -FilePath "cloudflared" `
         -ArgumentList "tunnel", "--url", "http://127.0.0.1:$ApiPort"
     Write-Host "Túneles HTTPS: copie las URL https://...trycloudflare.com que imprime cloudflared."
-    Write-Host "Sitio: ponga su URL en WEB_BASE_URL (backend\.env). API: úsela para el webhook de WhatsApp."
+    Write-Host "Sitio: ponga su URL en WEB_BASE_URL (backend\.env). Comparta la del sitio para abrir el chat en línea (/asistente)."
 }
 
 Write-Host "Modo producción. API: http://127.0.0.1:$ApiPort  Sitio: http://localhost:$WebPort"

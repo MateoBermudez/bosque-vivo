@@ -18,7 +18,7 @@ const SECTIONS: LegalSection[] = [
         <p>
           Bosque Vivo es un proyecto integrador académico de estudiantes de Ingeniería Informática del Politécnico
           Colombiano Jaime Isaza Cadavid (Medellín, Colombia). El equipo del proyecto es el responsable del tratamiento
-          de los datos que se recogen en este sitio, en el chat en línea y en el asistente de WhatsApp.
+          de los datos que se recogen en este sitio y en su chat en línea.
         </p>
         <p>
           Contacto para temas de privacidad: <ContactLine />.
@@ -41,17 +41,18 @@ const SECTIONS: LegalSection[] = [
           navegador de cada solicitud para operar y proteger el servicio.
         </p>
         <p>
-          <strong>Asistente de WhatsApp y chat en línea.</strong>
+          <strong>Chat en línea del asistente.</strong>
         </p>
         <ul>
           <li>
-            El número de teléfono se guarda solo como una huella cifrada (HMAC-SHA256); el número no se almacena. En el
-            chat en línea se usa un identificador aleatorio guardado en tu navegador en lugar del teléfono.
+            Un identificador aleatorio de la conversación, guardado en tu navegador. En la base de datos se guarda solo
+            su huella cifrada (HMAC-SHA256). No pedimos tu nombre, tu teléfono ni tu correo.
           </li>
           <li>Tus preguntas, las respuestas y el proyecto que elijas, para atenderte y revisar la calidad.</li>
           <li>La fecha y la versión del aviso con que diste tu autorización.</li>
           <li>
-            Fotos, notas de voz y ubicación solo si las envías; las fotos y audios requieren una autorización aparte (
+            Fotos, notas de voz y ubicación solo si las envías desde el chat; el navegador te pide permiso antes de usar
+            la ubicación o el micrófono. Las fotos y audios requieren una autorización aparte (
             <strong>ACEPTO FOTOS</strong>). Los archivos se procesan y se descartan: no se guardan.
           </li>
         </ul>
@@ -118,7 +119,7 @@ const SECTIONS: LegalSection[] = [
         <p>No vendemos ni cedemos datos personales. Para funcionar, el servicio usa estos proveedores:</p>
         <ul>
           <li>
-            <strong>Google (Gemini)</strong>: procesa el texto, las imágenes y los audios de las consultas. En la capa
+            <strong>Google (Gemini)</strong>: procesa el texto, las fotos y las notas de voz de las consultas. En la capa
             gratuita, Google puede usar el contenido para mejorar sus productos; por eso pedimos no enviar cédula,
             dirección ni datos privados.
           </li>
@@ -131,10 +132,6 @@ const SECTIONS: LegalSection[] = [
           </li>
           <li>
             <strong>Google (Gmail)</strong>: envía los correos de invitación, verificación y seguridad.
-          </li>
-          <li>
-            <strong>Meta (WhatsApp Business)</strong>: transporta los mensajes del asistente de WhatsApp, según sus
-            propias condiciones.
           </li>
         </ul>
         <p>
@@ -171,12 +168,11 @@ const SECTIONS: LegalSection[] = [
       <>
         <ul>
           <li>
-            <strong>Borrado inmediato:</strong> escribe <strong>BORRAR MIS DATOS</strong> en WhatsApp o en el chat en
-            línea. Se eliminan tu registro, tus permisos y tus consultas.
+            <strong>Borrado inmediato:</strong> escribe <strong>BORRAR MIS DATOS</strong> en el chat en línea. Se eliminan tu registro, tus permisos y tus consultas.
           </li>
           <li>
             <strong>Consultas y reclamos:</strong> escribe a <ContactLine /> indicando tu solicitud y cómo identificarte
-            (por ejemplo, el correo de tu cuenta o el número desde el que escribiste).
+            (por ejemplo, el correo de tu cuenta de auditor, o la fecha y el proyecto de tu conversación en el chat).
           </li>
         </ul>
         <p>
@@ -194,7 +190,7 @@ const SECTIONS: LegalSection[] = [
     body: (
       <ul>
         <li>Conexiones cifradas (HTTPS/TLS) entre tu navegador, la API y la base de datos.</li>
-        <li>Teléfonos guardados como huella HMAC; contraseñas con scrypt; enlaces y códigos como huellas SHA-256.</li>
+        <li>Identificadores de conversación guardados como huella HMAC; contraseñas con scrypt; enlaces y códigos como huellas SHA-256.</li>
         <li>
           Verificación en dos pasos por correo, bloqueo temporal tras 5 intentos fallidos y avisos de inicio de sesión.
         </li>
@@ -270,7 +266,7 @@ export default function PrivacyPage() {
     <LegalDocument
       eyebrow="Ley 1581 de 2012"
       title="Política de privacidad y tratamiento de datos"
-      version="v2"
+      version="v3"
       current="/privacidad"
       intro={
         <p>

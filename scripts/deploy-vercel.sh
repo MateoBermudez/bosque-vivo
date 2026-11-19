@@ -47,8 +47,6 @@ wait_ok() {
 
 api_keys=(DATABASE_URL DATABASE_PASSWORD ADMIN_TOKEN PHONE_HMAC_KEY INDEX_VERSION
   GEMINI_API_KEY GEMINI_MODEL GEMINI_MODEL_LIGHT
-  WHATSAPP_TOKEN WHATSAPP_PHONE_NUMBER_ID WHATSAPP_VERIFY_TOKEN WHATSAPP_APP_SECRET
-  WHATSAPP_ALLOWED_PHONES WHATSAPP_API_VERSION
   MAIL_BACKEND MAIL_FROM SMTP_HOST SMTP_PORT SMTP_USER SMTP_PASSWORD SMTP_STARTTLS SMTP_SSL
   AUTH_TWO_FACTOR AUTH_CODE_TTL_MINUTES AUTH_LOGIN_ALERTS PASSWORD_RESET_TTL_MINUTES
   INVITATION_TTL_HOURS AGENT_DAILY_LIMIT_PER_USER)
@@ -72,7 +70,6 @@ push_env BACKEND_URL "$api_public"
 push_env ADMIN_TOKEN "$(value ADMIN_TOKEN "$backend_env")"
 push_env SESSION_SECRET "$session_secret"
 push_env PRIVACY_CONTACT_EMAIL "$(value PRIVACY_CONTACT_EMAIL "$web_env")"
-push_env WHATSAPP_PUBLIC_NUMBER "$(value WHATSAPP_PUBLIC_NUMBER "$web_env")"
 web_url="$(deploy)"
 web_public="https://$web_project.vercel.app"
 wait_ok "$web_public" || web_public="$web_url"
@@ -87,4 +84,4 @@ wait_ok "$api_public/health"
 echo
 echo "Listo."
 echo "  Sitio: $web_public"
-echo "  API:   $api_public  (webhook de WhatsApp: $api_public/webhook/whatsapp)"
+echo "  API:   $api_public"

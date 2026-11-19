@@ -5,7 +5,7 @@ import { PageHeader } from "@/components/common/page-header";
 
 export type LegalSection = { id: string; title: string; body: ReactNode };
 
-export const LEGAL_UPDATED = "5 de noviembre de 2026";
+export const LEGAL_UPDATED = "19 de noviembre de 2026";
 
 export const LEGAL_PAGES = [
   { href: "/terminos", label: "Términos y condiciones" },

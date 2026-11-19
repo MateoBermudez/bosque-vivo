@@ -5,10 +5,25 @@ import { z } from "zod";
 import { BackendError, communityApi } from "@/lib/api/backend";
 import { createThrottle } from "@/lib/auth/throttle";
 
-const bodySchema = z.object({
-  session_ref: z.string().regex(/^[A-Za-z0-9-]{8,64}$/),
-  message: z.string().trim().min(1).max(1000),
-});
+const MAX_MEDIA_BASE64 = 4_000_004;
+
+const sessionRef = z.string().regex(/^[A-Za-z0-9-]{8,64}$/);
+const bodySchema = z.discriminatedUnion("kind", [
+  z.object({ kind: z.literal("text"), session_ref: sessionRef, message: z.string().trim().min(1).max(1000) }),
+  z.object({
+    kind: z.literal("location"),
+    session_ref: sessionRef,
+    latitude: z.number().min(-90).max(90),
+    longitude: z.number().min(-180).max(180),
+  }),
+  z.object({
+    kind: z.enum(["image", "audio"]),
+    session_ref: sessionRef,
+    message: z.string().trim().max(1000).optional(),
+    media_base64: z.string().min(4).max(MAX_MEDIA_BASE64),
+    mime_type: z.string().max(60),
+  }),
+]);
 
 const throttle = createThrottle(40, 10 * 60 * 1000);
 
@@ -31,15 +46,33 @@ export async function POST(request: NextRequest) {
   let payload: unknown;
   try {
     payload = await request.json();
+    if (payload && typeof payload === "object" && !("kind" in payload)) payload = { ...payload, kind: "text" };
   } catch {
     return NextResponse.json({ error: "La solicitud no es válida." }, { status: 400 });
   }
   const parsed = bodySchema.safeParse(payload);
   if (!parsed.success) {
-    return NextResponse.json({ error: "Escribe un mensaje de hasta 1.000 caracteres." }, { status: 400 });
+    return NextResponse.json(
+      { error: "Escribe un mensaje de hasta 1.000 caracteres, o envía una foto o un audio de hasta 3 MB." },
+      { status: 400 },
+    );
   }
+  const data = parsed.data;
   try {
-    const replies = await communityApi.send(parsed.data.session_ref, parsed.data.message);
+    const replies =
+      data.kind === "text"
+        ? await communityApi.send(data.session_ref, data.message)
+        : data.kind === "location"
+          ? await communityApi.send(data.session_ref, "", {
+              kind: "location",
+              latitude: data.latitude,
+              longitude: data.longitude,
+            })
+          : await communityApi.send(data.session_ref, data.message ?? "", {
+              kind: data.kind,
+              media_base64: data.media_base64,
+              mime_type: data.mime_type,
+            });
     return NextResponse.json({ replies }, { headers: { "Cache-Control": "no-store" } });
   } catch (error) {
     const message = error instanceof BackendError ? error.message : "El asistente no respondió. Intenta de nuevo.";

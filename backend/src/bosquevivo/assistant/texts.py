@@ -27,7 +27,7 @@ HELP = (
 )
 NEED_PROJECT = (
     "Primero dígame cuál es su proyecto: escriba PROYECTO y el número (por ejemplo PROYECTO 7) "
-    "o envíe su ubicación desde WhatsApp."
+    "o comparta su ubicación con el botón de ubicación del chat."
 )
 PROJECT_NOT_FOUND = "No encontré ese número de proyecto. Revise el número o envíe su ubicación."
 NOT_AUTHORIZED = (

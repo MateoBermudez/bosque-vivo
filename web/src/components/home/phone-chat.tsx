@@ -20,13 +20,13 @@ function Bubble({ me, children }: { me?: boolean; children: ReactNode }) {
   );
 }
 
-/** Maqueta ilustrativa de una conversación con el asistente. */
+/** Maqueta ilustrativa de una conversación en el chat en línea del sitio. */
 export function PhoneChat() {
   return (
     <div
       className="mx-auto w-full max-w-[340px] rounded-[2.6rem] bg-forest p-3 shadow-[var(--shadow-soft)]"
       role="img"
-      aria-label="Ejemplo de conversación con el asistente de WhatsApp: una persona comparte su ubicación, una foto y una nota de voz, y el asistente responde."
+      aria-label="Ejemplo de conversación en el chat en línea: una persona comparte su ubicación, una foto y una nota de voz, y el asistente responde."
     >
       <div className="rounded-[2.1rem] bg-forest-2 p-4 text-forest-foreground">
         <div className="mb-4 flex items-center gap-3 border-b border-forest-foreground/10 pb-3">

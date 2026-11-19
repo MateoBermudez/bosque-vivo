@@ -64,8 +64,8 @@ export default function AboutPage() {
                   con series históricas de cobertura vegetal y estima un índice de credibilidad.
                 </li>
                 <li>
-                  <strong>Asistente conversacional:</strong> prototipo por WhatsApp, en español sencillo, para
-                  consultar el estado del bosque.
+                  <strong>Asistente conversacional:</strong> chat en línea dentro del sitio, en español sencillo,
+                  para consultar el estado del bosque desde el celular o el computador.
                 </li>
               </ul>
             </div>

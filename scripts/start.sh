@@ -26,7 +26,7 @@ if [ "${TUNNEL:-0}" = "1" ]; then
     (exec setsid cloudflared tunnel --url "http://127.0.0.1:$api_port") &
     pids+=($!)
     echo "Túneles HTTPS: copie las URL https://...trycloudflare.com que imprime cloudflared."
-    echo "Sitio: ponga su URL en WEB_BASE_URL (backend/.env). API: úsela para el webhook de WhatsApp."
+    echo "Sitio: ponga su URL en WEB_BASE_URL (backend/.env). Comparta la del sitio para abrir el chat en línea (/asistente)."
 fi
 
 echo "Modo producción. API: http://127.0.0.1:$api_port  Sitio: http://localhost:$web_port"

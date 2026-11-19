@@ -12,8 +12,7 @@ import { Logo } from "./logo";
 const NAV = [
   { href: "/", label: "Inicio" },
   { href: "/proyectos", label: "Proyectos" },
-  { href: "/whatsapp", label: "Asistente WhatsApp" },
-  { href: "/asistente", label: "Chat en línea" },
+  { href: "/asistente", label: "Asistente" },
   { href: "/metodologia", label: "Metodología" },
   { href: "/privacidad", label: "Privacidad" },
   { href: "/acerca", label: "Acerca de" },

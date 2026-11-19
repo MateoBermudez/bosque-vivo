@@ -243,13 +243,18 @@ export const accountsApi = {
 
 const communitySchema = z.object({ replies: z.array(z.string()) });
 
+/** Lo que puede enviar una persona en el chat en línea, además del texto. */
+export type CommunityAttachment =
+  | { kind: "location"; latitude: number; longitude: number }
+  | { kind: "image" | "audio"; media_base64: string; mime_type: string };
+
 export const communityApi = {
-  send: async (sessionRef: string, message: string): Promise<string[]> =>
+  send: async (sessionRef: string, message: string, attachment?: CommunityAttachment): Promise<string[]> =>
     (
       await requireJson(`${API_PREFIX}/community/messages`, communitySchema, {
         admin: true,
         method: "POST",
-        body: { session_ref: sessionRef, message },
+        body: { session_ref: sessionRef, message: message || null, kind: "text", ...attachment },
         timeoutMs: 90_000,
       })
     ).replies,

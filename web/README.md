@@ -62,7 +62,7 @@ El chat y las trazas consumen la cuota de IA y las trazas muestran preguntas de 
 | `/` | Inicio: problema, cómo funciona, asistente, qué mide y qué no |
 | `/proyectos` | Explorador: mapa + lista con filtros |
 | `/proyectos/[id]` | Detalle: índice, componentes, NDVI, pérdida, antes/después, declarado vs observado, reproducibilidad |
-| `/whatsapp` | Cómo usar el asistente (con código QR si hay número configurado) |
+| `/asistente` | Chat en línea del asistente: texto, ubicación, fotos y notas de voz; pasos de uso y código QR para abrirlo en el celular (`/whatsapp` redirige aquí) |
 | `/metodologia` | Índice, confianza, limitaciones, glosario, preguntas frecuentes, normativa |
 | `/privacidad` | Aviso de privacidad (Ley 1581) |
 | `/acerca` | Objetivos, alcance, referencias |

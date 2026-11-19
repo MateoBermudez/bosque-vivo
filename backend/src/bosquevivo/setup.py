@@ -3,7 +3,7 @@ import secrets
 from dataclasses import dataclass, field
 from pathlib import Path
 
-GENERATED_BACKEND = ("ADMIN_TOKEN", "PHONE_HMAC_KEY", "WHATSAPP_VERIFY_TOKEN")
+GENERATED_BACKEND = ("ADMIN_TOKEN", "PHONE_HMAC_KEY")
 LINE = re.compile(r"^\s*([A-Z][A-Z0-9_]*)\s*=(.*)$")
 
 
@@ -101,11 +101,6 @@ REQUIREMENTS = (
         f"{GUIDES}/gemini.md",
     ),
     Requirement(
-        "WhatsApp Cloud API",
-        ("WHATSAPP_TOKEN", "WHATSAPP_PHONE_NUMBER_ID", "WHATSAPP_APP_SECRET"),
-        f"{GUIDES}/whatsapp.md",
-    ),
-    Requirement(
         "Correo SMTP (2FA, avisos, recuperación)",
         ("SMTP_USER", "SMTP_PASSWORD"),
         f"{GUIDES}/correo.md",
@@ -149,12 +144,6 @@ API_KEYS = (
     "GEMINI_API_KEY",
     "GEMINI_MODEL",
     "GEMINI_MODEL_LIGHT",
-    "WHATSAPP_TOKEN",
-    "WHATSAPP_PHONE_NUMBER_ID",
-    "WHATSAPP_VERIFY_TOKEN",
-    "WHATSAPP_APP_SECRET",
-    "WHATSAPP_ALLOWED_PHONES",
-    "WHATSAPP_API_VERSION",
     "MAIL_BACKEND",
     "MAIL_FROM",
     "SMTP_HOST",
@@ -170,7 +159,7 @@ API_KEYS = (
     "INVITATION_TTL_HOURS",
     "AGENT_DAILY_LIMIT_PER_USER",
 )
-WEB_KEYS = ("PRIVACY_CONTACT_EMAIL", "WHATSAPP_PUBLIC_NUMBER")
+WEB_KEYS = ("PRIVACY_CONTACT_EMAIL",)
 
 
 def vercel_env_blocks(

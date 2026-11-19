@@ -85,7 +85,7 @@ export default function HomePage() {
               <Link href="/proyectos" className="btn-lime">
                 Explorar proyectos <ArrowRight className="h-4 w-4" aria-hidden />
               </Link>
-              <Link href="/whatsapp" className="btn-cream">
+              <Link href="/asistente" className="btn-cream">
                 Hablar con el asistente
               </Link>
             </div>
@@ -162,14 +162,14 @@ export default function HomePage() {
           <div>
             <p className="eyebrow">Asistente de IA</p>
             <h2 id="titulo-asistente" className="mt-2 text-3xl font-extrabold md:text-5xl">
-              Pregunta por WhatsApp, en español sencillo.
+              Pregunta en el chat, en español sencillo.
             </h2>
             <p className="mt-4 text-lg text-muted-foreground">
-              Escribe, comparte tu ubicación, envía una foto o una nota de voz. El asistente te responde con las
-              cifras del sistema.
+              Escribe, comparte tu ubicación, envía una foto o una nota de voz desde el navegador, sin instalar nada.
+              El asistente te responde con las cifras del sistema.
             </p>
-            <Link href="/whatsapp" className="btn-dark mt-8">
-              <MessageCircle className="h-4 w-4" aria-hidden /> Conocer el asistente
+            <Link href="/asistente" className="btn-dark mt-8">
+              <MessageCircle className="h-4 w-4" aria-hidden /> Abrir el chat
             </Link>
           </div>
           <PhoneChat />
