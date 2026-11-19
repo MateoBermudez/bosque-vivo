@@ -252,6 +252,21 @@ def cmd_recompute(args: argparse.Namespace) -> int:
 
 
 def cmd_eval(args: argparse.Namespace) -> int:
+    if args.remote:
+        from bosquevivo.ai.eval.remote import run_remote
+
+        token = os.environ.get("ADMIN_TOKEN") or get_settings().admin_token
+        report = run_remote(
+            args.remote,
+            token,
+            load_cases(),
+            progress=lambda r: print(f"{'OK   ' if r.passed else 'FALLA'} {r.case_id}"),
+        )
+        output = Path(args.output)
+        output.parent.mkdir(parents=True, exist_ok=True)
+        output.write_text(report.to_json(), encoding="utf-8")
+        print(report.summary())
+        return 0
     init_db()
     settings = get_settings()
     llm = build_llm(settings)
@@ -673,6 +688,11 @@ def build_parser() -> argparse.ArgumentParser:
     _add_database_commands(sub)
     evaluate = sub.add_parser("eval")
     evaluate.add_argument("--output", default="data/eval/report.json")
+    evaluate.add_argument(
+        "--remote",
+        metavar="URL_API",
+        help="Ejecuta los casos en un despliegue (p. ej. la API de producción) con su modelo",
+    )
     evaluate.set_defaults(func=cmd_eval)
     return parser
 

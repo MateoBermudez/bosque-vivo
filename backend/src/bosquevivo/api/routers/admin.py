@@ -1,3 +1,4 @@
+from dataclasses import asdict
 from pathlib import Path
 from typing import Any
 
@@ -6,7 +7,10 @@ from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from bosquevivo.accounts import AccountService, build_mailer
-from bosquevivo.api.deps import db_session, require_admin
+from bosquevivo.ai.agent import Agent, default_registry
+from bosquevivo.ai.eval import EvalRunner, load_cases
+from bosquevivo.ai.llm import LLMProvider
+from bosquevivo.api.deps import db_session, get_llm, require_admin
 from bosquevivo.api.schemas import ImportOut, ImportRequest
 from bosquevivo.core.config import Settings, get_settings
 from bosquevivo.core.errors import ExternalServiceError, ValidationFailedError
@@ -155,3 +159,18 @@ def mail_test(
     except ExternalServiceError as exc:
         raise HTTPException(status_code=502, detail=str(exc)) from exc
     return {"backend": mailer.name, "to": body.to}
+
+
+@router.post("/eval/{case_id}")
+def eval_case(
+    case_id: str,
+    session: Session = Depends(db_session),
+    settings: Settings = Depends(get_settings),
+    llm: LLMProvider = Depends(get_llm),
+):
+    """Ejecuta un caso de `bosquevivo eval` en este despliegue, con su modelo y su base."""
+    case = next((c for c in load_cases() if c.id == case_id), None)
+    if case is None:
+        raise HTTPException(status_code=404, detail=f"caso desconocido: {case_id}")
+    agent = Agent(session, llm, default_registry(), settings)
+    return asdict(EvalRunner(session, agent).run_case(case))

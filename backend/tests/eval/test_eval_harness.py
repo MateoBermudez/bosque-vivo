@@ -60,3 +60,25 @@ def test_harness_detects_accusatory_answer_and_missing_tools(db, tmp_path):
     assert result.neutral_ok is True
     assert result.tools_ok is False
     assert result.used_fallback
+
+
+def test_cases_run_on_the_server_and_report_locally(client, db, tmp_path):
+    from bosquevivo.ai.eval.remote import run_remote
+    from bosquevivo.api.deps import get_llm
+
+    seed_demo(db, tmp_path)
+    db.commit()
+    client.app.dependency_overrides[get_llm] = lambda: ScriptedLLM(
+        lambda system, messages, tools: LLMResponse(text="No tengo datos suficientes para eso.")
+    )
+    assert client.post("/api/v1/admin/eval/fuera-de-alcance").status_code == 401
+    headers = {"X-Admin-Token": "secreto"}
+    assert client.post("/api/v1/admin/eval/no-existe", headers=headers).status_code == 404
+    cases = [c for c in load_cases() if c.id in {"estado-roble", "fuera-de-alcance"}]
+    seen = []
+    report = run_remote("http://testserver", "secreto", cases, client=client, progress=seen.append)
+    assert [r.case_id for r in report.results] == ["estado-roble", "fuera-de-alcance"]
+    assert len(seen) == 2
+    summary = report.summary()
+    assert summary["casos"] == 2 and summary["neutralidad"] == 1.0
+    assert json.loads(report.to_json())["resumen"]["casos"] == 2
