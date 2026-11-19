@@ -1,6 +1,6 @@
 "use client";
 
-import { Camera, MapPin, Mic, Search, SendHorizontal, Square, X } from "lucide-react";
+import { Camera, ChevronRight, MapPin, Mic, Search, SendHorizontal, Square, X } from "lucide-react";
 import { useEffect, useId, useRef, useState } from "react";
 
 import { communityReplySchema, type CommunityProject, type CommunitySuggestion } from "@/lib/api/schema";
@@ -310,20 +310,26 @@ export function CommunityChat() {
           )}
         </div>
       )}
-      <ul className="mt-4 flex flex-wrap gap-2" aria-label="Respuestas rápidas">
-        {[...suggestions, ...(suggestions.length > 1 ? [HELP] : [])].map((suggestion) => (
-          <li key={suggestion.label}>
-            <button
-              type="button"
-              onClick={() => pickSuggestion(suggestion)}
-              disabled={busy}
-              className="rounded-full border border-border bg-background px-3 py-1 text-xs hover:bg-muted disabled:opacity-50"
-            >
-              {suggestion.label}
-            </button>
-          </li>
-        ))}
-      </ul>
+      <div className="mt-4">
+        <p className="mb-2 text-xs font-medium text-muted-foreground">
+          Toque una opción o escriba su pregunta abajo:
+        </p>
+        <ul className="flex flex-wrap gap-2" aria-label="Opciones para tocar">
+          {[...suggestions, ...(suggestions.length > 1 ? [HELP] : [])].map((suggestion) => (
+            <li key={suggestion.label}>
+              <button
+                type="button"
+                onClick={() => pickSuggestion(suggestion)}
+                disabled={busy}
+                className="flex items-center gap-1 rounded-full border border-emerald-600 bg-emerald-50 px-3.5 py-1.5 text-xs font-semibold text-emerald-800 shadow-sm transition hover:bg-emerald-600 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600 disabled:opacity-50 dark:border-emerald-500 dark:bg-emerald-950 dark:text-emerald-200 dark:hover:bg-emerald-500 dark:hover:text-emerald-950"
+              >
+                {suggestion.label}
+                <ChevronRight className="h-3.5 w-3.5" aria-hidden />
+              </button>
+            </li>
+          ))}
+        </ul>
+      </div>
       {recording ? (
         <div className="mt-3 flex items-center gap-2" role="status" aria-live="polite">
           <span className="flex h-11 min-w-0 flex-1 items-center gap-2 rounded-full border border-destructive/40 bg-destructive/5 px-4 text-sm">
