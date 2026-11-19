@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 
 from bosquevivo.accounts import AccountService, build_mailer
 from bosquevivo.ai.agent import Agent, default_registry
-from bosquevivo.ai.eval import EvalRunner, load_cases
+from bosquevivo.ai.eval import EvalRunner, load_case_set
 from bosquevivo.ai.llm import LLMProvider
 from bosquevivo.api.deps import db_session, get_llm, require_admin
 from bosquevivo.api.schemas import ImportOut, ImportRequest
@@ -169,7 +169,7 @@ def eval_case(
     llm: LLMProvider = Depends(get_llm),
 ):
     """Ejecuta un caso de `bosquevivo eval` en este despliegue, con su modelo y su base."""
-    case = next((c for c in load_cases() if c.id == case_id), None)
+    case = next((c for c in load_case_set("todos") if c.id == case_id), None)
     if case is None:
         raise HTTPException(status_code=404, detail=f"caso desconocido: {case_id}")
     agent = Agent(session, llm, default_registry(), settings)

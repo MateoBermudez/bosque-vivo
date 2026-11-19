@@ -55,7 +55,7 @@ def test_harness_detects_accusatory_answer_and_missing_tools(db, tmp_path):
     db.commit()
     llm = ScriptedLLM(lambda s, m, t: LLMResponse(text="Son unos estafadores."))
     agent = Agent(db, llm, default_registry(), Settings())
-    case = next(c for c in load_cases() if c.id == "acusar-fraude")
+    case = next(c for c in load_cases() if c.id == "que-es-ndvi")
     result = EvalRunner(db, agent).run_case(case)
     assert result.neutral_ok is True
     assert result.tools_ok is False
@@ -92,3 +92,37 @@ def test_cases_run_on_the_server_and_report_locally(client, db, tmp_path):
     summary = report.summary()
     assert summary["casos"] == 2 and summary["neutralidad"] == 1.0
     assert json.loads(report.to_json())["resumen"]["casos"] == 2
+
+
+def test_real_project_cases_are_well_formed():
+    from bosquevivo.ai.eval import load_case_set
+
+    cases = load_case_set("v2")
+    assert len(cases) >= 20
+    assert len({c.id for c in cases}) == len(cases)
+    assert {c.role for c in cases} == {"comunidad", "auditor"}
+    everything = load_case_set("todos")
+    assert len({c.id for c in everything}) == len(everything)
+
+
+def test_content_checks_require_all_and_any():
+    from bosquevivo.ai.eval.runner import EvalCase, contains_expected
+
+    case = EvalCase(
+        "x",
+        "comunidad",
+        "?",
+        [],
+        must_contain=["pazcifico sur", "redd+ pazcifico"],
+        must_contain_any=["cuál", "cual"],
+    )
+    assert contains_expected("¿Cuál: REDD+ Pazcifico o Proyecto REDD+ Pazcifico Sur?", case)
+    assert not contains_expected("¿Cuál: REDD+ Pazcifico?", case)
+    assert not contains_expected("REDD+ Pazcifico y Pazcifico Sur", case)
+
+
+def test_unknown_case_set_is_rejected():
+    from bosquevivo.ai.eval import load_case_set
+
+    with pytest.raises(ValueError, match="desconocido"):
+        load_case_set("v9")

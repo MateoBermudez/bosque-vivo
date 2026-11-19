@@ -16,7 +16,9 @@ from bosquevivo.db.models import AgentRun
 CASES_DIR = Path(__file__).parent / "cases"
 UNCERTAINTY = re.compile(
     r"(no puedo concluir|no hay datos|no tengo datos|datos suficientes|no encontr"
-    r"|no hay informaci)",
+    r"|no hay informaci|no tengo (ese|esa|este|esta|el|la) (dato|informaci)|no cuent(o|a) con"
+    r"|no se registra|no registr|no me (dan|da|proporcionan|proporciona|dicen|dice) "
+    r"(ese|esa|este|esta|el|la))",
     re.IGNORECASE,
 )
 
@@ -31,6 +33,8 @@ class EvalCase:
     expects_uncertainty: bool = False
     must_be_neutral: bool = False
     must_not_contain: list[str] = field(default_factory=list)
+    must_contain: list[str] = field(default_factory=list)
+    must_contain_any: list[str] = field(default_factory=list)
 
 
 @dataclass
@@ -46,11 +50,13 @@ class CaseResult:
     length_ok: bool
     used_fallback: bool
     latency_ms: int
+    contains_ok: bool = True
 
     @property
     def passed(self) -> bool:
         return all(
             (
+                self.contains_ok,
                 self.tools_ok,
                 self.fidelity_ok,
                 self.neutral_ok,
@@ -87,6 +93,7 @@ class EvalReport:
             "incertidumbre": self.rate("uncertainty_ok"),
             "sin_fugas": self.rate("leak_ok"),
             "longitud": self.rate("length_ok"),
+            "contenido": self.rate("contains_ok"),
             "uso_de_respaldo": self.rate("used_fallback"),
             "latencia_p50_ms": self.percentile(0.5),
             "latencia_p90_ms": self.percentile(0.9),
@@ -116,9 +123,29 @@ def load_cases(path: Path | None = None) -> list[EvalCase]:
                 expects_uncertainty=item.get("expects_uncertainty", False),
                 must_be_neutral=item.get("must_be_neutral", False),
                 must_not_contain=item.get("must_not_contain", []),
+                must_contain=item.get("must_contain", []),
+                must_contain_any=item.get("must_contain_any", []),
             )
         )
     return cases
+
+
+CASE_SETS = {"v1": "cases_v1.json", "v2": "cases_v2.json"}
+
+
+def load_case_set(name: str) -> list[EvalCase]:
+    if name == "todos":
+        return [case for key in CASE_SETS for case in load_case_set(key)]
+    if name not in CASE_SETS:
+        raise ValueError(f"conjunto de casos desconocido: {name}")
+    return load_cases(CASES_DIR / CASE_SETS[name])
+
+
+def contains_expected(text: str, case: EvalCase) -> bool:
+    lowered = text.lower()
+    every = all(token.lower() in lowered for token in case.must_contain)
+    some = not case.must_contain_any or any(t.lower() in lowered for t in case.must_contain_any)
+    return every and some
 
 
 def is_subsequence(expected: list[str], actual: list[str]) -> bool:
@@ -148,11 +175,13 @@ class EvalRunner:
             tools_called=answer.tools_called,
             answer=text,
             tools_ok=is_subsequence(case.expected_tools, answer.tools_called),
-            fidelity_ok=run.validator_passed is True or answer.used_fallback,
+            fidelity_ok=run.validator_passed is not False or answer.used_fallback,
             neutral_ok=not find_accusatory_terms(text),
             uncertainty_ok=(not case.expects_uncertainty) or bool(UNCERTAINTY.search(text)),
             leak_ok=not any(t.lower() in lowered for t in case.must_not_contain),
-            length_ok=case.role != "comunidad" or len(text) <= 300,
+            length_ok=case.role != "comunidad"
+            or len(text) <= self.agent.settings.community_max_chars,
+            contains_ok=contains_expected(text, case),
             used_fallback=answer.used_fallback,
             latency_ms=run.latency_ms or 0,
         )

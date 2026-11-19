@@ -12,7 +12,7 @@ from sqlalchemy import func, select
 
 from bosquevivo.accounts import AccountService, build_mailer
 from bosquevivo.ai.agent import Agent, default_registry
-from bosquevivo.ai.eval import EvalRunner, load_cases
+from bosquevivo.ai.eval import EvalRunner, load_case_set
 from bosquevivo.assistant.runtime import build_llm, build_llm_or_unavailable
 from bosquevivo.core.config import get_settings
 from bosquevivo.core.errors import ExternalServiceError, ValidationFailedError
@@ -259,7 +259,7 @@ def cmd_eval(args: argparse.Namespace) -> int:
         report = run_remote(
             args.remote,
             token,
-            load_cases(),
+            load_case_set(args.cases),
             progress=lambda r: print(f"{'OK   ' if r.passed else 'FALLA'} {r.case_id}"),
             pause_seconds=args.pausa,
         )
@@ -273,7 +273,7 @@ def cmd_eval(args: argparse.Namespace) -> int:
     llm = build_llm(settings)
     with get_session() as session:
         agent = Agent(session, llm, default_registry(), settings)
-        report = EvalRunner(session, agent).run(load_cases())
+        report = EvalRunner(session, agent).run(load_case_set(args.cases))
         output = Path(args.output)
         output.parent.mkdir(parents=True, exist_ok=True)
         output.write_text(report.to_json(), encoding="utf-8")
@@ -689,6 +689,12 @@ def build_parser() -> argparse.ArgumentParser:
     _add_database_commands(sub)
     evaluate = sub.add_parser("eval")
     evaluate.add_argument("--output", default="data/eval/report.json")
+    evaluate.add_argument(
+        "--cases",
+        choices=["v1", "v2", "todos"],
+        default="v1",
+        help="v1: proyectos de demostración; v2: proyectos reales cargados; todos: ambos",
+    )
     evaluate.add_argument(
         "--remote",
         metavar="URL_API",
