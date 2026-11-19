@@ -228,7 +228,7 @@ export function CommunityChat() {
       </ul>
       {recording ? (
         <div className="mt-3 flex items-center gap-2" role="status" aria-live="polite">
-          <span className="flex h-11 flex-1 items-center gap-2 rounded-full border border-destructive/40 bg-destructive/5 px-4 text-sm">
+          <span className="flex h-11 min-w-0 flex-1 items-center gap-2 rounded-full border border-destructive/40 bg-destructive/5 px-4 text-sm">
             <span className="h-2.5 w-2.5 animate-pulse rounded-full bg-destructive" aria-hidden />
             Grabando · {formatSeconds(elapsed)} de {formatSeconds(MAX_RECORDING_SECONDS)}
           </span>
@@ -245,72 +245,73 @@ export function CommunityChat() {
           </button>
         </div>
       ) : (
-        <form
-          className="mt-3 flex gap-2"
-          onSubmit={(event) => {
-            event.preventDefault();
-            void send(input);
-          }}
-        >
-          <label htmlFor={inputId} className="sr-only">
-            Mensaje
-          </label>
-          <input
-            id={inputId}
-            value={input}
-            maxLength={1000}
-            onChange={(event) => setInput(event.target.value)}
-            placeholder="Escribe tu mensaje"
-            className="h-11 min-w-0 flex-1 rounded-full border border-input bg-background px-4 text-sm"
-          />
-          <button
-            type="button"
-            className="btn-cream px-3"
-            onClick={() => void shareLocation()}
-            disabled={busy}
-            aria-label="Compartir mi ubicación"
-            title="Compartir mi ubicación"
-          >
-            <MapPin className="h-4 w-4" aria-hidden />
-          </button>
-          <button
-            type="button"
-            className="btn-cream px-3"
-            onClick={() => photoRef.current?.click()}
-            disabled={busy}
-            aria-label="Enviar una foto"
-            title="Enviar una foto"
-          >
-            <Camera className="h-4 w-4" aria-hidden />
-          </button>
-          <input
-            ref={photoRef}
-            type="file"
-            accept="image/*"
-            capture="environment"
-            className="hidden"
-            aria-hidden
-            tabIndex={-1}
-            data-testid="foto"
-            onChange={(event) => {
-              void sendPhoto(event.target.files?.[0]);
-              event.target.value = "";
+        <>
+          <div className="mt-3 flex flex-wrap gap-2" aria-label="Adjuntar">
+            <button
+              type="button"
+              className="flex h-9 items-center gap-1.5 rounded-full border border-border bg-background px-3 text-xs font-semibold hover:bg-muted disabled:opacity-50"
+              onClick={() => void shareLocation()}
+              disabled={busy}
+              aria-label="Compartir mi ubicación"
+            >
+              <MapPin className="h-4 w-4" aria-hidden /> Ubicación
+            </button>
+            <button
+              type="button"
+              className="flex h-9 items-center gap-1.5 rounded-full border border-border bg-background px-3 text-xs font-semibold hover:bg-muted disabled:opacity-50"
+              onClick={() => photoRef.current?.click()}
+              disabled={busy}
+              aria-label="Enviar una foto"
+            >
+              <Camera className="h-4 w-4" aria-hidden /> Foto
+            </button>
+            <button
+              type="button"
+              className="flex h-9 items-center gap-1.5 rounded-full border border-border bg-background px-3 text-xs font-semibold hover:bg-muted disabled:opacity-50"
+              onClick={() => void startRecording()}
+              disabled={busy}
+              aria-label="Grabar una nota de voz"
+            >
+              <Mic className="h-4 w-4" aria-hidden /> Nota de voz
+            </button>
+            <input
+              ref={photoRef}
+              type="file"
+              accept="image/*"
+              capture="environment"
+              className="hidden"
+              aria-hidden
+              tabIndex={-1}
+              data-testid="foto"
+              onChange={(event) => {
+                void sendPhoto(event.target.files?.[0]);
+                event.target.value = "";
+              }}
+            />
+          </div>
+          <form
+            className="mt-3 flex gap-2"
+            onSubmit={(event) => {
+              event.preventDefault();
+              void send(input);
             }}
-          />
-          <button
-            type="button"
-            className="btn-cream px-3"
-            onClick={() => void startRecording()}
-            disabled={busy}
-            aria-label="Grabar una nota de voz"
-            title="Grabar una nota de voz"
           >
-            <Mic className="h-4 w-4" aria-hidden />
-          </button>
-          <button type="submit" className="btn-dark" disabled={busy || !input.trim()} aria-label="Enviar">
-            <SendHorizontal className="h-4 w-4" aria-hidden />
-          </button>
-        </form>
+            <label htmlFor={inputId} className="sr-only">
+              Mensaje
+            </label>
+            <input
+              id={inputId}
+              value={input}
+              maxLength={1000}
+              onChange={(event) => setInput(event.target.value)}
+              placeholder="Escribe tu mensaje"
+              className="h-11 min-w-0 flex-1 rounded-full border border-input bg-background px-4 text-sm"
+            />
+            <button type="submit" className="btn-dark shrink-0" disabled={busy || !input.trim()} aria-label="Enviar">
+              <SendHorizontal className="h-4 w-4" aria-hidden />
+            </button>
+          </form>
+        </>
       )}
     </div>
   );

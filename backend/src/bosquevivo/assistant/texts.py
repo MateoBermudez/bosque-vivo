@@ -30,6 +30,10 @@ NEED_PROJECT = (
     "o comparta su ubicación con el botón de ubicación del chat."
 )
 PROJECT_NOT_FOUND = "No encontré ese número de proyecto. Revise el número o envíe su ubicación."
+LOCATION_OUTSIDE = (
+    "Ese punto no queda dentro de ningún proyecto registrado. Si conoce su proyecto, escriba "
+    "PROYECTO y el número (por ejemplo PROYECTO 7)."
+)
 NOT_AUTHORIZED = (
     "Este número no está habilitado para el piloto de Bosque Vivo. Si cree que es un error, "
     "comuníquese con el equipo del proyecto."

@@ -191,21 +191,23 @@ def test_unintelligible_audio_asks_to_write(db, seeded):
     assert "escribirme" in client.sent[0][1]
 
 
-def test_location_message_is_passed_to_agent(db, seeded):
-    script = [
-        ToolCallResponse("buscar_proyecto"),
-        LLMResponse(text="Ese lugar está en un proyecto registrado."),
-    ]
-    service, _, llm = build(db, script)
+def test_location_answers_with_the_project_without_the_model(db, seeded):
+    service, client, llm = build(db, [])
     onboard(service)
+    client.sent.clear()
     service.handle(
         IncomingMessage(
             message_id="l1", phone=PHONE, kind="location", latitude=5.05, longitude=-74.95
         )
     )
-    assert "lat 5.05" in llm.calls[0]["messages"][0].text
-    tool_result = llm.calls[1]["messages"][-1].tool_results[0].content
-    assert tool_result["nombre"] == "Reserva El Roble"
+    assert "quedó registrado el proyecto Reserva El Roble" in client.sent[0][1]
+    assert llm.calls == []
+    service.handle(
+        IncomingMessage(
+            message_id="l2", phone=PHONE, kind="location", latitude=-30.0, longitude=10.0
+        )
+    )
+    assert "no queda dentro de ningún proyecto" in client.sent[-1][1]
 
 
 def test_webhook_rejects_bad_signature(client):

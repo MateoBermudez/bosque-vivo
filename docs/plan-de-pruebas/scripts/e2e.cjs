@@ -213,8 +213,97 @@ async function chat(page) {
   check("CP-42", "BORRAR MIS DATOS elimina la conversación", (await say("BORRAR MIS DATOS"))[0].includes("Borré"));
 }
 
+const TEST_ACCOUNT = "pruebas@bosquevivo.test";
+const TEST_PASSWORD = "BosqueVivo-Pruebas-2026";
+
+async function testAccount(browser) {
+  const context = await browser.newContext({ viewport: { width: 1100, height: 900 } });
+  const page = await context.newPage();
+  const before = mails().length;
+  await page.goto(`${BASE}/acceso?next=/chat`);
+  await page.fill("#email", TEST_ACCOUNT);
+  await page.fill("#password", TEST_PASSWORD);
+  await page.click("button[type=submit]");
+  await page.waitForURL((url) => url.pathname === "/chat", { timeout: 60000 });
+  check("CP-65", "la cuenta de pruebas compartida entra sin código de verificación", true, page.url());
+  check("CP-65", "la cuenta de pruebas no recibe correos de aviso", mails().length === before);
+  await page.goto(`${BASE}/acceso`);
+  check("CP-65", "la sesión muestra la cuenta de pruebas", (await page.textContent("main form")).includes(TEST_ACCOUNT));
+  await context.close();
+}
+
+async function noWhatsApp(page) {
+  const response = await page.goto(`${BASE}/whatsapp`);
+  check("CP-66", "/whatsapp redirige al chat en línea", new URL(page.url()).pathname === "/asistente" && response.ok());
+  const routes = ["/", "/asistente", "/privacidad", "/terminos", "/acerca", "/uso-de-datos", "/metodologia"];
+  const mentions = [];
+  for (const route of routes) {
+    await page.goto(`${BASE}${route}`);
+    if (/whatsapp/i.test(await page.textContent("body"))) mentions.push(route);
+  }
+  check("CP-66", "ninguna página del sitio menciona WhatsApp", mentions.length === 0, mentions.join(", "));
+  const nav = await page.locator("header a").evaluateAll((links) => links.map((link) => link.getAttribute("href")));
+  check("CP-66", "el menú lleva al asistente en /asistente", nav.includes("/asistente") && !nav.includes("/whatsapp"));
+}
+
+async function chatMedia(browser) {
+  const context = await browser.newContext({
+    viewport: { width: 390, height: 844 },
+    isMobile: true,
+    hasTouch: true,
+    permissions: ["geolocation", "microphone"],
+    geolocation: { latitude: 6.2, longitude: -75.6 },
+  });
+  const page = await context.newPage();
+  await page.goto(`${BASE}/asistente`);
+  await page.evaluate(() => window.localStorage.clear());
+  await page.reload();
+  const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+  check("CP-67", "en un celular (390 px) la página no se desborda a lo ancho", overflow <= 0, `${overflow} px`);
+  const count = () => page.locator("[role=log] [data-from]").count();
+  const waitReply = async (before) => {
+    await page.waitForFunction(
+      (n) => document.querySelectorAll("[role=log] [data-from]").length > n + 1 && !document.querySelector("[role=log] [role=status]"),
+      before,
+      { timeout: 90000 },
+    );
+    return (await page.locator("[role=log] [data-from]").allTextContents()).slice(before);
+  };
+  const say = async (text) => {
+    const before = await count();
+    await page.fill('input[placeholder="Escribe tu mensaje"]', text);
+    await page.click("button[aria-label=Enviar]");
+    return (await waitReply(before)).slice(1);
+  };
+  await say("Hola");
+  await say("ACEPTO");
+  let before = await count();
+  await page.click("button[aria-label='Compartir mi ubicación']");
+  const located = await waitReply(before);
+  check("CP-67", "compartir la ubicación desde el celular encuentra el proyecto", located[0].includes("Ubicación compartida") && located.slice(1).some((text) => text.includes("Reserva El Roble")), located.join(" | "));
+  before = await count();
+  await page.setInputFiles("[data-testid=foto]", path.join(__dirname, "../../../web/public/images/sat-before.jpg"));
+  const photoWithout = await waitReply(before);
+  check("CP-67", "una foto sin permiso aparte pide ACEPTO FOTOS", photoWithout.slice(1).some((text) => text.includes("ACEPTO FOTOS")));
+  await say("ACEPTO FOTOS");
+  before = await count();
+  await page.setInputFiles("[data-testid=foto]", path.join(__dirname, "../../../web/public/images/sat-before.jpg"));
+  const photo = await waitReply(before);
+  check("CP-67", "la foto se envía y el asistente responde", Boolean(await page.locator("[role=log] img[alt='Foto enviada']").count()) && photo.length >= 2, photo.slice(1).join(" | "));
+  before = await count();
+  await page.click("button[aria-label='Grabar una nota de voz']");
+  await page.waitForSelector("text=Grabando");
+  await page.waitForTimeout(2500);
+  await page.click("button[aria-label='Enviar la nota de voz']");
+  const voice = await waitReply(before);
+  check("CP-67", "la nota de voz se graba, se envía y el asistente responde", voice[0].includes("Nota de voz") && voice.length >= 2, voice.join(" | "));
+  await shot(page, "10-chat-celular.png");
+  check("CP-42", "BORRAR MIS DATOS elimina la conversación", (await say("BORRAR MIS DATOS"))[0].includes("Borré"));
+  await context.close();
+}
+
 (async () => {
-  const browser = await chromium.launch();
+  const browser = await chromium.launch({ args: ["--use-fake-ui-for-media-stream", "--use-fake-device-for-media-stream"] });
   const page = await browser.newPage({ viewport: { width: 1100, height: 900 } });
   try {
     await invitation(page);
@@ -222,6 +311,9 @@ async function chat(page) {
     await twoFactor(page);
     await chat(page);
     await legal(page);
+    await testAccount(browser);
+    await noWhatsApp(page);
+    await chatMedia(browser);
   } catch (error) {
     check("E2E", "ejecución sin errores", false, String(error.message ?? error));
   } finally {

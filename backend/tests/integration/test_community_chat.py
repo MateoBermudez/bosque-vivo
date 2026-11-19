@@ -65,8 +65,7 @@ def onboard(client):
 
 
 def test_location_from_the_browser_registers_the_project(client, db, seeded):
-    script = [LLMResponse(text="Ese lugar está dentro de Reserva El Roble.")]
-    client.app.dependency_overrides[get_assistant_llm] = lambda: ScriptedLLM(script)
+    client.app.dependency_overrides[get_assistant_llm] = lambda: ScriptedLLM([])
     client.app.dependency_overrides[get_satellite_provider] = lambda: None
     onboard(client)
     replies = post(client, kind="location", latitude=5.05, longitude=-74.95).json()["replies"]

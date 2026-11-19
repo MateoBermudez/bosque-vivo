@@ -74,7 +74,7 @@ export default function CommunityChatPage() {
       </PageHeader>
 
       <div className="mx-auto grid max-w-7xl gap-10 px-5 pb-16 lg:grid-cols-[1.2fr_1fr]">
-        <div>
+        <div className="min-w-0">
           <CommunityChat />
           <p className="mt-4 text-xs text-muted-foreground">
             Las respuestas describen lo que se ve desde el satélite y pueden contener errores. Escribe BORRAR MIS DATOS
@@ -82,7 +82,7 @@ export default function CommunityChatPage() {
           </p>
         </div>
 
-        <div className="space-y-10">
+        <div className="min-w-0 space-y-10">
           <Suspense fallback={<div className="card-soft h-32 animate-pulse" />}>
             <PhoneCard />
           </Suspense>

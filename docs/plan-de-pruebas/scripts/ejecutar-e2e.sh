@@ -21,6 +21,7 @@ export SATELLITE_PROVIDER=fake WEB_BASE_URL="http://localhost:$web_port" AUTH_TW
 cd "$root/backend"
 uv run bosquevivo seed-demo
 uv run bosquevivo user-invite auditora@elpoli.edu.co --name "Auditora Prueba"
+BOSQUEVIVO_PASSWORD="BosqueVivo-Pruebas-2026" uv run bosquevivo user-create pruebas@bosquevivo.test --name "Cuenta de pruebas"
 setsid uv run uvicorn bosquevivo.api.app:app --port "$api_port" > "$work/api.log" 2>&1 &
 api_pid=$!
 

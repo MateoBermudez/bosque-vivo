@@ -122,7 +122,10 @@ class AssistantService:
                 self._reply(phone, reply)
                 return
         if message.kind == "location" and message.latitude is not None:
-            self._register_by_location(user, message.latitude, message.longitude or 0.0)
+            self._reply(
+                phone, self._register_by_location(user, message.latitude, message.longitude or 0.0)
+            )
+            return
         self._respond(user, message)
 
     def _admit(self, message: IncomingMessage) -> WaUser | None:
@@ -176,11 +179,13 @@ class AssistantService:
         self.session.flush()
         return texts.project_registered(project.name)
 
-    def _register_by_location(self, user: WaUser, latitude: float, longitude: float) -> None:
+    def _register_by_location(self, user: WaUser, latitude: float, longitude: float) -> str:
         project = ProjectRepository(self.session).locate(float(latitude), float(longitude))
-        if project is not None:
-            user.project_id = project.id
-            self.session.flush()
+        if project is None:
+            return texts.LOCATION_OUTSIDE
+        user.project_id = project.id
+        self.session.flush()
+        return texts.project_registered(project.name)
 
     def _respond(self, user: WaUser, message: IncomingMessage) -> None:
         phone = message.phone
@@ -209,11 +214,7 @@ class AssistantService:
         self, user: WaUser, message: IncomingMessage, media_ok: bool
     ) -> AgentRequest | None:
         text = message.text or ""
-        location = None
         media: list[MediaPart] = []
-        if message.kind == "location" and message.latitude is not None:
-            location = (float(message.latitude), float(message.longitude or 0.0))
-            text = text or "¿Qué hay en este lugar?"
         if message.kind == "audio" and message.media_id:
             data, mime = self.client.download_media(message.media_id)
             transcript = transcribe_audio(self.llm, MediaPart(data, mime))
@@ -228,7 +229,6 @@ class AssistantService:
             text=text,
             role="comunidad",
             user_ref=user.phone_hmac,
-            location=location,
             media=media,
             media_consent=media_ok,
         )
