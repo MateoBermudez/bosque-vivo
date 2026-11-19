@@ -111,3 +111,14 @@ def test_rejects_invalid_media_and_location(client):
     assert post(client, kind="image", mime_type="image/png", media_base64="%%%").status_code == 422
     assert post(client, kind="location", latitude=95, longitude=0).status_code == 422
     assert post(client, kind="text", message="  ").status_code == 422
+
+
+def test_free_question_knows_the_chosen_project(client, db, seeded):
+    llm = ScriptedLLM([LLMResponse(text="Su bosque se conserva bien.")])
+    client.app.dependency_overrides[get_assistant_llm] = lambda: llm
+    client.app.dependency_overrides[get_satellite_provider] = lambda: None
+    onboard(client)
+    send(client, f"proyecto {seeded.id}")
+    send(client, "¿mi bosque está bien cuidado?")
+    prompt = llm.calls[0]["messages"][0].text
+    assert f"Proyecto que la persona eligió: Reserva El Roble (id {seeded.id})" in prompt

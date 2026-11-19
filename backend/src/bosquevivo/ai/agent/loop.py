@@ -44,6 +44,7 @@ class AgentRequest:
     location: tuple[float, float] | None = None
     media: list[MediaPart] = field(default_factory=list)
     media_consent: bool = False
+    project: tuple[int, str] | None = None
 
 
 @dataclass
@@ -87,6 +88,11 @@ class Agent:
         text = wrap_untrusted(request.text, "mensaje_usuario")
         if scan_for_injection(request.text).suspicious:
             text += INJECTION_NOTICE
+        if request.project:
+            text += (
+                f"\nProyecto que la persona eligió: {request.project[1]} (id {request.project[0]})."
+                ' Úsalo cuando pregunte por "mi bosque" o "mi proyecto".'
+            )
         if request.location:
             text += f"\nUbicación enviada: lat {request.location[0]}, lon {request.location[1]}."
         if request.media:

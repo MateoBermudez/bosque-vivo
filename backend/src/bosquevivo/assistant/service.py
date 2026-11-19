@@ -225,10 +225,12 @@ class AssistantService:
             data, mime = self.client.download_media(message.media_id)
             media = [MediaPart(data, mime)]
             text = text or "Mire esta foto"
+        project = self._project_of(user)
         return AgentRequest(
             text=text,
             role="comunidad",
             user_ref=user.phone_hmac,
             media=media,
             media_consent=media_ok,
+            project=(project.id, project.name) if project else None,
         )
